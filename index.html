@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Hive · Nambour invite</title>
+<style>
+  :root {
+    --bg:#0f1412; --card:#1a221e; --hive:#c8f54a; --hive-dim:#8fb82e;
+    --text:#f4f7f2; --muted:#9aa89c; --line:#2a3530; --ok:#5ddea8; --warn:#f0c14a;
+    --red:#ff5a5a; --red-dim:#4a1818;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    background:#070a09;color:var(--text);min-height:100dvh;display:flex;justify-content:center}
+  .phone{width:100%;max-width:390px;min-height:100dvh;background:var(--bg);
+    padding:16px 16px 28px;display:flex;flex-direction:column;gap:14px}
+  header{display:flex;align-items:center;justify-content:space-between}
+  .logo{font-weight:700;letter-spacing:.04em;font-size:15px}
+  .logo span{color:var(--hive)}
+  .pill{font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:4px 10px}
+  h1{font-size:22px;margin:0;font-weight:650}
+  .sub{color:var(--muted);font-size:13px;margin:0;line-height:1.35}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px}
+  .import{display:flex;align-items:center;justify-content:space-between;gap:12px;
+    border:1.5px dashed var(--hive-dim);background:#141c16;cursor:pointer}
+  .btn{appearance:none;border:0;border-radius:14px;padding:14px 16px;font-weight:650;font-size:15px;cursor:pointer;width:100%}
+  .btn-primary{background:var(--hive);color:#10200a}
+  .btn-primary:disabled{opacity:.4;cursor:not-allowed}
+  .btn-ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
+  .btn-alert{background:var(--red);color:#fff}
+  .tabs{display:flex;gap:6px}
+  .tab{flex:1;text-align:center;padding:8px;border-radius:12px;font-size:12px;color:var(--muted);
+    background:var(--card);border:1px solid var(--line);cursor:pointer}
+  .tab.on{color:#10200a;background:var(--hive);border-color:var(--hive);font-weight:650}
+  .list{display:flex;flex-direction:column;gap:8px;max-height:240px;overflow:auto}
+  .row{display:grid;grid-template-columns:28px 1fr auto;gap:10px;align-items:center;
+    padding:10px 12px;border-radius:12px;background:#121916;border:1px solid var(--line)}
+  .row input{width:18px;height:18px;accent-color:var(--hive)}
+  .name{font-size:14px;font-weight:600}
+  .meta{font-size:11px;color:var(--muted)}
+  .badge{font-size:10px;text-transform:uppercase;letter-spacing:.04em;padding:4px 8px;
+    border-radius:999px;background:#243028;color:var(--hive)}
+  .live{display:flex;flex-direction:column;gap:8px}
+  .live-row{display:flex;justify-content:space-between;font-size:13px;gap:8px}
+  .ok{color:var(--ok)}.wait{color:var(--warn)}.taken{color:var(--muted);text-decoration:line-through}.win{color:var(--ok);font-weight:700}
+  footer{margin-top:auto;display:flex;flex-direction:column;gap:8px}
+  .note{font-size:11px;color:var(--muted);text-align:center;line-height:1.4}
+  .hidden{display:none!important}
+  .screen{display:flex;flex-direction:column;gap:14px;flex:1}
+  .qr-card{display:flex;gap:14px;align-items:center}
+  .qr{width:88px;height:88px;border-radius:12px;background:
+    linear-gradient(90deg,#111 25%,transparent 25%) 0 0/8px 8px,
+    linear-gradient(#c8f54a 25%,transparent 25%) 0 0/8px 8px,#1a221e;
+    border:2px solid var(--hive);flex-shrink:0}
+  .msg{font-size:13px;line-height:1.45;background:#121916;border-radius:12px;padding:12px;border:1px solid var(--line)}
+  .msg em{color:var(--hive);font-style:normal}
+  .banner-red{background:var(--red-dim);border:1px solid var(--red);border-radius:14px;padding:12px 14px}
+  .banner-red strong{color:#ffb4b4;display:block;font-size:13px}
+  .al-only{font-size:10px;color:#886;letter-spacing:.06em;text-transform:uppercase}
+</style>
+</head>
+<body>
+<div class="phone">
+  <!-- LOUISE: Nambour invite home -->
+  <section id="screen-home" class="screen">
+    <header>
+      <div class="logo">THE <span>HIVE</span></div>
+      <div class="pill">Nambour</div>
+    </header>
+    <div>
+      <h1>Invite to Nambour</h1>
+      <p class="sub">Your people. Personal text + QR. Filming consent on the link.</p>
+    </div>
+    <div class="card qr-card">
+      <div class="qr" aria-hidden="true"></div>
+      <div>
+        <strong style="font-size:14px">Session QR</strong>
+        <p class="meta" style="margin:6px 0 0">They can scan or tap the link in your text. Feels like you sent it — not a blast.</p>
+      </div>
+    </div>
+    <div class="card msg">
+      Hi <em>Mia</em> — it’s Louise from The Hive. You’re invited to our Nambour session. Tap to RSVP + filming consent →
+    </div>
+    <footer>
+      <button class="btn btn-primary" id="goPick">Import CSV · pick people</button>
+      <p class="note">SMS from The Hive’s AU number · MessageMedia / Twilio · cloud only</p>
+      <button class="btn btn-ghost al-only hidden" id="alDoor" style="font-size:11px;opacity:.5">Al · ops (hidden)</button>
+    </footer>
+  </section>
+
+  <!-- LOUISE: pick -->
+  <section id="screen-invite" class="screen hidden">
+    <header>
+      <div class="logo">THE <span>HIVE</span></div>
+      <div class="pill">Nambour</div>
+    </header>
+    <div>
+      <h1>Who to invite</h1>
+      <p class="sub">Tick people. Start invite sends the first 8 — small burst, personal feel.</p>
+    </div>
+    <label class="card import" id="importBtn">
+      <div><strong>Import CSV</strong><div class="meta">Detects Name / Phone / Level if present</div></div>
+      <input type="file" accept=".csv,text/csv" hidden id="file"/>
+      <span class="badge">1 tap</span>
+    </label>
+    <div class="tabs" id="tabs">
+      <button class="tab on" data-level="all">All</button>
+      <button class="tab" data-level="beg">Beg</button>
+      <button class="tab" data-level="int">Int</button>
+      <button class="tab" data-level="adv">Adv</button>
+    </div>
+    <div class="list card" id="list"></div>
+    <footer>
+      <button class="btn btn-primary" id="startBtn" disabled>Start invite · first 8</button>
+      <button class="btn btn-ghost" id="backHome">Back</button>
+    </footer>
+  </section>
+
+  <!-- LOUISE: live -->
+  <section id="screen-invite-live" class="screen hidden">
+    <header>
+      <div class="logo">THE <span>HIVE</span></div>
+      <div class="pill">Live</div>
+    </header>
+    <div>
+      <h1>Invites out</h1>
+      <p class="sub" id="burstSub">Personal texts sent. Fills as they RSVP + consent.</p>
+    </div>
+    <div class="card live" id="liveList"></div>
+    <div class="card">
+      <strong style="font-size:13px">Their link</strong>
+      <p class="meta" style="margin:8px 0 0">Nambour session · level · filming consent tick · RSVP · QR if they need it again</p>
+    </div>
+    <footer>
+      <button class="btn btn-ghost" id="backInvite">Back to list</button>
+      <button class="btn btn-primary" id="nextBurst" disabled>Send next 8</button>
+    </footer>
+  </section>
+
+  <!-- AL ONLY: ops hub (hidden unless ?al=1) -->
+  <section id="screen-al" class="screen hidden">
+    <header>
+      <div class="logo">THE <span>HIVE</span></div>
+      <div class="pill">Al only</div>
+    </header>
+    <p class="al-only">Background product — not for Louise yet</p>
+    <div>
+      <h1>Wider ops</h1>
+      <p class="sub">Red-alert fill · opt-out of red alerts · email invite path. Reveal when Louise asks.</p>
+    </div>
+    <button class="btn btn-alert" id="goAlert">Red alert · first Yes wins</button>
+    <button class="btn btn-ghost" id="backHomeAl">Louise home</button>
+    <p class="note">Email path + red-alert opt-out = build later. Same Safari shell.</p>
+  </section>
+
+  <!-- AL: red alert -->
+  <section id="screen-alert" class="screen hidden">
+    <header>
+      <div class="logo">THE <span>HIVE</span></div>
+      <div class="pill" style="border-color:var(--red);color:#ffb4b4">Red alert · Al</div>
+    </header>
+    <div class="banner-red">
+      <strong>Crew short 1</strong>
+      <span class="meta">Blast shortlist. First Yes locks seat. Others see taken.</span>
+    </div>
+    <div class="list card" id="alertList"></div>
+    <footer>
+      <button class="btn btn-alert" id="blastBtn">Blast · first Yes wins</button>
+      <button class="btn btn-ghost" id="backAl">Al ops</button>
+      <p class="note">Also: opt-out of red alerts · email invite (background)</p>
+    </footer>
+  </section>
+
+  <section id="screen-alert-live" class="screen hidden">
+    <header>
+      <div class="logo">THE <span>HIVE</span></div>
+      <div class="pill" style="border-color:var(--red);color:#ffb4b4">Filling</div>
+    </header>
+    <div>
+      <h1 id="alertTitle">Waiting on Yes</h1>
+      <p class="sub" id="alertSub">First accept locks the seat.</p>
+    </div>
+    <div class="card live" id="alertLive"></div>
+    <footer><button class="btn btn-ghost" id="backAlert">Back</button></footer>
+  </section>
+</div>
+<script>
+const alMode = new URLSearchParams(location.search).has("al");
+const sample=[
+  {name:"Mia Chen",phone:"0412 000 101",level:"beg"},
+  {name:"Tom Blake",phone:"0412 000 102",level:"beg"},
+  {name:"Sara N.",phone:"0412 000 103",level:"int"},
+  {name:"James P.",phone:"0412 000 104",level:"int"},
+  {name:"Ava R.",phone:"0412 000 105",level:"adv"},
+  {name:"Noah K.",phone:"0412 000 106",level:"beg"},
+  {name:"Lily W.",phone:"0412 000 107",level:"int"},
+  {name:"Owen D.",phone:"0412 000 108",level:"adv"},
+  {name:"Zoe M.",phone:"0412 000 109",level:"beg"},
+  {name:"Leo H.",phone:"0412 000 110",level:"int"},
+];
+const shortlist=[
+  {name:"Helen M.",phone:"0413 111 201"},
+  {name:"Priya S.",phone:"0413 111 202"},
+  {name:"Jan B.",phone:"0413 111 203"},
+  {name:"Claire T.",phone:"0413 111 204"},
+  {name:"Ruth K.",phone:"0413 111 205"},
+];
+let people=sample.map((p,i)=>({...p,id:i,on:false}));
+let alertPeople=shortlist.map((p,i)=>({...p,id:i,on:true}));
+let filter="all";
+const $=id=>document.getElementById(id);
+function show(id){["home","invite","invite-live","al","alert","alert-live"].forEach(s=>{
+  $("screen-"+s).classList.toggle("hidden", s!==id);
+});}
+function levelLabel(l){return ({beg:"Beg",int:"Int",adv:"Adv"})[l]||l}
+
+if(alMode){ $("alDoor").classList.remove("hidden"); }
+
+function renderInvite(){
+  const rows=people.filter(p=>filter==="all"||p.level===filter);
+  $("list").innerHTML=rows.map(p=>`<label class="row"><input type="checkbox" data-id="${p.id}" ${p.on?"checked":""}/>
+    <div><div class="name">${p.name}</div><div class="meta">${p.phone}</div></div>
+    <span class="badge">${levelLabel(p.level)}</span></label>`).join("");
+  const n=people.filter(p=>p.on).length;
+  $("startBtn").disabled=n===0;
+  $("startBtn").textContent=n?`Start invite · first ${Math.min(8,n)}`:"Start invite · first 8";
+}
+function renderAlert(){
+  $("alertList").innerHTML=alertPeople.map(p=>`<label class="row"><input type="checkbox" data-aid="${p.id}" ${p.on?"checked":""}/>
+    <div><div class="name">${p.name}</div><div class="meta">${p.phone}</div></div>
+    <span class="badge">standby</span></label>`).join("");
+}
+
+$("list").onchange=e=>{const p=people.find(x=>x.id===+e.target.dataset.id);if(p){p.on=e.target.checked;renderInvite();}};
+$("alertList").onchange=e=>{const p=alertPeople.find(x=>x.id===+e.target.dataset.aid);if(p)p.on=e.target.checked;};
+$("tabs").onclick=e=>{const t=e.target.closest(".tab");if(!t)return;filter=t.dataset.level;
+  [...document.querySelectorAll(".tab")].forEach(x=>x.classList.toggle("on",x===t));renderInvite();};
+$("file").onchange=async e=>{
+  const f=e.target.files?.[0];if(!f)return;
+  const lines=(await f.text()).trim().split(/\r?\n/);
+  const header=lines.shift().split(",").map(s=>s.trim().toLowerCase());
+  const nameI=header.findIndex(h=>/name|player|full/.test(h));
+  const phoneI=header.findIndex(h=>/phone|mobile|sms|tel/.test(h));
+  const levelI=header.findIndex(h=>/level|skill|group|bucket|beg|int|adv/.test(h));
+  people=lines.map((line,i)=>{
+    const c=line.split(",").map(s=>s.trim());
+    let level="int";const raw=(levelI>=0?c[levelI]:"").toLowerCase();
+    if(/beg|intro|1/.test(raw))level="beg";else if(/adv|3|pro/.test(raw))level="adv";
+    return{id:i,name:c[nameI>=0?nameI:0]||`Player ${i+1}`,phone:c[phoneI>=0?phoneI:1]||"",level,on:false};
+  });
+  renderInvite();
+};
+$("importBtn").onclick=()=>$("file").click();
+$("goPick").onclick=()=>{show("invite");renderInvite();};
+$("backHome").onclick=$("backHomeAl").onclick=()=>show("home");
+$("backInvite").onclick=()=>show("invite");
+$("alDoor").onclick=()=>show("al");
+$("goAlert").onclick=()=>{show("alert");renderAlert();};
+$("backAl").onclick=()=>show("al");
+$("backAlert").onclick=()=>show("alert");
+
+$("startBtn").onclick=()=>{
+  const burst=people.filter(p=>p.on).slice(0,8);
+  show("invite-live");
+  $("burstSub").textContent=`${burst.length} personal texts out · consent on the link`;
+  $("liveList").innerHTML=burst.map((p,i)=>`<div class="live-row" id="lr${i}"><span>${p.name}</span><span class="wait">sent…</span></div>`).join("");
+  burst.forEach((_,i)=>setTimeout(()=>{
+    const el=document.querySelector(`#lr${i} span:last-child`);if(!el)return;
+    if(i%3===1){el.className="ok";el.textContent="RSVP yes · consent ✓";}
+    else if(i%3===0){el.className="wait";el.textContent="opened";}
+    else{el.className="wait";el.textContent="no reply yet";}
+  },500+i*400));
+  $("nextBurst").disabled=people.filter(p=>p.on).length<=8;
+};
+
+$("blastBtn").onclick=()=>{
+  const blast=alertPeople.filter(p=>p.on);if(!blast.length)return;
+  show("alert-live");
+  $("alertTitle").textContent="Waiting on Yes";
+  $("alertSub").textContent=`${blast.length} shortlisted · first Yes locks`;
+  $("alertLive").innerHTML=blast.map((p,i)=>`<div class="live-row" id="ar${i}"><span>${p.name}</span><span class="wait">texted…</span></div>`).join("");
+  const winner=Math.min(2,blast.length-1);
+  blast.forEach((p,i)=>setTimeout(()=>{
+    const el=document.querySelector(`#ar${i} span:last-child`);if(!el)return;
+    if(i===winner){
+      el.className="win";el.textContent="YES · seat filled";
+      $("alertTitle").textContent="Seat filled";
+      $("alertSub").textContent=`${p.name} locked it. Others see taken.`;
+      blast.forEach((_,j)=>{if(j===winner)return;const o=document.querySelector(`#ar${j} span:last-child`);if(o){o.className="taken";o.textContent="taken";}});
+    } else if(i<winner){el.className="wait";el.textContent="opened";}
+  },700+i*550));
+};
+show("home");
+</script>
+</body>
+</html>
