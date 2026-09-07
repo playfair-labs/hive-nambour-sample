@@ -19,12 +19,12 @@
   .logo{font-weight:700;letter-spacing:.04em;font-size:15px}
   .logo span{color:var(--hive)}
   .pill{font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:4px 10px}
-  h1{font-size:22px;margin:0;font-weight:650}
+  h1{font-size:26px;margin:0;font-weight:650}
   .sub{color:var(--muted);font-size:13px;margin:0;line-height:1.35}
   .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px}
   .import{display:flex;align-items:center;justify-content:space-between;gap:12px;
     border:1.5px dashed var(--hive-dim);background:#141c16;cursor:pointer}
-  .btn{appearance:none;border:0;border-radius:14px;padding:14px 16px;font-weight:650;font-size:15px;cursor:pointer;width:100%}
+  .btn{appearance:none;border:0;border-radius:14px;padding:16px 16px;font-weight:650;font-size:17px;cursor:pointer;width:100%}
   .btn-primary{background:var(--hive);color:#10200a}
   .btn-primary:disabled{opacity:.35;cursor:not-allowed}
   .btn-ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
@@ -62,16 +62,16 @@
   .count{font-size:12px;color:var(--muted)}
 
   .sticky-search{position:sticky;top:0;z-index:5;background:var(--bg);padding:0 0 8px;margin:0 -2px;}
-  .search{width:100%;padding:12px 14px;border-radius:14px;border:1px solid var(--line);
-    background:#121916;color:var(--text);font-size:16px;outline:none;}
+  .search{width:100%;padding:14px 16px;border-radius:14px;border:2px solid var(--hive-dim);
+    background:#121916;color:var(--text);font-size:18px;outline:none;}
   .search:focus{border-color:var(--hive);}
   .search::placeholder{color:var(--muted);}
 
   .counters{display:flex;gap:8px;margin:0;}
   .counter{flex:1;text-align:center;padding:10px 6px;border-radius:14px;background:var(--card);
     border:1px solid var(--line);}
-  .counter .n{font-size:22px;font-weight:700;color:var(--hive);line-height:1.1;}
-  .counter .l{font-size:11px;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:.04em;}
+  .counter .n{font-size:28px;font-weight:700;color:var(--hive);line-height:1.1;}
+  .counter .l{font-size:13px;color:var(--muted);margin-top:4px;font-weight:600;}
 </style>
 </head>
 <body>
@@ -79,49 +79,26 @@
   <section id="screen-home" class="screen">
     <header>
       <div class="logo">SMS <span>FILL</span></div>
-      <div class="pill">Nambour session</div>
+      <div class="pill">Nambour</div>
     </header>
     <div>
-      <h1>SMS Fill</h1>
-      <p class="sub">Hand-pick who gets a text. Nothing sends until you confirm.</p>
-    </div>
-    <div class="card qr-card">
-      <div class="qr" aria-hidden="true"></div>
-      <div>
-        <strong style="font-size:14px">Session QR</strong>
-        <p class="meta" style="margin:6px 0 0">On their invite link. Personal feel — not a blast.</p>
-      </div>
+      <h1>Invite people</h1>
+      <p class="sub">Tick who gets a text.</p>
     </div>
     <div class="card msg">
-      Hi <em>Mia</em> — it’s Louise — you’re invited to our Nambour session. Tap to RSVP + filming consent →
+      Hi <em>Mia</em> — it’s Louise. Come to Nambour. Tap yes + filming OK →
     </div>
     <footer>
-      <button class="btn btn-primary" id="goPick">Pick people · sample list</button>
-      <p class="note">~50 Beg · 50 Int · 50 Adv in sample. Unpicked never get SMS.</p>
-      <button class="btn btn-ghost al-only hidden" id="alDoor" style="font-size:11px;opacity:.5">Al · SMS Fill ops</button>
+      <button class="btn btn-primary" id="goPick">Pick people</button>
+      <button class="btn btn-ghost al-only hidden" id="alDoor" style="font-size:11px;opacity:.45">Al</button>
     </footer>
   </section>
 
   <section id="screen-invite" class="screen hidden">
     <header>
       <div class="logo">SMS <span>FILL</span></div>
-      <div class="pill">Hand-pick</div>
+      <div class="pill">Pick</div>
     </header>
-    <div>
-      <h1>Who to invite</h1>
-      <p class="sub">Search a name, tick early adopters. Blank ticks = no text.</p>
-    </div>
-    <label class="card import" id="importBtn">
-      <div><strong>Import CSV</strong><div class="meta">Optional — replaces sample. Maps Name / Phone / Level</div></div>
-      <input type="file" accept=".csv,text/csv" hidden id="file"/>
-      <span class="badge">1 tap</span>
-    </label>
-    <div class="tabs" id="tabs">
-      <button class="tab on" data-level="all">All</button>
-      <button class="tab" data-level="beg">Beg</button>
-      <button class="tab" data-level="int">Int</button>
-      <button class="tab" data-level="adv">Adv</button>
-    </div>
     <div class="sticky-search">
       <div class="counters" id="levelCounters" aria-live="polite">
         <div class="counter"><div class="n" id="cBeg">0</div><div class="l">Beg</div></div>
@@ -129,55 +106,54 @@
         <div class="counter"><div class="n" id="cAdv">0</div><div class="l">Adv</div></div>
       </div>
       <input class="search" id="nameSearch" type="search" enterkeyhint="search" autocomplete="off"
-        placeholder="Search name · tick early adopters" style="margin-top:8px" />
+        placeholder="Find a name" style="margin-top:10px" />
+      <div class="tabs" id="tabs" style="margin-top:10px">
+        <button class="tab on" data-level="all">All</button>
+        <button class="tab" data-level="beg">Beg</button>
+        <button class="tab" data-level="int">Int</button>
+        <button class="tab" data-level="adv">Adv</button>
+      </div>
     </div>
-    <p class="count" id="pickCount">0 picked · 0 in view</p>
-    <div class="list card" id="list"></div>
+    <div class="list card" id="list" style="max-height:none;flex:1"></div>
     <footer>
-      <button class="btn btn-primary" id="reviewBtn" disabled>Review picked · next</button>
+      <button class="btn btn-primary" id="reviewBtn" disabled>Next</button>
       <button class="btn btn-ghost" id="backHome">Back</button>
-      <p class="note">No select-all. Failsafe confirm is next.</p>
+      <label class="card import" id="importBtn" style="margin-top:4px;padding:10px 12px">
+        <div><strong style="font-size:13px">Add from file</strong></div>
+        <input type="file" accept=".csv,text/csv" hidden id="file"/>
+      </label>
     </footer>
   </section>
 
   <section id="screen-confirm" class="screen hidden">
     <header>
       <div class="logo">SMS <span>FILL</span></div>
-      <div class="pill">Confirm</div>
+      <div class="pill">Check</div>
     </header>
-    <div class="warn-box">
-      <strong style="display:block;margin-bottom:6px">Before any SMS fires</strong>
-      Check this list. Only these people get a text. First 8 go in this burst.
-    </div>
     <div>
-      <h1 id="confirmTitle">Review</h1>
-      <p class="sub" id="confirmSub">Confirm to send.</p>
+      <h1 id="confirmTitle">Send these?</h1>
+      <p class="sub" id="confirmSub">Only the people on this list.</p>
     </div>
-    <div class="list card" id="confirmList"></div>
+    <div class="list card" id="confirmList" style="max-height:none;flex:1"></div>
     <footer>
-      <button class="btn btn-primary" id="confirmSend">Confirm · send SMS to these</button>
-      <button class="btn btn-ghost" id="backPick">Change picks</button>
-      <p class="note">Unpicked people cannot receive this send.</p>
+      <button class="btn btn-primary" id="confirmSend">Yes · send texts</button>
+      <button class="btn btn-ghost" id="backPick">Change list</button>
     </footer>
   </section>
 
   <section id="screen-invite-live" class="screen hidden">
     <header>
       <div class="logo">SMS <span>FILL</span></div>
-      <div class="pill">Live</div>
+      <div class="pill">Sent</div>
     </header>
     <div>
-      <h1>Invites out</h1>
-      <p class="sub" id="burstSub">Personal texts sent. Fills as they RSVP + consent.</p>
+      <h1>Sent</h1>
+      <p class="sub" id="burstSub">Waiting for yes.</p>
     </div>
-    <div class="card live" id="liveList"></div>
-    <div class="card">
-      <strong style="font-size:13px">Their link</strong>
-      <p class="meta" style="margin:8px 0 0">Nambour session · level · filming consent · RSVP · QR</p>
-    </div>
+    <div class="card live" id="liveList" style="max-height:none;flex:1"></div>
     <footer>
-      <button class="btn btn-ghost" id="backInvite">Back to list</button>
-      <button class="btn btn-primary" id="nextBurst" disabled>Review next 8</button>
+      <button class="btn btn-primary" id="nextBurst" disabled>Send more</button>
+      <button class="btn btn-ghost" id="backInvite">Back</button>
     </footer>
   </section>
 
@@ -413,9 +389,8 @@ function renderInvite(){
   $("cBeg").textContent = String(allP.filter(p=>p.level==="beg").length);
   $("cInt").textContent = String(allP.filter(p=>p.level==="int").length);
   $("cAdv").textContent = String(allP.filter(p=>p.level==="adv").length);
-  $("pickCount").textContent = `${n} picked · ${rows.length} in view · ${people.length} total`;
   $("reviewBtn").disabled = n===0;
-  $("reviewBtn").textContent = n ? `Review ${n} picked · next` : "Review picked · next";
+  $("reviewBtn").textContent = n ? `Next · ${n} people` : "Next";
 }
 function renderAlert(){
   $("alertList").innerHTML = alertPeople.map(p=>`<label class="row"><input type="checkbox" data-aid="${p.id}" ${p.on?"checked":""}/>
@@ -471,8 +446,8 @@ $("reviewBtn").onclick=()=>{
   pendingBurst = all.slice(sentCount, sentCount+8);
   if(!pendingBurst.length){ pendingBurst = all.slice(0,8); sentCount=0; }
   show("confirm");
-  $("confirmTitle").textContent = `Send to ${pendingBurst.length}?`;
-  $("confirmSub").textContent = `Only these ${pendingBurst.length} (of ${all.length} picked). Unpicked get nothing.`;
+  $("confirmTitle").textContent = `Send these ${pendingBurst.length}?`;
+  $("confirmSub").textContent = `From your ${all.length} picks. Nobody else.`;
   $("confirmList").innerHTML = pendingBurst.map(p=>`<div class="row" style="grid-template-columns:1fr auto">
     <div><div class="name">${p.name}</div><div class="meta">${p.phone}</div></div>
     <span class="badge">${levelLabel(p.level)}</span></div>`).join("");
@@ -485,17 +460,17 @@ $("confirmSend").onclick=()=>{
   if(!burst.length) return;
   sentCount += burst.length;
   show("invite-live");
-  $("burstSub").textContent = `${burst.length} SMS queued · filming consent on the link`;
+  $("burstSub").textContent = `${burst.length} texts on the way.`;
   $("liveList").innerHTML = burst.map((p,i)=>`<div class="live-row" id="lr${i}"><span>${p.name}</span><span class="wait">sent…</span></div>`).join("");
   burst.forEach((_,i)=>setTimeout(()=>{
     const el=document.querySelector(`#lr${i} span:last-child`); if(!el) return;
-    if(i%3===1){el.className="ok"; el.textContent="RSVP yes · consent ✓";}
+    if(i%3===1){el.className="ok"; el.textContent="Yes ✓";}
     else if(i%3===0){el.className="wait"; el.textContent="opened";}
-    else {el.className="wait"; el.textContent="no reply yet";}
+    else {el.className="wait"; el.textContent="…";}
   },500+i*400));
   const remaining = picked().length - sentCount;
   $("nextBurst").disabled = remaining<=0;
-  $("nextBurst").textContent = remaining>0 ? `Review next ${Math.min(8,remaining)}` : "All picked sent";
+  $("nextBurst").textContent = remaining>0 ? `Send next ${Math.min(8,remaining)}` : "Done";
 };
 
 $("nextBurst").onclick=()=>{
