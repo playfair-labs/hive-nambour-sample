@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Hive · Nambour invite</title>
+<title>SMS Fill</title>
 <style>
   :root {
     --bg:#0f1412; --card:#1a221e; --hive:#c8f54a; --hive-dim:#8fb82e;
@@ -65,12 +65,12 @@
   <!-- LOUISE: Nambour invite home -->
   <section id="screen-home" class="screen">
     <header>
-      <div class="logo">THE <span>HIVE</span></div>
-      <div class="pill">Nambour</div>
+      <div class="logo">SMS <span>FILL</span></div>
+      <div class="pill">Nambour session</div>
     </header>
     <div>
-      <h1>Invite to Nambour</h1>
-      <p class="sub">Your people. Personal text + QR. Filming consent on the link.</p>
+      <h1>SMS Fill</h1>
+      <p class="sub">Fill seats by text. Personal invite + QR. Filming consent on the link.</p>
     </div>
     <div class="card qr-card">
       <div class="qr" aria-hidden="true"></div>
@@ -80,20 +80,20 @@
       </div>
     </div>
     <div class="card msg">
-      Hi <em>Mia</em> — it’s Louise from The Hive. You’re invited to our Nambour session. Tap to RSVP + filming consent →
+      Hi <em>Mia</em> — it’s Louise — you’re invited to our Nambour session (SMS Fill). Tap to RSVP + filming consent →
     </div>
     <footer>
       <button class="btn btn-primary" id="goPick">Import CSV · pick people</button>
-      <p class="note">SMS from The Hive’s AU number · MessageMedia / Twilio · cloud only</p>
-      <button class="btn btn-ghost al-only hidden" id="alDoor" style="font-size:11px;opacity:.5">Al · ops (hidden)</button>
+      <p class="note">SMS Fill · AU number · MessageMedia / Twilio · cloud only</p>
+      <button class="btn btn-ghost al-only hidden" id="alDoor" style="font-size:11px;opacity:.5">Al · SMS Fill ops (hidden)</button>
     </footer>
   </section>
 
   <!-- LOUISE: pick -->
   <section id="screen-invite" class="screen hidden">
     <header>
-      <div class="logo">THE <span>HIVE</span></div>
-      <div class="pill">Nambour</div>
+      <div class="logo">SMS <span>FILL</span></div>
+      <div class="pill">Nambour session</div>
     </header>
     <div>
       <h1>Who to invite</h1>
@@ -120,7 +120,7 @@
   <!-- LOUISE: live -->
   <section id="screen-invite-live" class="screen hidden">
     <header>
-      <div class="logo">THE <span>HIVE</span></div>
+      <div class="logo">SMS <span>FILL</span></div>
       <div class="pill">Live</div>
     </header>
     <div>
@@ -130,7 +130,7 @@
     <div class="card live" id="liveList"></div>
     <div class="card">
       <strong style="font-size:13px">Their link</strong>
-      <p class="meta" style="margin:8px 0 0">Nambour session · level · filming consent tick · RSVP · QR if they need it again</p>
+      <p class="meta" style="margin:8px 0 0">Session (e.g. Nambour) · level · filming consent · RSVP · QR</p>
     </div>
     <footer>
       <button class="btn btn-ghost" id="backInvite">Back to list</button>
@@ -141,12 +141,12 @@
   <!-- AL ONLY: ops hub (hidden unless ?al=1) -->
   <section id="screen-al" class="screen hidden">
     <header>
-      <div class="logo">THE <span>HIVE</span></div>
+      <div class="logo">SMS <span>FILL</span></div>
       <div class="pill">Al only</div>
     </header>
     <p class="al-only">Background product — not for Louise yet</p>
     <div>
-      <h1>Wider ops</h1>
+      <h1>SMS Fill · wider ops</h1>
       <p class="sub">Red-alert fill · opt-out of red alerts · email invite path. Reveal when Louise asks.</p>
     </div>
     <button class="btn btn-alert" id="goAlert">Red alert · first Yes wins</button>
@@ -157,7 +157,7 @@
   <!-- AL: red alert -->
   <section id="screen-alert" class="screen hidden">
     <header>
-      <div class="logo">THE <span>HIVE</span></div>
+      <div class="logo">SMS <span>FILL</span></div>
       <div class="pill" style="border-color:var(--red);color:#ffb4b4">Red alert · Al</div>
     </header>
     <div class="banner-red">
@@ -174,7 +174,7 @@
 
   <section id="screen-alert-live" class="screen hidden">
     <header>
-      <div class="logo">THE <span>HIVE</span></div>
+      <div class="logo">SMS <span>FILL</span></div>
       <div class="pill" style="border-color:var(--red);color:#ffb4b4">Filling</div>
     </header>
     <div>
