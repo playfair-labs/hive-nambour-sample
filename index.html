@@ -26,14 +26,14 @@
     border:1.5px dashed var(--hive-dim);background:#141c16;cursor:pointer}
   .btn{appearance:none;border:0;border-radius:14px;padding:14px 16px;font-weight:650;font-size:15px;cursor:pointer;width:100%}
   .btn-primary{background:var(--hive);color:#10200a}
-  .btn-primary:disabled{opacity:.4;cursor:not-allowed}
+  .btn-primary:disabled{opacity:.35;cursor:not-allowed}
   .btn-ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
   .btn-alert{background:var(--red);color:#fff}
   .tabs{display:flex;gap:6px}
   .tab{flex:1;text-align:center;padding:8px;border-radius:12px;font-size:12px;color:var(--muted);
     background:var(--card);border:1px solid var(--line);cursor:pointer}
   .tab.on{color:#10200a;background:var(--hive);border-color:var(--hive);font-weight:650}
-  .list{display:flex;flex-direction:column;gap:8px;max-height:240px;overflow:auto}
+  .list{display:flex;flex-direction:column;gap:8px;max-height:260px;overflow:auto;-webkit-overflow-scrolling:touch}
   .row{display:grid;grid-template-columns:28px 1fr auto;gap:10px;align-items:center;
     padding:10px 12px;border-radius:12px;background:#121916;border:1px solid var(--line)}
   .row input{width:18px;height:18px;accent-color:var(--hive)}
@@ -41,7 +41,7 @@
   .meta{font-size:11px;color:var(--muted)}
   .badge{font-size:10px;text-transform:uppercase;letter-spacing:.04em;padding:4px 8px;
     border-radius:999px;background:#243028;color:var(--hive)}
-  .live{display:flex;flex-direction:column;gap:8px}
+  .live{display:flex;flex-direction:column;gap:8px;max-height:280px;overflow:auto}
   .live-row{display:flex;justify-content:space-between;font-size:13px;gap:8px}
   .ok{color:var(--ok)}.wait{color:var(--warn)}.taken{color:var(--muted);text-decoration:line-through}.win{color:var(--ok);font-weight:700}
   footer{margin-top:auto;display:flex;flex-direction:column;gap:8px}
@@ -58,11 +58,12 @@
   .banner-red{background:var(--red-dim);border:1px solid var(--red);border-radius:14px;padding:12px 14px}
   .banner-red strong{color:#ffb4b4;display:block;font-size:13px}
   .al-only{font-size:10px;color:#886;letter-spacing:.06em;text-transform:uppercase}
+  .warn-box{border:1px solid var(--warn);background:#2a2410;border-radius:14px;padding:12px 14px;font-size:13px;line-height:1.4}
+  .count{font-size:12px;color:var(--muted)}
 </style>
 </head>
 <body>
 <div class="phone">
-  <!-- LOUISE: Nambour invite home -->
   <section id="screen-home" class="screen">
     <header>
       <div class="logo">SMS <span>FILL</span></div>
@@ -70,37 +71,36 @@
     </header>
     <div>
       <h1>SMS Fill</h1>
-      <p class="sub">Fill seats by text. Personal invite + QR. Filming consent on the link.</p>
+      <p class="sub">Hand-pick who gets a text. Nothing sends until you confirm.</p>
     </div>
     <div class="card qr-card">
       <div class="qr" aria-hidden="true"></div>
       <div>
         <strong style="font-size:14px">Session QR</strong>
-        <p class="meta" style="margin:6px 0 0">They can scan or tap the link in your text. Feels like you sent it — not a blast.</p>
+        <p class="meta" style="margin:6px 0 0">On their invite link. Personal feel — not a blast.</p>
       </div>
     </div>
     <div class="card msg">
-      Hi <em>Mia</em> — it’s Louise — you’re invited to our Nambour session (SMS Fill). Tap to RSVP + filming consent →
+      Hi <em>Mia</em> — it’s Louise — you’re invited to our Nambour session. Tap to RSVP + filming consent →
     </div>
     <footer>
-      <button class="btn btn-primary" id="goPick">Import CSV · pick people</button>
-      <p class="note">SMS Fill · AU number · MessageMedia / Twilio · cloud only</p>
-      <button class="btn btn-ghost al-only hidden" id="alDoor" style="font-size:11px;opacity:.5">Al · SMS Fill ops (hidden)</button>
+      <button class="btn btn-primary" id="goPick">Pick people · sample list</button>
+      <p class="note">~50 Beg · 50 Int · 50 Adv in sample. Unpicked never get SMS.</p>
+      <button class="btn btn-ghost al-only hidden" id="alDoor" style="font-size:11px;opacity:.5">Al · SMS Fill ops</button>
     </footer>
   </section>
 
-  <!-- LOUISE: pick -->
   <section id="screen-invite" class="screen hidden">
     <header>
       <div class="logo">SMS <span>FILL</span></div>
-      <div class="pill">Nambour session</div>
+      <div class="pill">Hand-pick</div>
     </header>
     <div>
       <h1>Who to invite</h1>
-      <p class="sub">Tick people. Start invite sends the first 8 — small burst, personal feel.</p>
+      <p class="sub">Tick only the people you want. Blank ticks = no text.</p>
     </div>
     <label class="card import" id="importBtn">
-      <div><strong>Import CSV</strong><div class="meta">Detects Name / Phone / Level if present</div></div>
+      <div><strong>Import CSV</strong><div class="meta">Optional — replaces sample. Maps Name / Phone / Level</div></div>
       <input type="file" accept=".csv,text/csv" hidden id="file"/>
       <span class="badge">1 tap</span>
     </label>
@@ -110,14 +110,36 @@
       <button class="tab" data-level="int">Int</button>
       <button class="tab" data-level="adv">Adv</button>
     </div>
+    <p class="count" id="pickCount">0 picked · 0 in view</p>
     <div class="list card" id="list"></div>
     <footer>
-      <button class="btn btn-primary" id="startBtn" disabled>Start invite · first 8</button>
+      <button class="btn btn-primary" id="reviewBtn" disabled>Review picked · next</button>
       <button class="btn btn-ghost" id="backHome">Back</button>
+      <p class="note">No select-all. Failsafe confirm is next.</p>
     </footer>
   </section>
 
-  <!-- LOUISE: live -->
+  <section id="screen-confirm" class="screen hidden">
+    <header>
+      <div class="logo">SMS <span>FILL</span></div>
+      <div class="pill">Confirm</div>
+    </header>
+    <div class="warn-box">
+      <strong style="display:block;margin-bottom:6px">Before any SMS fires</strong>
+      Check this list. Only these people get a text. First 8 go in this burst.
+    </div>
+    <div>
+      <h1 id="confirmTitle">Review</h1>
+      <p class="sub" id="confirmSub">Confirm to send.</p>
+    </div>
+    <div class="list card" id="confirmList"></div>
+    <footer>
+      <button class="btn btn-primary" id="confirmSend">Confirm · send SMS to these</button>
+      <button class="btn btn-ghost" id="backPick">Change picks</button>
+      <p class="note">Unpicked people cannot receive this send.</p>
+    </footer>
+  </section>
+
   <section id="screen-invite-live" class="screen hidden">
     <header>
       <div class="logo">SMS <span>FILL</span></div>
@@ -130,31 +152,28 @@
     <div class="card live" id="liveList"></div>
     <div class="card">
       <strong style="font-size:13px">Their link</strong>
-      <p class="meta" style="margin:8px 0 0">Session (e.g. Nambour) · level · filming consent · RSVP · QR</p>
+      <p class="meta" style="margin:8px 0 0">Nambour session · level · filming consent · RSVP · QR</p>
     </div>
     <footer>
       <button class="btn btn-ghost" id="backInvite">Back to list</button>
-      <button class="btn btn-primary" id="nextBurst" disabled>Send next 8</button>
+      <button class="btn btn-primary" id="nextBurst" disabled>Review next 8</button>
     </footer>
   </section>
 
-  <!-- AL ONLY: ops hub (hidden unless ?al=1) -->
   <section id="screen-al" class="screen hidden">
     <header>
       <div class="logo">SMS <span>FILL</span></div>
       <div class="pill">Al only</div>
     </header>
-    <p class="al-only">Background product — not for Louise yet</p>
+    <p class="al-only">Background club product — not Louise wedge</p>
     <div>
       <h1>SMS Fill · wider ops</h1>
-      <p class="sub">Red-alert fill · opt-out of red alerts · email invite path. Reveal when Louise asks.</p>
+      <p class="sub">Red-alert · wait-list · auto-fill — later. Louise sample stays invite-only.</p>
     </div>
     <button class="btn btn-alert" id="goAlert">Red alert · first Yes wins</button>
     <button class="btn btn-ghost" id="backHomeAl">Louise home</button>
-    <p class="note">Email path + red-alert opt-out = build later. Same Safari shell.</p>
   </section>
 
-  <!-- AL: red alert -->
   <section id="screen-alert" class="screen hidden">
     <header>
       <div class="logo">SMS <span>FILL</span></div>
@@ -162,13 +181,12 @@
     </header>
     <div class="banner-red">
       <strong>Crew short 1</strong>
-      <span class="meta">Blast shortlist. First Yes locks seat. Others see taken.</span>
+      <span class="meta">Blast shortlist. First Yes locks seat.</span>
     </div>
     <div class="list card" id="alertList"></div>
     <footer>
       <button class="btn btn-alert" id="blastBtn">Blast · first Yes wins</button>
       <button class="btn btn-ghost" id="backAl">Al ops</button>
-      <p class="note">Also: opt-out of red alerts · email invite (background)</p>
     </footer>
   </section>
 
@@ -186,58 +204,213 @@
   </section>
 </div>
 <script>
-const alMode = new URLSearchParams(location.search).has("al");
-const sample=[
-  {name:"Mia Chen",phone:"0412 000 101",level:"beg"},
-  {name:"Tom Blake",phone:"0412 000 102",level:"beg"},
-  {name:"Sara N.",phone:"0412 000 103",level:"int"},
-  {name:"James P.",phone:"0412 000 104",level:"int"},
-  {name:"Ava R.",phone:"0412 000 105",level:"adv"},
-  {name:"Noah K.",phone:"0412 000 106",level:"beg"},
-  {name:"Lily W.",phone:"0412 000 107",level:"int"},
-  {name:"Owen D.",phone:"0412 000 108",level:"adv"},
-  {name:"Zoe M.",phone:"0412 000 109",level:"beg"},
-  {name:"Leo H.",phone:"0412 000 110",level:"int"},
+const SAMPLE = [
+  {name:'Mia Patel',phone:'0400 100 000',level:'beg'},
+  {name:'Tom Martin',phone:'0401 100 010',level:'beg'},
+  {name:'Sara Rahman',phone:'0402 100 021',level:'beg'},
+  {name:'James Walker',phone:'0403 100 032',level:'beg'},
+  {name:'Ava Park',phone:'0404 100 042',level:'beg'},
+  {name:'Noah Taylor',phone:'0405 100 053',level:'beg'},
+  {name:'Lily Harris',phone:'0406 100 064',level:'beg'},
+  {name:'Owen Young',phone:'0407 100 074',level:'beg'},
+  {name:'Zoe King',phone:'0408 100 085',level:'beg'},
+  {name:'Leo Green',phone:'0409 100 096',level:'beg'},
+  {name:'Emma Nelson',phone:'0410 100 107',level:'beg'},
+  {name:'Jack Mitchell',phone:'0411 100 117',level:'beg'},
+  {name:'Helen Phillips',phone:'0412 100 128',level:'beg'},
+  {name:'Priya Torres',phone:'0413 100 139',level:'beg'},
+  {name:'Jan Edwards',phone:'0414 100 149',level:'beg'},
+  {name:'Claire Rogers',phone:'0415 100 150',level:'beg'},
+  {name:'Ruth Blake',phone:'0416 100 161',level:'beg'},
+  {name:'Ben Kim',phone:'0417 100 171',level:'beg'},
+  {name:'Tahlia Santos',phone:'0418 100 182',level:'beg'},
+  {name:'Lachlan Lee',phone:'0419 100 193',level:'beg'},
+  {name:'Maya Thompson',phone:'0420 100 204',level:'beg'},
+  {name:'Jordan Singh',phone:'0421 100 214',level:'beg'},
+  {name:'Chris Anderson',phone:'0422 100 225',level:'beg'},
+  {name:'Bella Clark',phone:'0423 100 236',level:'beg'},
+  {name:'Alex Hall',phone:'0424 100 246',level:'beg'},
+  {name:'Olivia Wright',phone:'0425 100 257',level:'beg'},
+  {name:'Liam Baker',phone:'0426 100 268',level:'beg'},
+  {name:'Sophie Hill',phone:'0427 100 278',level:'beg'},
+  {name:'Ethan Roberts',phone:'0428 100 289',level:'beg'},
+  {name:'Nina Evans',phone:'0429 100 290',level:'beg'},
+  {name:'Zara Parker',phone:'0430 100 301',level:'beg'},
+  {name:'Diego Stewart',phone:'0431 100 311',level:'beg'},
+  {name:'Aria Reed',phone:'0432 100 322',level:'beg'},
+  {name:'Helen Nguyen',phone:'0433 100 333',level:'beg'},
+  {name:'Grace Walsh',phone:'0434 100 343',level:'beg'},
+  {name:'Henry Wright',phone:'0435 100 354',level:'beg'},
+  {name:'Isla Brown',phone:'0436 100 365',level:'beg'},
+  {name:'Lucas Rodriguez',phone:'0437 100 375',level:'beg'},
+  {name:'Chloe Murphy',phone:'0438 100 386',level:'beg'},
+  {name:'Mason White',phone:'0439 100 397',level:'beg'},
+  {name:'Ella Lewis',phone:'0440 100 408',level:'beg'},
+  {name:'Ryan Allen',phone:'0441 100 418',level:'beg'},
+  {name:'Ruby Scott',phone:'0442 100 429',level:'beg'},
+  {name:'Finn Adams',phone:'0443 100 430',level:'beg'},
+  {name:'Ivy Campbell',phone:'0444 100 440',level:'beg'},
+  {name:'Archer Carter',phone:'0445 100 451',level:'beg'},
+  {name:'Willow Turner',phone:'0446 100 462',level:'beg'},
+  {name:'Hugo Collins',phone:'0447 100 472',level:'beg'},
+  {name:'Poppy Morris',phone:'0448 100 483',level:'beg'},
+  {name:'Jasper Chen',phone:'0449 100 494',level:'beg'},
+  {name:'Mia Patel',phone:'0400 200 000',level:'int'},
+  {name:'Tom Martin',phone:'0401 200 010',level:'int'},
+  {name:'Sara Rahman',phone:'0402 200 021',level:'int'},
+  {name:'James Walker',phone:'0403 200 032',level:'int'},
+  {name:'Ava Park',phone:'0404 200 042',level:'int'},
+  {name:'Noah Taylor',phone:'0405 200 053',level:'int'},
+  {name:'Lily Harris',phone:'0406 200 064',level:'int'},
+  {name:'Owen Young',phone:'0407 200 074',level:'int'},
+  {name:'Zoe King',phone:'0408 200 085',level:'int'},
+  {name:'Leo Green',phone:'0409 200 096',level:'int'},
+  {name:'Emma Nelson',phone:'0410 200 107',level:'int'},
+  {name:'Jack Mitchell',phone:'0411 200 117',level:'int'},
+  {name:'Helen Phillips',phone:'0412 200 128',level:'int'},
+  {name:'Priya Torres',phone:'0413 200 139',level:'int'},
+  {name:'Jan Edwards',phone:'0414 200 149',level:'int'},
+  {name:'Claire Rogers',phone:'0415 200 150',level:'int'},
+  {name:'Ruth Blake',phone:'0416 200 161',level:'int'},
+  {name:'Ben Kim',phone:'0417 200 171',level:'int'},
+  {name:'Tahlia Santos',phone:'0418 200 182',level:'int'},
+  {name:'Lachlan Lee',phone:'0419 200 193',level:'int'},
+  {name:'Maya Thompson',phone:'0420 200 204',level:'int'},
+  {name:'Jordan Singh',phone:'0421 200 214',level:'int'},
+  {name:'Chris Anderson',phone:'0422 200 225',level:'int'},
+  {name:'Bella Clark',phone:'0423 200 236',level:'int'},
+  {name:'Alex Hall',phone:'0424 200 246',level:'int'},
+  {name:'Olivia Wright',phone:'0425 200 257',level:'int'},
+  {name:'Liam Baker',phone:'0426 200 268',level:'int'},
+  {name:'Sophie Hill',phone:'0427 200 278',level:'int'},
+  {name:'Ethan Roberts',phone:'0428 200 289',level:'int'},
+  {name:'Nina Evans',phone:'0429 200 290',level:'int'},
+  {name:'Zara Parker',phone:'0430 200 301',level:'int'},
+  {name:'Diego Stewart',phone:'0431 200 311',level:'int'},
+  {name:'Aria Reed',phone:'0432 200 322',level:'int'},
+  {name:'Helen Nguyen',phone:'0433 200 333',level:'int'},
+  {name:'Grace Walsh',phone:'0434 200 343',level:'int'},
+  {name:'Henry Wright',phone:'0435 200 354',level:'int'},
+  {name:'Isla Brown',phone:'0436 200 365',level:'int'},
+  {name:'Lucas Rodriguez',phone:'0437 200 375',level:'int'},
+  {name:'Chloe Murphy',phone:'0438 200 386',level:'int'},
+  {name:'Mason White',phone:'0439 200 397',level:'int'},
+  {name:'Ella Lewis',phone:'0440 200 408',level:'int'},
+  {name:'Ryan Allen',phone:'0441 200 418',level:'int'},
+  {name:'Ruby Scott',phone:'0442 200 429',level:'int'},
+  {name:'Finn Adams',phone:'0443 200 430',level:'int'},
+  {name:'Ivy Campbell',phone:'0444 200 440',level:'int'},
+  {name:'Archer Carter',phone:'0445 200 451',level:'int'},
+  {name:'Willow Turner',phone:'0446 200 462',level:'int'},
+  {name:'Hugo Collins',phone:'0447 200 472',level:'int'},
+  {name:'Poppy Morris',phone:'0448 200 483',level:'int'},
+  {name:'Jasper Chen',phone:'0449 200 494',level:'int'},
+  {name:'Mia Patel',phone:'0400 300 000',level:'adv'},
+  {name:'Tom Martin',phone:'0401 300 010',level:'adv'},
+  {name:'Sara Rahman',phone:'0402 300 021',level:'adv'},
+  {name:'James Walker',phone:'0403 300 032',level:'adv'},
+  {name:'Ava Park',phone:'0404 300 042',level:'adv'},
+  {name:'Noah Taylor',phone:'0405 300 053',level:'adv'},
+  {name:'Lily Harris',phone:'0406 300 064',level:'adv'},
+  {name:'Owen Young',phone:'0407 300 074',level:'adv'},
+  {name:'Zoe King',phone:'0408 300 085',level:'adv'},
+  {name:'Leo Green',phone:'0409 300 096',level:'adv'},
+  {name:'Emma Nelson',phone:'0410 300 107',level:'adv'},
+  {name:'Jack Mitchell',phone:'0411 300 117',level:'adv'},
+  {name:'Helen Phillips',phone:'0412 300 128',level:'adv'},
+  {name:'Priya Torres',phone:'0413 300 139',level:'adv'},
+  {name:'Jan Edwards',phone:'0414 300 149',level:'adv'},
+  {name:'Claire Rogers',phone:'0415 300 150',level:'adv'},
+  {name:'Ruth Blake',phone:'0416 300 161',level:'adv'},
+  {name:'Ben Kim',phone:'0417 300 171',level:'adv'},
+  {name:'Tahlia Santos',phone:'0418 300 182',level:'adv'},
+  {name:'Lachlan Lee',phone:'0419 300 193',level:'adv'},
+  {name:'Maya Thompson',phone:'0420 300 204',level:'adv'},
+  {name:'Jordan Singh',phone:'0421 300 214',level:'adv'},
+  {name:'Chris Anderson',phone:'0422 300 225',level:'adv'},
+  {name:'Bella Clark',phone:'0423 300 236',level:'adv'},
+  {name:'Alex Hall',phone:'0424 300 246',level:'adv'},
+  {name:'Olivia Wright',phone:'0425 300 257',level:'adv'},
+  {name:'Liam Baker',phone:'0426 300 268',level:'adv'},
+  {name:'Sophie Hill',phone:'0427 300 278',level:'adv'},
+  {name:'Ethan Roberts',phone:'0428 300 289',level:'adv'},
+  {name:'Nina Evans',phone:'0429 300 290',level:'adv'},
+  {name:'Zara Parker',phone:'0430 300 301',level:'adv'},
+  {name:'Diego Stewart',phone:'0431 300 311',level:'adv'},
+  {name:'Aria Reed',phone:'0432 300 322',level:'adv'},
+  {name:'Helen Nguyen',phone:'0433 300 333',level:'adv'},
+  {name:'Grace Walsh',phone:'0434 300 343',level:'adv'},
+  {name:'Henry Wright',phone:'0435 300 354',level:'adv'},
+  {name:'Isla Brown',phone:'0436 300 365',level:'adv'},
+  {name:'Lucas Rodriguez',phone:'0437 300 375',level:'adv'},
+  {name:'Chloe Murphy',phone:'0438 300 386',level:'adv'},
+  {name:'Mason White',phone:'0439 300 397',level:'adv'},
+  {name:'Ella Lewis',phone:'0440 300 408',level:'adv'},
+  {name:'Ryan Allen',phone:'0441 300 418',level:'adv'},
+  {name:'Ruby Scott',phone:'0442 300 429',level:'adv'},
+  {name:'Finn Adams',phone:'0443 300 430',level:'adv'},
+  {name:'Ivy Campbell',phone:'0444 300 440',level:'adv'},
+  {name:'Archer Carter',phone:'0445 300 451',level:'adv'},
+  {name:'Willow Turner',phone:'0446 300 462',level:'adv'},
+  {name:'Hugo Collins',phone:'0447 300 472',level:'adv'},
+  {name:'Poppy Morris',phone:'0448 300 483',level:'adv'},
+  {name:'Jasper Chen',phone:'0449 300 494',level:'adv'}
 ];
-const shortlist=[
+const shortlist = [
   {name:"Helen M.",phone:"0413 111 201"},
   {name:"Priya S.",phone:"0413 111 202"},
   {name:"Jan B.",phone:"0413 111 203"},
   {name:"Claire T.",phone:"0413 111 204"},
   {name:"Ruth K.",phone:"0413 111 205"},
 ];
-let people=sample.map((p,i)=>({...p,id:i,on:false}));
-let alertPeople=shortlist.map((p,i)=>({...p,id:i,on:true}));
-let filter="all";
-const $=id=>document.getElementById(id);
-function show(id){["home","invite","invite-live","al","alert","alert-live"].forEach(s=>{
-  $("screen-"+s).classList.toggle("hidden", s!==id);
-});}
+const alMode = new URLSearchParams(location.search).has("al");
+let people = SAMPLE.map((p,i)=>({...p,id:i,on:false}));
+let alertPeople = shortlist.map((p,i)=>({...p,id:i,on:false})); // hand-pick only — default off
+let filter = "all";
+let pendingBurst = [];
+let sentCount = 0;
+const $ = id => document.getElementById(id);
+function show(id){
+  ["home","invite","confirm","invite-live","al","alert","alert-live"].forEach(s=>{
+    $("screen-"+s).classList.toggle("hidden", s!==id);
+  });
+}
 function levelLabel(l){return ({beg:"Beg",int:"Int",adv:"Adv"})[l]||l}
-
-if(alMode){ $("alDoor").classList.remove("hidden"); }
+function picked(){return people.filter(p=>p.on)}
+if(alMode) $("alDoor").classList.remove("hidden");
 
 function renderInvite(){
-  const rows=people.filter(p=>filter==="all"||p.level===filter);
-  $("list").innerHTML=rows.map(p=>`<label class="row"><input type="checkbox" data-id="${p.id}" ${p.on?"checked":""}/>
+  const rows = people.filter(p => filter==="all" || p.level===filter);
+  $("list").innerHTML = rows.map(p=>`<label class="row"><input type="checkbox" data-id="${p.id}" ${p.on?"checked":""}/>
     <div><div class="name">${p.name}</div><div class="meta">${p.phone}</div></div>
     <span class="badge">${levelLabel(p.level)}</span></label>`).join("");
-  const n=people.filter(p=>p.on).length;
-  $("startBtn").disabled=n===0;
-  $("startBtn").textContent=n?`Start invite · first ${Math.min(8,n)}`:"Start invite · first 8";
+  const n = picked().length;
+  $("pickCount").textContent = `${n} picked · ${rows.length} in view · ${people.length} total`;
+  $("reviewBtn").disabled = n===0;
+  $("reviewBtn").textContent = n ? `Review ${n} picked · next` : "Review picked · next";
 }
 function renderAlert(){
-  $("alertList").innerHTML=alertPeople.map(p=>`<label class="row"><input type="checkbox" data-aid="${p.id}" ${p.on?"checked":""}/>
+  $("alertList").innerHTML = alertPeople.map(p=>`<label class="row"><input type="checkbox" data-aid="${p.id}" ${p.on?"checked":""}/>
     <div><div class="name">${p.name}</div><div class="meta">${p.phone}</div></div>
     <span class="badge">standby</span></label>`).join("");
 }
 
-$("list").onchange=e=>{const p=people.find(x=>x.id===+e.target.dataset.id);if(p){p.on=e.target.checked;renderInvite();}};
-$("alertList").onchange=e=>{const p=alertPeople.find(x=>x.id===+e.target.dataset.aid);if(p)p.on=e.target.checked;};
-$("tabs").onclick=e=>{const t=e.target.closest(".tab");if(!t)return;filter=t.dataset.level;
-  [...document.querySelectorAll(".tab")].forEach(x=>x.classList.toggle("on",x===t));renderInvite();};
-$("file").onchange=async e=>{
-  const f=e.target.files?.[0];if(!f)return;
+$("list").onchange = e=>{
+  const p = people.find(x=>x.id===+e.target.dataset.id);
+  if(p){ p.on = !!e.target.checked; renderInvite(); }
+};
+$("alertList").onchange = e=>{
+  const p = alertPeople.find(x=>x.id===+e.target.dataset.aid);
+  if(p) p.on = !!e.target.checked;
+};
+$("tabs").onclick = e=>{
+  const t=e.target.closest(".tab"); if(!t) return;
+  filter=t.dataset.level;
+  [...document.querySelectorAll(".tab")].forEach(x=>x.classList.toggle("on",x===t));
+  renderInvite();
+};
+$("file").onchange = async e=>{
+  const f=e.target.files?.[0]; if(!f) return;
   const lines=(await f.text()).trim().split(/\r?\n/);
   const header=lines.shift().split(",").map(s=>s.trim().toLowerCase());
   const nameI=header.findIndex(h=>/name|player|full/.test(h));
@@ -245,50 +418,78 @@ $("file").onchange=async e=>{
   const levelI=header.findIndex(h=>/level|skill|group|bucket|beg|int|adv/.test(h));
   people=lines.map((line,i)=>{
     const c=line.split(",").map(s=>s.trim());
-    let level="int";const raw=(levelI>=0?c[levelI]:"").toLowerCase();
-    if(/beg|intro|1/.test(raw))level="beg";else if(/adv|3|pro/.test(raw))level="adv";
-    return{id:i,name:c[nameI>=0?nameI:0]||`Player ${i+1}`,phone:c[phoneI>=0?phoneI:1]||"",level,on:false};
+    let level="int"; const raw=(levelI>=0?c[levelI]:"").toLowerCase();
+    if(/beg|intro|1/.test(raw)) level="beg";
+    else if(/adv|3|pro/.test(raw)) level="adv";
+    return {id:i,name:c[nameI>=0?nameI:0]||`Player ${i+1}`,phone:c[phoneI>=0?phoneI:1]||"",level,on:false};
   });
-  renderInvite();
+  sentCount=0; renderInvite();
 };
 $("importBtn").onclick=()=>$("file").click();
-$("goPick").onclick=()=>{show("invite");renderInvite();};
+$("goPick").onclick=()=>{show("invite"); renderInvite();};
 $("backHome").onclick=$("backHomeAl").onclick=()=>show("home");
 $("backInvite").onclick=()=>show("invite");
 $("alDoor").onclick=()=>show("al");
-$("goAlert").onclick=()=>{show("alert");renderAlert();};
+$("goAlert").onclick=()=>{show("alert"); renderAlert();};
 $("backAl").onclick=()=>show("al");
 $("backAlert").onclick=()=>show("alert");
+$("backPick").onclick=()=>show("invite");
 
-$("startBtn").onclick=()=>{
-  const burst=people.filter(p=>p.on).slice(0,8);
+$("reviewBtn").onclick=()=>{
+  const all = picked();
+  if(!all.length) return;
+  pendingBurst = all.slice(sentCount, sentCount+8);
+  if(!pendingBurst.length){ pendingBurst = all.slice(0,8); sentCount=0; }
+  show("confirm");
+  $("confirmTitle").textContent = `Send to ${pendingBurst.length}?`;
+  $("confirmSub").textContent = `Only these ${pendingBurst.length} (of ${all.length} picked). Unpicked get nothing.`;
+  $("confirmList").innerHTML = pendingBurst.map(p=>`<div class="row" style="grid-template-columns:1fr auto">
+    <div><div class="name">${p.name}</div><div class="meta">${p.phone}</div></div>
+    <span class="badge">${levelLabel(p.level)}</span></div>`).join("");
+};
+
+$("confirmSend").onclick=()=>{
+  if(!pendingBurst.length) return;
+  // Failsafe: only pendingBurst (hand-picked subset) — never full list
+  const burst = pendingBurst.filter(p=>p.on);
+  if(!burst.length) return;
+  sentCount += burst.length;
   show("invite-live");
-  $("burstSub").textContent=`${burst.length} personal texts out · consent on the link`;
-  $("liveList").innerHTML=burst.map((p,i)=>`<div class="live-row" id="lr${i}"><span>${p.name}</span><span class="wait">sent…</span></div>`).join("");
+  $("burstSub").textContent = `${burst.length} SMS queued · filming consent on the link`;
+  $("liveList").innerHTML = burst.map((p,i)=>`<div class="live-row" id="lr${i}"><span>${p.name}</span><span class="wait">sent…</span></div>`).join("");
   burst.forEach((_,i)=>setTimeout(()=>{
-    const el=document.querySelector(`#lr${i} span:last-child`);if(!el)return;
-    if(i%3===1){el.className="ok";el.textContent="RSVP yes · consent ✓";}
-    else if(i%3===0){el.className="wait";el.textContent="opened";}
-    else{el.className="wait";el.textContent="no reply yet";}
+    const el=document.querySelector(`#lr${i} span:last-child`); if(!el) return;
+    if(i%3===1){el.className="ok"; el.textContent="RSVP yes · consent ✓";}
+    else if(i%3===0){el.className="wait"; el.textContent="opened";}
+    else {el.className="wait"; el.textContent="no reply yet";}
   },500+i*400));
-  $("nextBurst").disabled=people.filter(p=>p.on).length<=8;
+  const remaining = picked().length - sentCount;
+  $("nextBurst").disabled = remaining<=0;
+  $("nextBurst").textContent = remaining>0 ? `Review next ${Math.min(8,remaining)}` : "All picked sent";
+};
+
+$("nextBurst").onclick=()=>{
+  if($("nextBurst").disabled) return;
+  show("invite");
+  // jump straight to review for next slice
+  setTimeout(()=>$("reviewBtn").click(), 50);
 };
 
 $("blastBtn").onclick=()=>{
-  const blast=alertPeople.filter(p=>p.on);if(!blast.length)return;
+  const blast=alertPeople.filter(p=>p.on); if(!blast.length) return;
   show("alert-live");
   $("alertTitle").textContent="Waiting on Yes";
   $("alertSub").textContent=`${blast.length} shortlisted · first Yes locks`;
   $("alertLive").innerHTML=blast.map((p,i)=>`<div class="live-row" id="ar${i}"><span>${p.name}</span><span class="wait">texted…</span></div>`).join("");
   const winner=Math.min(2,blast.length-1);
   blast.forEach((p,i)=>setTimeout(()=>{
-    const el=document.querySelector(`#ar${i} span:last-child`);if(!el)return;
+    const el=document.querySelector(`#ar${i} span:last-child`); if(!el) return;
     if(i===winner){
-      el.className="win";el.textContent="YES · seat filled";
+      el.className="win"; el.textContent="YES · seat filled";
       $("alertTitle").textContent="Seat filled";
       $("alertSub").textContent=`${p.name} locked it. Others see taken.`;
-      blast.forEach((_,j)=>{if(j===winner)return;const o=document.querySelector(`#ar${j} span:last-child`);if(o){o.className="taken";o.textContent="taken";}});
-    } else if(i<winner){el.className="wait";el.textContent="opened";}
+      blast.forEach((_,j)=>{if(j===winner)return; const o=document.querySelector(`#ar${j} span:last-child`); if(o){o.className="taken"; o.textContent="taken";}});
+    } else if(i<winner){ el.className="wait"; el.textContent="opened"; }
   },700+i*550));
 };
 show("home");
