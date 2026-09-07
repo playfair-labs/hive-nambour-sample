@@ -66,6 +66,12 @@
     background:#121916;color:var(--text);font-size:16px;outline:none;}
   .search:focus{border-color:var(--hive);}
   .search::placeholder{color:var(--muted);}
+
+  .counters{display:flex;gap:8px;margin:0;}
+  .counter{flex:1;text-align:center;padding:10px 6px;border-radius:14px;background:var(--card);
+    border:1px solid var(--line);}
+  .counter .n{font-size:22px;font-weight:700;color:var(--hive);line-height:1.1;}
+  .counter .l{font-size:11px;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:.04em;}
 </style>
 </head>
 <body>
@@ -117,8 +123,13 @@
       <button class="tab" data-level="adv">Adv</button>
     </div>
     <div class="sticky-search">
+      <div class="counters" id="levelCounters" aria-live="polite">
+        <div class="counter"><div class="n" id="cBeg">0</div><div class="l">Beg</div></div>
+        <div class="counter"><div class="n" id="cInt">0</div><div class="l">Int</div></div>
+        <div class="counter"><div class="n" id="cAdv">0</div><div class="l">Adv</div></div>
+      </div>
       <input class="search" id="nameSearch" type="search" enterkeyhint="search" autocomplete="off"
-        placeholder="Search name · tick early adopters" />
+        placeholder="Search name · tick early adopters" style="margin-top:8px" />
     </div>
     <p class="count" id="pickCount">0 picked · 0 in view</p>
     <div class="list card" id="list"></div>
@@ -397,7 +408,11 @@ function renderInvite(){
   $("list").innerHTML = rows.map(p=>`<label class="row"><input type="checkbox" data-id="${p.id}" ${p.on?"checked":""}/>
     <div><div class="name">${p.name}</div><div class="meta">${p.phone}</div></div>
     <span class="badge">${levelLabel(p.level)}</span></label>`).join("");
-  const n = picked().length;
+  const allP = picked();
+  const n = allP.length;
+  $("cBeg").textContent = String(allP.filter(p=>p.level==="beg").length);
+  $("cInt").textContent = String(allP.filter(p=>p.level==="int").length);
+  $("cAdv").textContent = String(allP.filter(p=>p.level==="adv").length);
   $("pickCount").textContent = `${n} picked · ${rows.length} in view · ${people.length} total`;
   $("reviewBtn").disabled = n===0;
   $("reviewBtn").textContent = n ? `Review ${n} picked · next` : "Review picked · next";
