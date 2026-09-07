@@ -60,6 +60,12 @@
   .al-only{font-size:10px;color:#886;letter-spacing:.06em;text-transform:uppercase}
   .warn-box{border:1px solid var(--warn);background:#2a2410;border-radius:14px;padding:12px 14px;font-size:13px;line-height:1.4}
   .count{font-size:12px;color:var(--muted)}
+
+  .sticky-search{position:sticky;top:0;z-index:5;background:var(--bg);padding:0 0 8px;margin:0 -2px;}
+  .search{width:100%;padding:12px 14px;border-radius:14px;border:1px solid var(--line);
+    background:#121916;color:var(--text);font-size:16px;outline:none;}
+  .search:focus{border-color:var(--hive);}
+  .search::placeholder{color:var(--muted);}
 </style>
 </head>
 <body>
@@ -97,7 +103,7 @@
     </header>
     <div>
       <h1>Who to invite</h1>
-      <p class="sub">Tick only the people you want. Blank ticks = no text.</p>
+      <p class="sub">Search a name, tick early adopters. Blank ticks = no text.</p>
     </div>
     <label class="card import" id="importBtn">
       <div><strong>Import CSV</strong><div class="meta">Optional — replaces sample. Maps Name / Phone / Level</div></div>
@@ -109,6 +115,10 @@
       <button class="tab" data-level="beg">Beg</button>
       <button class="tab" data-level="int">Int</button>
       <button class="tab" data-level="adv">Adv</button>
+    </div>
+    <div class="sticky-search">
+      <input class="search" id="nameSearch" type="search" enterkeyhint="search" autocomplete="off"
+        placeholder="Search name · tick early adopters" />
     </div>
     <p class="count" id="pickCount">0 picked · 0 in view</p>
     <div class="list card" id="list"></div>
@@ -379,8 +389,11 @@ function levelLabel(l){return ({beg:"Beg",int:"Int",adv:"Adv"})[l]||l}
 function picked(){return people.filter(p=>p.on)}
 if(alMode) $("alDoor").classList.remove("hidden");
 
+let nameQ = "";
 function renderInvite(){
-  const rows = people.filter(p => filter==="all" || p.level===filter);
+  const q = nameQ.trim().toLowerCase();
+  const rows = people.filter(p => (filter==="all" || p.level===filter)
+    && (!q || p.name.toLowerCase().includes(q)));
   $("list").innerHTML = rows.map(p=>`<label class="row"><input type="checkbox" data-id="${p.id}" ${p.on?"checked":""}/>
     <div><div class="name">${p.name}</div><div class="meta">${p.phone}</div></div>
     <span class="badge">${levelLabel(p.level)}</span></label>`).join("");
@@ -403,6 +416,8 @@ $("alertList").onchange = e=>{
   const p = alertPeople.find(x=>x.id===+e.target.dataset.aid);
   if(p) p.on = !!e.target.checked;
 };
+
+$("nameSearch").oninput = e=>{ nameQ = e.target.value || ""; renderInvite(); };
 $("tabs").onclick = e=>{
   const t=e.target.closest(".tab"); if(!t) return;
   filter=t.dataset.level;
