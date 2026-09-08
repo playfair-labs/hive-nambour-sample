@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<title>Paint Shot</title>
+<style>
+  :root { --bg:#111; --ink:#f4f4f4; --muted:#9a9a9a; --line:#333; --red:#e24b4b; --gold:#c9a227; --blue:#3a7bd5; --green:#6dbe5f; --hi:rgba(201,162,39,.35); }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body { margin:0; height:100%; background:var(--bg); color:var(--ink); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; overflow:hidden; }
+  header { display:flex; align-items:center; justify-content:space-between; padding:8px 10px; border-bottom:1px solid var(--line); }
+  header strong { font-size:15px; letter-spacing:.04em; }
+  .tools { display:flex; gap:6px; flex-wrap:wrap; padding:8px 10px; border-bottom:1px solid var(--line); background:#161616; }
+  .tools button, .tools label { padding:10px 12px; border-radius:12px; border:1px solid var(--line); background:#1c1c1c; color:var(--ink); font-size:14px; font-weight:700; }
+  .tools button.on { border-color:#fff; background:#2a2a2a; }
+  .sw { width:32px; height:32px; border-radius:50%; border:2px solid #000; padding:0 !important; }
+  .sw.on { outline:2px solid #fff; }
+  .stage { position:relative; height:calc(100% - 168px); overflow:auto; background:#0a0a0a; display:flex; align-items:flex-start; justify-content:center; }
+  canvas { display:block; max-width:100%; touch-action:none; background:#222; }
+  .empty { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:16px; text-align:center; padding:24px; pointer-events:none; }
+  .bar { display:flex; gap:8px; padding:10px; border-top:1px solid var(--line); }
+  .bar button { flex:1; padding:14px; border:0; border-radius:12px; font-weight:800; font-size:15px; }
+  .go { background:#6dbe5f; color:#0d1a08; }
+  .ghost { background:#1c1c1c; color:var(--ink); border:1px solid var(--line); }
+  input[type=file] { display:none; }
+</style>
+</head>
+<body>
+<header>
+  <strong>PAINT SHOT</strong>
+  <span style="color:#9a9a9a;font-size:12px">Tap photo · mark · share</span>
+</header>
+<div class="tools">
+  <label class="go" style="background:#6dbe5f;color:#0d1a08">Photo<input id="file" type="file" accept="image/*" /></label>
+  <button type="button" id="paste">Paste</button>
+  <button type="button" class="on" data-tool="arrow">Arrow</button>
+  <button type="button" data-tool="text">Text</button>
+  <button type="button" data-tool="box">Box</button>
+  <button type="button" data-tool="hi">Highlight</button>
+  <button type="button" data-tool="pen">Pen</button>
+  <button type="button" class="sw on" data-color="#e24b4b" style="background:#e24b4b"></button>
+  <button type="button" class="sw" data-color="#c9a227" style="background:#c9a227"></button>
+  <button type="button" class="sw" data-color="#3a7bd5" style="background:#3a7bd5"></button>
+  <button type="button" class="sw" data-color="#6dbe5f" style="background:#6dbe5f"></button>
+  <button type="button" class="sw" data-color="#ffffff" style="background:#fff"></button>
+</div>
+<div class="stage" id="stage">
+  <div class="empty" id="empty">Add a screenshot.<br>Photo · Paste · then mark fast.</div>
+  <canvas id="c" width="1" height="1"></canvas>
+</div>
+<div class="bar">
+  <button class="ghost" type="button" id="undo">Undo</button>
+  <button class="ghost" type="button" id="clear">Clear marks</button>
+  <button class="go" type="button" id="share">Share PNG</button>
+</div>
+<script>
+const canvas=document.getElementById('c');
+const ctx=canvas.getContext('2d');
+const empty=document.getElementById('empty');
+let tool='arrow', color='#e24b4b';
+let base=null, marks=[], draft=null, drawing=false;
+
+function fit(img){
+  const maxW=Math.min(window.innerWidth, img.width);
+  const scale=maxW/img.width;
+  canvas.width=Math.round(img.width*scale);
+  canvas.height=Math.round(img.height*scale);
+  base={img, scale};
+  empty.style.display='none';
+  redraw();
+}
+function loadFile(file){
+  const fr=new FileReader();
+  fr.onload=()=>{ const img=new Image(); img.onload=()=>fit(img); img.src=fr.result; };
+  fr.readAsDataURL(file);
+}
+document.getElementById('file').onchange=e=>{ if(e.target.files[0]) loadFile(e.target.files[0]); };
+document.getElementById('paste').onclick=async()=>{
+  try{
+    const items=await navigator.clipboard.read();
+    for(const it of items){
+      const type=it.types.find(t=>t.startsWith('image/'));
+      if(!type) continue;
+      loadFile(await it.getType(type));
+      return;
+    }
+  }catch(e){}
+  alert('Paste a screenshot, or use Photo.');
+};
+document.querySelectorAll('[data-tool]').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('[data-tool]').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on'); tool=b.dataset.tool;
+});
+document.querySelectorAll('.sw').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('.sw').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on'); color=b.dataset.color;
+});
+
+function pos(e){
+  const r=canvas.getBoundingClientRect();
+  const t=e.touches?e.touches[0]:e;
+  return {x:(t.clientX-r.left)*(canvas.width/r.width), y:(t.clientY-r.top)*(canvas.height/r.height)};
+}
+function redraw(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  if(base) ctx.drawImage(base.img,0,0,canvas.width,canvas.height);
+  [...marks, draft].filter(Boolean).forEach(drawMark);
+}
+function arrowHead(x1,y1,x2,y2){
+  const a=Math.atan2(y2-y1,x2-x1), s=18;
+  ctx.beginPath();
+  ctx.moveTo(x2,y2);
+  ctx.lineTo(x2-s*Math.cos(a-0.4), y2-s*Math.sin(a-0.4));
+  ctx.lineTo(x2-s*Math.cos(a+0.4), y2-s*Math.sin(a+0.4));
+  ctx.closePath(); ctx.fill();
+}
+function drawMark(m){
+  ctx.save();
+  ctx.strokeStyle=m.color; ctx.fillStyle=m.color; ctx.lineWidth=m.tool==='hi'?18:4; ctx.lineCap='round';
+  if(m.tool==='pen' && m.pts){
+    ctx.beginPath();
+    m.pts.forEach((p,i)=> i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));
+    ctx.stroke();
+  } else if(m.tool==='arrow'){
+    ctx.beginPath(); ctx.moveTo(m.x1,m.y1); ctx.lineTo(m.x2,m.y2); ctx.stroke();
+    arrowHead(m.x1,m.y1,m.x2,m.y2);
+  } else if(m.tool==='box' || m.tool==='hi'){
+    const x=Math.min(m.x1,m.x2), y=Math.min(m.y1,m.y2), w=Math.abs(m.x2-m.x1), h=Math.abs(m.y2-m.y1);
+    if(m.tool==='hi'){ ctx.fillStyle=m.color+'55'; ctx.fillRect(x,y,w,h); }
+    else { ctx.strokeRect(x,y,w,h); }
+  } else if(m.tool==='text'){
+    ctx.font='700 28px -apple-system,sans-serif';
+    ctx.lineWidth=6; ctx.strokeStyle='#000'; ctx.strokeText(m.text,m.x,m.y);
+    ctx.fillStyle=m.color; ctx.fillText(m.text,m.x,m.y);
+  }
+  ctx.restore();
+}
+
+function down(e){
+  if(!base) return;
+  e.preventDefault();
+  const p=pos(e);
+  drawing=true;
+  if(tool==='text'){
+    const text=prompt('Label')||'';
+    if(text) marks.push({tool:'text', color, x:p.x, y:p.y, text});
+    drawing=false; redraw(); return;
+  }
+  if(tool==='pen') draft={tool, color, pts:[p]};
+  else draft={tool, color, x1:p.x, y1:p.y, x2:p.x, y2:p.y};
+  redraw();
+}
+function move(e){
+  if(!drawing||!draft) return;
+  e.preventDefault();
+  const p=pos(e);
+  if(draft.pts) draft.pts.push(p);
+  else { draft.x2=p.x; draft.y2=p.y; }
+  redraw();
+}
+function up(e){
+  if(!drawing) return;
+  drawing=false;
+  if(draft) marks.push(draft);
+  draft=null; redraw();
+}
+canvas.addEventListener('pointerdown', down);
+canvas.addEventListener('pointermove', move);
+window.addEventListener('pointerup', up);
+document.getElementById('undo').onclick=()=>{ marks.pop(); redraw(); };
+document.getElementById('clear').onclick=()=>{ marks=[]; draft=null; redraw(); };
+document.getElementById('share').onclick=async()=>{
+  if(!base) return;
+  canvas.toBlob(async blob=>{
+    const file=new File([blob],'paint-shot.png',{type:'image/png'});
+    if(navigator.canShare && navigator.canShare({files:[file]})){
+      try{ await navigator.share({files:[file], title:'Paint Shot'}); return; }catch(e){}
+    }
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob); a.download='paint-shot.png'; a.click();
+  }, 'image/png');
+};
+window.addEventListener('paste', e=>{
+  const item=[...e.clipboardData.items].find(i=>i.type.startsWith('image/'));
+  if(item) loadFile(item.getAsFile());
+});
+</script>
+</body>
+</html>
