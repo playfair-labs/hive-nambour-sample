@@ -361,6 +361,15 @@ const shortlist = [
   {name:"Ruth K.",phone:"0413 111 205"},
 ];
 const alMode = new URLSearchParams(location.search).has("al");
+function surnameKey(name){
+  const parts = String(name||'').trim().split(/\s+/).filter(Boolean);
+  return (parts[parts.length-1]||'').toLocaleLowerCase();
+}
+SAMPLE.sort((a,b)=>{
+  const c = surnameKey(a.name).localeCompare(surnameKey(b.name), undefined, {sensitivity:'base'});
+  if (c) return c;
+  return a.name.localeCompare(b.name, undefined, {sensitivity:'base'});
+});
 let people = SAMPLE.map((p,i)=>({...p,id:i,on:false}));
 let alertPeople = shortlist.map((p,i)=>({...p,id:i,on:false})); // hand-pick only — default off
 let filter = "all";
