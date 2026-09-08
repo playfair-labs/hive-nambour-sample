@@ -130,7 +130,7 @@
           <div class="n" id="cAdv">0</div><div class="l">Adv</div>
         </button>
       </div>
-      <div class="block-label" style="margin-top:10px">Search roster · all people</div>
+      <div class="block-label" id="searchLabel" style="margin-top:10px">Search roster · all people</div>
       <input class="search" id="nameSearch" type="search" enterkeyhint="search" autocomplete="off"
         placeholder="Find a name" />
       <div class="tabs" id="tabs" style="margin-top:10px">
@@ -413,6 +413,7 @@ function show(id){
   });
 }
 function levelLabel(l){return ({beg:"Beg",int:"Int",adv:"Adv"})[l]||l}
+function peopleWord(n){return n===1 ? "1 person" : `${n} people`}
 function picked(){return people.filter(p=>p.on)}
 if(alMode) $("alDoor").classList.remove("hidden");
 
@@ -447,16 +448,18 @@ function renderInvite(){
   if (invitedView) {
     $("listModeText").textContent = q
       ? `Invited ${lvlWord} · ${rows.length} match`
-      : `Invited ${lvlWord} · ${rows.length} people`;
+      : `Invited ${lvlWord} · ${peopleWord(rows.length)}`;
     $("backRoster").classList.remove("hidden");
     $("nameSearch").placeholder = "Find in invited";
+    $("searchLabel").textContent = `Search invited · ${lvlWord} only`;
     $("invitedLabel").textContent = `Already invited · viewing ${lvlWord}`;
   } else {
     $("listModeText").textContent = q
       ? `Roster · ${rows.length} match`
-      : (filter==="all" ? `Roster · ${rows.length} people` : `Roster · ${rows.length} ${lvlWord}`);
+      : (filter==="all" ? `Roster · ${peopleWord(rows.length)}` : `Roster · ${rows.length} ${lvlWord}`);
     $("backRoster").classList.add("hidden");
     $("nameSearch").placeholder = "Find a name";
+    $("searchLabel").textContent = "Search roster · all people";
     $("invitedLabel").textContent = "Already invited · tap a card to check";
   }
 
@@ -472,7 +475,7 @@ function renderInvite(){
   }
   const n = allP.length;
   $("reviewBtn").disabled = n===0;
-  $("reviewBtn").textContent = n ? `Next · ${n} people` : "Next";
+  $("reviewBtn").textContent = n ? `Next · ${peopleWord(n)}` : "Next";
 }
 function renderAlert(){
   $("alertList").innerHTML = alertPeople.map(p=>`<label class="row"><input type="checkbox" data-aid="${p.id}" ${p.on?"checked":""}/>
