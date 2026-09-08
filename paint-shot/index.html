@@ -8,18 +8,19 @@
 <style>
   :root { --bg:#111; --ink:#f4f4f4; --muted:#9a9a9a; --line:#333; --red:#e24b4b; --gold:#c9a227; --blue:#3a7bd5; --green:#6dbe5f; --hi:rgba(201,162,39,.35); }
   * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-  html,body { margin:0; height:100%; background:var(--bg); color:var(--ink); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; overflow:hidden; }
-  header { display:flex; align-items:center; justify-content:space-between; padding:8px 10px; border-bottom:1px solid var(--line); }
+  html,body { margin:0; height:100%; height:100dvh; max-height:100dvh; background:var(--bg); color:var(--ink); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; overflow:hidden; }
+  body { display:flex; flex-direction:column; min-height:100%; min-height:100dvh; padding-left:env(safe-area-inset-left); padding-right:env(safe-area-inset-right); }
+  header { flex:0 0 auto; display:flex; align-items:center; justify-content:space-between; padding:8px 10px; padding-top:max(8px, env(safe-area-inset-top)); border-bottom:1px solid var(--line); }
   header strong { font-size:15px; letter-spacing:.04em; }
-  .tools { display:flex; gap:6px; flex-wrap:wrap; padding:8px 10px; border-bottom:1px solid var(--line); background:#161616; }
+  .tools { flex:0 0 auto; display:flex; gap:6px; flex-wrap:wrap; padding:8px 10px; border-bottom:1px solid var(--line); background:#161616; }
   .tools button, .tools label { padding:10px 12px; border-radius:12px; border:1px solid var(--line); background:#1c1c1c; color:var(--ink); font-size:14px; font-weight:700; }
   .tools button.on { border-color:#fff; background:#2a2a2a; }
   .sw { width:32px; height:32px; border-radius:50%; border:2px solid #000; padding:0 !important; }
   .sw.on { outline:2px solid #fff; }
-  .stage { position:relative; height:calc(100% - 168px); overflow:auto; background:#0a0a0a; display:flex; align-items:flex-start; justify-content:center; }
+  .stage { position:relative; flex:1 1 auto; min-height:0; overflow:auto; background:#0a0a0a; display:flex; align-items:flex-start; justify-content:center; }
   canvas { display:block; max-width:100%; touch-action:none; background:#222; }
   .empty { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:16px; text-align:center; padding:24px; pointer-events:none; }
-  .bar { display:flex; gap:8px; padding:10px; border-top:1px solid var(--line); }
+  .bar { flex:0 0 auto; display:flex; gap:8px; padding:10px; padding-bottom:max(12px, calc(10px + env(safe-area-inset-bottom))); border-top:1px solid var(--line); background:var(--bg); z-index:5; }
   .bar button { flex:1; padding:14px; border:0; border-radius:12px; font-weight:800; font-size:15px; }
   .go { background:#6dbe5f; color:#0d1a08; }
   .ghost { background:#1c1c1c; color:var(--ink); border:1px solid var(--line); }
