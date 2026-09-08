@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>SMS Fill</title>
-<meta name="smsfill-build" content="pin-footer" />
+<meta name="smsfill-build" content="search-roster" />
 <style>
   :root {
     --bg:#0f1412; --card:#1a221e; --hive:#c8f54a; --hive-dim:#8fb82e;
@@ -78,11 +78,18 @@
   .search:focus{border-color:var(--hive);}
   .search::placeholder{color:var(--muted);}
 
+  .block-label{font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.02em;margin:0 0 6px}
   .counters{display:flex;gap:8px;margin:0;}
   .counter{flex:1;text-align:center;padding:10px 6px;border-radius:14px;background:var(--card);
-    border:1px solid var(--line);}
+    border:1px solid var(--line);cursor:pointer;appearance:none;font:inherit;color:inherit;}
+  .counter.on{border-color:var(--hive);background:#1c2a14;box-shadow:0 0 0 1px var(--hive)}
   .counter .n{font-size:28px;font-weight:700;color:var(--hive);line-height:1.1;}
   .counter .l{font-size:13px;color:var(--muted);margin-top:4px;font-weight:600;}
+  .list-mode{display:flex;align-items:center;justify-content:space-between;gap:8px;
+    margin-top:8px;font-size:12px;font-weight:700;color:var(--muted)}
+  .list-mode .go{appearance:none;border:0;background:transparent;color:var(--hive);
+    font-weight:700;font-size:12px;cursor:pointer;padding:0;white-space:nowrap}
+  .empty{text-align:center;padding:28px 12px;color:var(--muted);font-size:14px;line-height:1.4}
 </style>
 </head>
 <body>
@@ -111,18 +118,30 @@
       <div class="pill">Pick</div>
     </header>
     <div class="sticky-search">
+      <div class="block-label" id="invitedLabel">Already invited · tap a card to check</div>
       <div class="counters" id="levelCounters" aria-live="polite">
-        <div class="counter"><div class="n" id="cBeg">0</div><div class="l">Beg</div></div>
-        <div class="counter"><div class="n" id="cInt">0</div><div class="l">Int</div></div>
-        <div class="counter"><div class="n" id="cAdv">0</div><div class="l">Adv</div></div>
+        <button type="button" class="counter" data-invited="beg" aria-pressed="false">
+          <div class="n" id="cBeg">0</div><div class="l">Beg</div>
+        </button>
+        <button type="button" class="counter" data-invited="int" aria-pressed="false">
+          <div class="n" id="cInt">0</div><div class="l">Int</div>
+        </button>
+        <button type="button" class="counter" data-invited="adv" aria-pressed="false">
+          <div class="n" id="cAdv">0</div><div class="l">Adv</div>
+        </button>
       </div>
+      <div class="block-label" style="margin-top:10px">Search roster · all people</div>
       <input class="search" id="nameSearch" type="search" enterkeyhint="search" autocomplete="off"
-        placeholder="Find a name" style="margin-top:10px" />
+        placeholder="Find a name" />
       <div class="tabs" id="tabs" style="margin-top:10px">
         <button class="tab on" data-level="all">All</button>
         <button class="tab" data-level="beg">Beg</button>
         <button class="tab" data-level="int">Int</button>
         <button class="tab" data-level="adv">Adv</button>
+      </div>
+      <div class="list-mode" id="listMode">
+        <span id="listModeText">Roster · all people</span>
+        <button type="button" class="go hidden" id="backRoster">Back to roster</button>
       </div>
     </div>
     <div class="list card" id="list" style="max-height:none;flex:1"></div>
@@ -384,6 +403,7 @@ SAMPLE.sort((a,b)=>{
 let people = SAMPLE.map((p,i)=>({...p,id:i,on:false}));
 let alertPeople = shortlist.map((p,i)=>({...p,id:i,on:false})); // hand-pick only — default off
 let filter = "all";
+let invitedView = null; // null = full search roster; 'beg'|'int'|'adv' = already-invited subset
 let pendingBurst = [];
 let sentCount = 0;
 const $ = id => document.getElementById(id);
@@ -399,16 +419,58 @@ if(alMode) $("alDoor").classList.remove("hidden");
 let nameQ = "";
 function renderInvite(){
   const q = nameQ.trim().toLowerCase();
-  const rows = people.filter(p => (filter==="all" || p.level===filter)
-    && (!q || p.name.toLowerCase().includes(q)));
-  $("list").innerHTML = rows.map(p=>`<label class="row"><input type="checkbox" data-id="${p.id}" ${p.on?"checked":""}/>
-    <div><div class="name">${p.name}</div><div class="meta">${p.phone}</div></div>
-    <span class="badge">${levelLabel(p.level)}</span></label>`).join("");
   const allP = picked();
+  const nBeg = allP.filter(p=>p.level==="beg").length;
+  const nInt = allP.filter(p=>p.level==="int").length;
+  const nAdv = allP.filter(p=>p.level==="adv").length;
+  $("cBeg").textContent = String(nBeg);
+  $("cInt").textContent = String(nInt);
+  $("cAdv").textContent = String(nAdv);
+  document.querySelectorAll("#levelCounters .counter").forEach(el=>{
+    const on = invitedView === el.dataset.invited;
+    el.classList.toggle("on", on);
+    el.setAttribute("aria-pressed", on ? "true" : "false");
+  });
+  [...document.querySelectorAll("#tabs .tab")].forEach(x=>{
+    x.classList.toggle("on", !invitedView && x.dataset.level===filter);
+  });
+
+  let rows;
+  if (invitedView) {
+    rows = people.filter(p => p.on && p.level===invitedView && (!q || p.name.toLowerCase().includes(q)));
+  } else {
+    rows = people.filter(p => (filter==="all" || p.level===filter)
+      && (!q || p.name.toLowerCase().includes(q)));
+  }
+
+  const lvlWord = invitedView ? levelLabel(invitedView) : (filter==="all" ? "all" : levelLabel(filter));
+  if (invitedView) {
+    $("listModeText").textContent = q
+      ? `Invited ${lvlWord} · ${rows.length} match`
+      : `Invited ${lvlWord} · ${rows.length} people`;
+    $("backRoster").classList.remove("hidden");
+    $("nameSearch").placeholder = "Find in invited";
+    $("invitedLabel").textContent = `Already invited · viewing ${lvlWord}`;
+  } else {
+    $("listModeText").textContent = q
+      ? `Roster · ${rows.length} match`
+      : (filter==="all" ? `Roster · ${rows.length} people` : `Roster · ${rows.length} ${lvlWord}`);
+    $("backRoster").classList.add("hidden");
+    $("nameSearch").placeholder = "Find a name";
+    $("invitedLabel").textContent = "Already invited · tap a card to check";
+  }
+
+  if (!rows.length) {
+    const empty = invitedView
+      ? (q ? `No invited ${lvlWord} match that name.` : `Nobody invited at ${lvlWord} yet.`)
+      : (q ? "No names match." : "Nobody on this roster.");
+    $("list").innerHTML = `<div class="empty">${empty}</div>`;
+  } else {
+    $("list").innerHTML = rows.map(p=>`<label class="row"><input type="checkbox" data-id="${p.id}" ${p.on?"checked":""}/>
+      <div><div class="name">${p.name}</div><div class="meta">${p.phone}</div></div>
+      <span class="badge">${levelLabel(p.level)}</span></label>`).join("");
+  }
   const n = allP.length;
-  $("cBeg").textContent = String(allP.filter(p=>p.level==="beg").length);
-  $("cInt").textContent = String(allP.filter(p=>p.level==="int").length);
-  $("cAdv").textContent = String(allP.filter(p=>p.level==="adv").length);
   $("reviewBtn").disabled = n===0;
   $("reviewBtn").textContent = n ? `Next · ${n} people` : "Next";
 }
@@ -428,11 +490,23 @@ $("alertList").onchange = e=>{
 };
 
 $("nameSearch").oninput = e=>{ nameQ = e.target.value || ""; renderInvite(); };
+function showRoster(nextFilter){
+  invitedView = null;
+  if (nextFilter) filter = nextFilter;
+  $("list").scrollTop = 0;
+  renderInvite();
+}
+$("backRoster").onclick = ()=>showRoster();
+$("levelCounters").onclick = e=>{
+  const c = e.target.closest(".counter"); if(!c) return;
+  const lvl = c.dataset.invited;
+  invitedView = invitedView === lvl ? null : lvl;
+  $("list").scrollTop = 0;
+  renderInvite();
+};
 $("tabs").onclick = e=>{
   const t=e.target.closest(".tab"); if(!t) return;
-  filter=t.dataset.level;
-  [...document.querySelectorAll(".tab")].forEach(x=>x.classList.toggle("on",x===t));
-  renderInvite();
+  showRoster(t.dataset.level);
 };
 $("file").onchange = async e=>{
   const f=e.target.files?.[0]; if(!f) return;
@@ -449,6 +523,7 @@ $("file").onchange = async e=>{
     return {id:i,name:c[nameI>=0?nameI:0]||`Player ${i+1}`,phone:c[phoneI>=0?phoneI:1]||"",level,on:false};
   });
   sentCount=0;
+  invitedView=null;
   // One person = one level: drop rows whose display name already appears
   const seen = new Set();
   people = people.filter(p => {
@@ -461,7 +536,7 @@ $("file").onchange = async e=>{
   renderInvite();
 };
 $("importBtn").onclick=()=>$("file").click();
-$("goPick").onclick=()=>{show("invite"); renderInvite();};
+$("goPick").onclick=()=>{invitedView=null; show("invite"); renderInvite();};
 $("backHome").onclick=$("backHomeAl").onclick=()=>show("home");
 $("backInvite").onclick=()=>show("invite");
 $("alDoor").onclick=()=>show("al");
