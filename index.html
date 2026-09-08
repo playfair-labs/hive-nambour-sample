@@ -4,6 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>SMS Fill</title>
+<meta name="smsfill-build" content="pin-footer" />
 <style>
   :root {
     --bg:#0f1412; --card:#1a221e; --hive:#c8f54a; --hive-dim:#8fb82e;
@@ -13,8 +14,8 @@
   *{box-sizing:border-box}
   body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
     background:#070a09;color:var(--text);min-height:100dvh;display:flex;justify-content:center}
-  .phone{width:100%;max-width:390px;min-height:100dvh;background:var(--bg);
-    padding:16px 16px 28px;display:flex;flex-direction:column;gap:14px}
+  .phone{width:100%;max-width:390px;height:100dvh;max-height:100dvh;min-height:100dvh;background:var(--bg);
+    padding:16px 16px 16px;display:flex;flex-direction:column;gap:14px;overflow:hidden}
   header{display:flex;align-items:center;justify-content:space-between}
   .logo{font-weight:700;letter-spacing:.04em;font-size:15px}
   .logo span{color:var(--hive)}
@@ -47,7 +48,17 @@
   footer{margin-top:auto;display:flex;flex-direction:column;gap:8px}
   .note{font-size:11px;color:var(--muted);text-align:center;line-height:1.4}
   .hidden{display:none!important}
-  .screen{display:flex;flex-direction:column;gap:14px;flex:1}
+  .screen{display:flex;flex-direction:column;gap:14px;flex:1;min-height:0;overflow:hidden}
+  /* Invite pick: top chrome fixed, list scrolls, Next/Back pinned */
+  #screen-invite{gap:10px}
+  #screen-invite > header,
+  #screen-invite > .sticky-search{flex-shrink:0}
+  #screen-invite > #list{
+    flex:1 1 auto;min-height:0;max-height:none!important;
+    overflow-y:auto;-webkit-overflow-scrolling:touch;
+  }
+  #screen-invite > footer{flex-shrink:0;margin-top:0;gap:8px}
+  #screen-invite .sticky-search{position:relative;top:auto;z-index:1;padding-bottom:0}
   .qr-card{display:flex;gap:14px;align-items:center}
   .qr{width:88px;height:88px;border-radius:12px;background:
     linear-gradient(90deg,#111 25%,transparent 25%) 0 0/8px 8px,
