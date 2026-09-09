@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-title" content="All Mates On Deck" />
 <meta name="theme-color" content="#0f1412" />
 <title>All Mates On Deck</title>
-<meta name="allmates-build" content="hat-picker" />
+<meta name="allmates-build" content="onboard-3" />
 <style>
   :root {
     --bg:#0f1412; --card:#1a221e; --hive:#c8f54a; --hive-dim:#8fb82e;
@@ -159,7 +159,7 @@
       <div id="myFirstCard" class="hidden"></div>
     </div>
     <footer>
-      <button class="btn btn-primary" id="goJoin">This sounds great</button>
+      <button class="btn btn-primary" id="goJoin">Join · 3 steps</button>
       <button type="button" class="more-link" id="moreToggle">More</button>
       <div class="tuck hidden" id="moreDoors">
         <button class="btn btn-primary" id="goPost">Post an activity</button>
@@ -430,37 +430,19 @@
       <p class="sub">Looks full of life. You can’t see who yet.</p>
     </div>
     <footer>
-      <button class="btn btn-primary" id="teaseJoin">This sounds great</button>
+      <button class="btn btn-primary" id="teaseJoin">Join · 3 steps</button>
       <button class="btn btn-ghost" id="teaseBack">Keep looking</button>
-    </footer>
-  </section>
-
-  <section id="screen-join" class="screen hidden">
-    <header>
-      <div class="logo">ALL <span>MATES</span> ON DECK</div>
-      <div class="pill">Join</div>
-    </header>
-    <div class="scroll">
-      <h1>Come aboard</h1>
-      <p class="sub">Neighbour <s>jobs</s> activities. Invite mates. When the ship is full, stop.</p>
-      <div class="card">
-        <p class="sub">You’re looking in. Not a member yet. The only way on is to post one <s>job</s> activity — the thing that’s been weighing on your mind.</p>
-      </div>
-    </div>
-    <footer>
-      <button class="btn btn-primary" id="joinYes">This sounds great</button>
-      <button class="btn btn-ghost" id="joinBack">Keep looking</button>
     </footer>
   </section>
 
   <section id="screen-selfie" class="screen hidden">
     <header>
       <div class="logo">ALL <span>MATES</span> ON DECK</div>
-      <div class="pill">Selfie</div>
+      <div class="pill">1 / 3</div>
     </header>
     <div>
-      <h1>Your face</h1>
-      <p class="sub">Hat goes on this. No costume. No outfit.</p>
+      <h1>Take a selfie</h1>
+      <p class="sub">Then a hat. Then post a <s>job</s> activity. Private mates group. No extra screens.</p>
     </div>
     <div class="face" id="selfieFace"><img id="selfieImg" alt="" class="hidden"/></div>
     <footer>
@@ -475,11 +457,11 @@
   <section id="screen-hat" class="screen hidden">
     <header>
       <div class="logo">ALL <span>MATES</span> ON DECK</div>
-      <div class="pill">Hat</div>
+      <div class="pill">2 / 3</div>
     </header>
     <div>
       <h1>Pick your hat</h1>
-      <p class="sub">Hat only. This is who shows when you’re turning up.</p>
+      <p class="sub">Hat only — sailor, pirate, captain, beret, turban.</p>
     </div>
     <div class="face" id="hatFace"><img id="hatImg" alt=""/><svg class="hat-svg" id="hatSvg" viewBox="0 0 100 100"></svg></div>
     <div class="chips" id="hatChips"></div>
@@ -492,12 +474,12 @@
   <section id="screen-first" class="screen hidden">
     <header>
       <div class="logo">ALL <span>MATES</span> ON DECK</div>
-      <div class="pill">First activity</div>
+      <div class="pill">3 / 3</div>
     </header>
     <div class="scroll">
       <p class="mind" aria-hidden="true">⚖</p>
-      <h1>What’s been weighing on your mind?</h1>
-      <p class="sub">The thing you’ve been putting off. Big or small. Not a fun invite — no tennis, no night out. First activity has to be the weight.</p>
+      <h1>Post a <s>job</s> activity</h1>
+      <p class="sub">What’s been weighing on your mind? Big or small. Not a fun invite.</p>
       <textarea class="field" id="firstText" rows="3" maxlength="80" placeholder="e.g. Garage has been staring at me" style="min-height:96px;resize:none"></textarea>
       <p class="count" id="firstWarn"></p>
       <div id="firstPic" class="pic hidden" style="max-width:160px"></div>
@@ -506,7 +488,7 @@
       <label class="btn btn-ghost" style="text-align:center">Text + picture
         <input type="file" accept="image/*" hidden id="firstFile"/>
       </label>
-      <button class="btn btn-primary" id="firstPost">Post this activity</button>
+      <button class="btn btn-primary" id="firstPost">Post this <s>job</s> activity</button>
       <button class="btn btn-ghost" id="firstBack">Back</button>
       <p class="note">Text only is fine. Fake sample.</p>
     </footer>
@@ -586,7 +568,7 @@ function blankJob(){
   };
 }
 function show(id){
-  ['home','chefs','urgent','ublast','umate','post','invite','confirm','live','wait','photos','tease','join','selfie','hat','first'].forEach(s=>{
+  ['home','chefs','urgent','ublast','umate','post','invite','confirm','live','wait','photos','tease','selfie','hat','first'].forEach(s=>{
     $('screen-'+s).classList.toggle('hidden', s!==id);
   });
 }
@@ -1066,8 +1048,8 @@ $('goEvent').onclick=()=>{
   $('photoSub').innerHTML = `This <s>job</s> activity is now an event. Photos live here.`;
   show('photos');
 };
-$('goJoin').onclick=$('teaseJoin').onclick=()=>show('join');
-$('teaseBack').onclick=$('joinBack').onclick=()=>{ renderHome(); show('home'); };
+$('goJoin').onclick=$('teaseJoin').onclick=()=>show('selfie');
+$('teaseBack').onclick=()=>{ renderHome(); show('home'); };
 const HATS = [
   {id:'sailor', label:'Sailor cap'},
   {id:'pirate', label:'Pirate hat'},
@@ -1105,8 +1087,7 @@ function renderBoard(){
   ];
   $('board').innerHTML = row.map(p=>`<div class="aboard"><div class="mini">${faceHtml(p.photo,p.hat,p.color)}</div><div class="n">${esc(p.name)}</div></div>`).join('');
 }
-$('joinYes').onclick=()=>show('selfie');
-$('selfieBack').onclick=()=>show('join');
+$('selfieBack').onclick=()=>{ renderHome(); show('home'); };
 $('selfieFile').onchange=e=>{
   const f=e.target.files&&e.target.files[0]; if(!f) return;
   selfieUrl=URL.createObjectURL(f);
@@ -1158,8 +1139,8 @@ $('picFile').onchange=e=>{
   $('picGrid').appendChild(el);
   e.target.value='';
 };
-$('goHands').onclick=()=>{ if(!member){ show('join'); return; } startUrgent('red'); };
-$('goHot').onclick=()=>{ if(!member){ show('join'); return; } startUrgent('purple'); };
+$('goHands').onclick=()=>{ if(!member){ show('selfie'); return; } startUrgent('red'); };
+$('goHot').onclick=()=>{ if(!member){ show('selfie'); return; } startUrgent('purple'); };
 $('urgentBack').onclick=()=>show('home');
 $('urgentNeeds').onclick=e=>{
   const c=e.target.closest('[data-uid]'); if(!c) return;
@@ -1197,7 +1178,7 @@ $('chefHost').onclick=()=>{
 $('presetIkea').onclick=()=>{ if(peek('IKEA wardrobe','Weekend · 6am to 10pm · 4 hands')) return; applyPreset('ikea'); };
 $('presetGarage').onclick=()=>{ if(peek('Garage tidy','Sun 13 Sep · 10am · 2 hands')) return; applyPreset('garage'); };
 $('goPost').onclick=()=>{
-  if(!member){ show('join'); return; }
+  if(!member){ show('selfie'); return; }
   clearTimers();
   job = blankJob();
   people.forEach(p=>p.on=false);
