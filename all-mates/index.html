@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-title" content="All Mates On Deck" />
 <meta name="theme-color" content="#0f1412" />
 <title>All Mates On Deck</title>
-<meta name="allmates-build" content="onboard-3" />
+<meta name="allmates-build" content="job-detail-boat" />
 <style>
   :root {
     --bg:#0f1412; --card:#1a221e; --hive:#c8f54a; --hive-dim:#8fb82e;
@@ -124,6 +124,33 @@
   .aboard .mini img{width:100%;height:100%;object-fit:cover}
   .aboard .mini .hat-svg{position:absolute;inset:0}
   .aboard .n{font-size:11px;color:var(--muted);font-weight:650}
+  .phone{position:relative}
+  #screen-detail{position:absolute;inset:0;padding:0;gap:0;margin:0;z-index:4;background:#071018}
+  .flick{height:100%;overflow-y:auto;scroll-snap-type:y mandatory;-webkit-overflow-scrolling:touch}
+  .hero,.boat-pane,.after-pane{min-height:100%;height:100%;scroll-snap-align:start;scroll-snap-stop:always;position:relative}
+  .hero{display:flex;flex-direction:column;background:#0a0e0c}
+  .hero-photo{flex:2 1 66%;min-height:0;position:relative}
+  .hero-photo svg{width:100%;height:100%;display:block}
+  .hero-copy{flex:1 1 34%;padding:14px 16px max(16px, env(safe-area-inset-bottom));display:flex;flex-direction:column;justify-content:flex-end;gap:4px}
+  .hero-kicker{font-size:11px;font-weight:800;letter-spacing:.12em;color:var(--hive);text-transform:uppercase}
+  .flick-hint{font-size:12px;color:var(--muted);margin-top:8px}
+  .back-fab{position:absolute;top:max(10px, env(safe-area-inset-top));left:12px;z-index:5;
+    width:auto;padding:8px 12px;font-size:13px;border-radius:999px}
+  .boat-pane{background:linear-gradient(180deg,#0a2430 0%,#071018 55%,#041016 100%);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px 12px}
+  .craft-wrap{position:relative;width:min(92%,340px)}
+  .craft-wrap svg.hull{width:100%;height:auto;display:block}
+  .seat{position:absolute;width:48px;height:48px;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center}
+  .seat .mini{width:46px;height:46px;border-radius:50%;overflow:hidden;position:relative;border:2px solid #c8a227;background:#243028}
+  .seat .mini img{width:100%;height:100%;object-fit:cover}
+  .seat .mini .hat-svg{position:absolute;inset:0}
+  .seat.crew .mini{border-color:var(--hive-dim)}
+  .seat .tag{font-size:9px;font-weight:800;letter-spacing:.06em;color:#c8a227;margin-top:2px;text-transform:uppercase}
+  .seat.crew .tag{color:var(--muted)}
+  .ghost-face{width:100%;height:100%;background:#1a2420}
+  .after-pane{display:flex;flex-direction:column;background:#0a0e0c}
+  .after-pane .hero-photo{flex:2 1 66%}
+  .after-pane .hero-copy{flex:1 1 34%}
 </style>
 </head>
 <body>
@@ -147,7 +174,7 @@
         <span class="job-meta" id="ikeaWho"></span>
       </button>
       <button type="button" class="card job-card" id="presetGarage">
-        <strong>Garage tidy</strong>
+        <strong>Al’s garage</strong>
         <span class="job-meta">Coming · 2 hands · Sun 13 Sep · 10am</span>
         <span class="job-meta" id="garageWho"></span>
       </button>
@@ -169,6 +196,34 @@
       </div>
       <p class="dark">Fake roster only · no real texts · no real numbers</p>
     </footer>
+  </section>
+
+  <section id="screen-detail" class="screen hidden">
+    <button type="button" class="btn btn-ghost back-fab" id="detailBack">Back</button>
+    <div class="flick" id="flick">
+      <div class="hero">
+        <div class="hero-photo" id="heroBefore"></div>
+        <div class="hero-copy">
+          <div class="hero-kicker">Before</div>
+          <h1 id="heroTitle">Al’s garage</h1>
+          <p class="sub" id="heroSub"></p>
+          <p class="flick-hint">Flick up · the boat</p>
+        </div>
+      </div>
+      <div class="boat-pane">
+        <p class="hero-kicker" id="craftKind">Dinghy</p>
+        <div class="craft-wrap" id="craft"></div>
+        <p class="note" id="craftNote">Captain is always at the helm.</p>
+      </div>
+      <div class="after-pane hidden" id="afterPane">
+        <div class="hero-photo" id="heroAfter"></div>
+        <div class="hero-copy">
+          <div class="hero-kicker">After</div>
+          <h1 id="afterTitle">Done</h1>
+          <p class="sub">Same <s>job</s> activity. After photo.</p>
+        </div>
+      </div>
+    </div>
   </section>
 
   <section id="screen-urgent" class="screen hidden">
@@ -568,7 +623,7 @@ function blankJob(){
   };
 }
 function show(id){
-  ['home','chefs','urgent','ublast','umate','post','invite','confirm','live','wait','photos','tease','selfie','hat','first'].forEach(s=>{
+  ['home','chefs','urgent','ublast','umate','post','invite','confirm','live','wait','photos','tease','selfie','hat','first','detail'].forEach(s=>{
     $('screen-'+s).classList.toggle('hidden', s!==id);
   });
 }
@@ -1028,7 +1083,8 @@ function renderHome(){
   if(!member) $('moreDoors').classList.add('hidden');
   if(myFirst){
     $('myFirstCard').classList.remove('hidden');
-    $('myFirstCard').innerHTML = `<div class="card job-card"><strong>${esc(myFirst)}</strong><span class="job-meta">Your first activity · the weight</span></div>`;
+    $('myFirstCard').innerHTML = `<button type="button" class="card job-card" id="goMine"><strong>${esc(myFirst)}</strong><span class="job-meta">Your first activity · the weight</span></button>`;
+    $('goMine').onclick=()=>openDetail('mine');
   }
   renderBoard();
 }
@@ -1039,15 +1095,66 @@ function peek(title, when){
   show('tease');
   return true;
 }
+function sceneSvg(kind){
+  if(kind==='garage') return `<svg viewBox="0 0 200 260" preserveAspectRatio="xMidYMid slice"><rect width="200" height="260" fill="#1c1410"/><rect x="20" y="40" width="160" height="180" fill="#2a1e14" stroke="#5a4030"/><rect x="30" y="150" width="50" height="40" fill="#6a4a28"/><rect x="90" y="130" width="70" height="60" fill="#4a3020"/><rect x="40" y="80" width="40" height="30" fill="#3a2a18"/><rect x="110" y="70" width="55" height="35" fill="#5a3820"/></svg>`;
+  if(kind==='ikea') return `<svg viewBox="0 0 200 260" preserveAspectRatio="xMidYMid slice"><rect width="200" height="260" fill="#1a2218"/><rect x="25" y="160" width="70" height="50" fill="#c8b48a"/><rect x="100" y="140" width="70" height="70" fill="#d4c49a"/><rect x="40" y="90" width="55" height="45" fill="#b8a878"/><rect x="110" y="70" width="50" height="40" fill="#c4b888"/></svg>`;
+  if(kind==='street') return `<svg viewBox="0 0 200 260" preserveAspectRatio="xMidYMid slice"><rect width="200" height="260" fill="#1a1c1a"/><rect x="0" y="140" width="200" height="80" fill="#2a2c2a"/><circle cx="50" cy="170" r="12" fill="#3a3a30"/><circle cx="120" cy="185" r="16" fill="#333228"/><rect x="20" y="40" width="30" height="90" fill="#243028"/><rect x="150" y="50" width="28" height="80" fill="#243028"/></svg>`;
+  if(kind==='street-after') return `<svg viewBox="0 0 200 260" preserveAspectRatio="xMidYMid slice"><rect width="200" height="260" fill="#142018"/><rect x="0" y="140" width="200" height="80" fill="#2a3830"/><rect x="20" y="40" width="30" height="90" fill="#2a4030"/><rect x="150" y="50" width="28" height="80" fill="#2a4030"/><circle cx="100" cy="120" r="18" fill="#c8f54a" opacity=".35"/></svg>`;
+  return `<svg viewBox="0 0 200 260" preserveAspectRatio="xMidYMid slice"><rect width="200" height="260" fill="#1a2218"/><text x="100" y="130" text-anchor="middle" fill="#8fb82e" font-size="42">⚖</text></svg>`;
+}
+function hullSvg(kind){
+  if(kind==='dinghy') return `<svg class="hull" viewBox="0 0 200 260"><ellipse cx="100" cy="130" rx="48" ry="100" fill="#6a4a28" stroke="#c8a227" stroke-width="3"/><path d="M100 28 L118 70 L82 70 Z" fill="#8a6238"/><path d="M52 130 L28 138 M148 130 L172 138" stroke="#5a3a18" stroke-width="4"/></svg>`;
+  if(kind==='cutter') return `<svg class="hull" viewBox="0 0 220 300"><path d="M110 20 L138 90 L130 250 L90 250 L82 90 Z" fill="#5a3a22" stroke="#c8a227" stroke-width="3"/><rect x="106" y="40" width="8" height="160" fill="#d8c49a"/><path d="M114 50 L170 140 L114 140 Z" fill="#f4f7f2" opacity=".85"/></svg>`;
+  return `<svg class="hull" viewBox="0 0 240 340"><path d="M120 30 L160 110 L150 300 L90 300 L80 110 Z" fill="#4a2e18" stroke="#c8a227" stroke-width="3"/><rect x="116" y="36" width="8" height="200" fill="#d8c49a"/><rect x="70" y="50" width="6" height="160" fill="#c8b888"/><rect x="164" y="50" width="6" height="160" fill="#c8b888"/><path d="M124 48 L190 130 L124 130 Z" fill="#f4f7f2" opacity=".8"/><path d="M76 60 L30 130 L76 130 Z" fill="#e8ead0" opacity=".75"/><path d="M170 60 L214 130 L170 130 Z" fill="#e8ead0" opacity=".75"/></svg>`;
+}
+function seatAt(x,y,person,isCap){
+  const hide = !member;
+  const face = hide
+    ? `<div class="mini"><div class="ghost-face"></div></div>`
+    : `<div class="mini">${faceHtml(person.photo||'', person.hat, person.color)}</div>`;
+  const tag = hide ? '' : `<div class="tag">${isCap?'Captain':(person.name||'mate')}</div>`;
+  return `<div class="seat ${isCap?'helm':'crew'}" style="left:${x}%;top:${y}%">${face}${tag}</div>`;
+}
+function openDetail(key){
+  const you = {name:'You', photo:selfieUrl, hat:myHat, color:'#3a4a20'};
+  const al = {name:'Al', photo:'', hat:'captain', color:'#2a3a20'};
+  const jobs = {
+    garage:{title:"Al’s garage", sub:'2 hands · dinghy', hands:2, scene:'garage', after:null,
+      captain:al, crew:[{name:'Tom', hat:'pirate', color:'#4a3a28'}]},
+    ikea:{title:'IKEA wardrobe', sub:'4 hands · cutter', hands:4, scene:'ikea', after:null,
+      captain:al, crew:[{name:'Mia', hat:'sailor', color:'#3a5a48'},{name:'Sara', hat:'beret', color:'#3a2a40'},{name:'Jack', hat:'turban', color:'#3a4030'}]},
+    street:{title:'Street tidy', sub:'6 hands · ship · done', hands:6, scene:'street', after:'street-after',
+      captain:al, crew:[{name:'Helen', hat:'captain', color:'#2a3a28'},{name:'Mia', hat:'sailor', color:'#3a5a48'},{name:'Tom', hat:'pirate', color:'#4a3a28'},{name:'Sara', hat:'beret', color:'#3a2a40'},{name:'Priya', hat:'turban', color:'#403828'}]},
+    mine:{title: myFirst||'Your activity', sub:'Your <s>job</s> activity · dinghy', hands:2, scene:'mind', after:null,
+      captain:you, crew:[{name:'Mia', hat:'sailor', color:'#3a5a48'}]}
+  };
+  const d = jobs[key] || jobs.garage;
+  const kind = d.hands<=2 ? 'dinghy' : d.hands<=5 ? 'cutter' : 'ship';
+  $('heroTitle').textContent = d.title;
+  $('heroSub').innerHTML = d.sub;
+  $('heroBefore').innerHTML = sceneSvg(d.scene);
+  $('craftKind').textContent = kind==='dinghy' ? 'Longboat' : kind==='cutter' ? 'Cutter' : 'Tall ship';
+  $('craftNote').textContent = member ? 'Captain is always at the helm.' : 'People aboard. Names stay hidden.';
+  const helm = kind==='dinghy' ? [[50,78]] : kind==='cutter' ? [[50,80]] : [[50,82]];
+  const crewPos = kind==='dinghy' ? [[50,32]] : kind==='cutter' ? [[50,28],[32,52],[68,52]] : [[50,24],[30,40],[70,40],[28,58],[72,58]];
+  let seats = seatAt(helm[0][0], helm[0][1], d.captain, true);
+  d.crew.forEach((p,i)=>{ if(crewPos[i]) seats += seatAt(crewPos[i][0], crewPos[i][1], p, false); });
+  $('craft').innerHTML = hullSvg(kind) + seats;
+  const done = !!d.after;
+  $('afterPane').classList.toggle('hidden', !done);
+  if(done){
+    $('heroAfter').innerHTML = sceneSvg(d.after);
+    $('afterTitle').textContent = d.title;
+  }
+  show('detail');
+  $('flick').scrollTop = 0;
+}
 $('moreToggle').onclick=()=>{
   $('moreDoors').classList.toggle('hidden');
   $('moreToggle').textContent = $('moreDoors').classList.contains('hidden') ? 'More' : 'Less';
 };
-$('goEvent').onclick=()=>{
-  if(peek('Street tidy','Today · event · photos')) return;
-  $('photoSub').innerHTML = `This <s>job</s> activity is now an event. Photos live here.`;
-  show('photos');
-};
+$('goEvent').onclick=()=>openDetail('street');
+$('detailBack').onclick=()=>{ renderHome(); show('home'); };
 $('goJoin').onclick=$('teaseJoin').onclick=()=>show('selfie');
 $('teaseBack').onclick=()=>{ renderHome(); show('home'); };
 const HATS = [
@@ -1175,8 +1282,8 @@ $('chefHost').onclick=()=>{
   renderChefs();
 };
 
-$('presetIkea').onclick=()=>{ if(peek('IKEA wardrobe','Weekend · 6am to 10pm · 4 hands')) return; applyPreset('ikea'); };
-$('presetGarage').onclick=()=>{ if(peek('Garage tidy','Sun 13 Sep · 10am · 2 hands')) return; applyPreset('garage'); };
+$('presetIkea').onclick=()=>openDetail('ikea');
+$('presetGarage').onclick=()=>openDetail('garage');
 $('goPost').onclick=()=>{
   if(!member){ show('selfie'); return; }
   clearTimers();
