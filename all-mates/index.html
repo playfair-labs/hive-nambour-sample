@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-title" content="All Mates On Deck" />
 <meta name="theme-color" content="#0f1412" />
 <title>All Mates On Deck</title>
-<meta name="allmates-build" content="multiday" />
+<meta name="allmates-build" content="chefs-door" />
 <style>
   :root {
     --bg:#0f1412; --card:#1a221e; --hive:#c8f54a; --hive-dim:#8fb82e;
@@ -123,7 +123,30 @@
     </div>
     <footer>
       <button class="btn btn-primary" id="goPost">Post a house job</button>
+      <button type="button" class="btn btn-ghost" id="goChefs" style="font-size:14px;padding:12px">All Chefs on Deck</button>
       <p class="dark">Fake roster only · no real texts · no real numbers</p>
+    </footer>
+  </section>
+
+  <section id="screen-chefs" class="screen hidden">
+    <header>
+      <div class="logo">ALL <span>CHEFS</span> ON DECK</div>
+      <div class="pill warn">Fake sample</div>
+    </header>
+    <div>
+      <h1>Cook at a mate’s</h1>
+      <p class="sub">Host a cook or learn session at someone’s place. Tonight’s fine — not only a big meal.</p>
+    </div>
+    <div class="scroll" id="chefList"></div>
+    <footer>
+      <input class="field" id="chefMeal" maxlength="40" placeholder="Favourite meal, or a quick cook" />
+      <div class="tabs" id="chefWhen">
+        <button type="button" class="tab on" data-cwhen="tonight">Tonight</button>
+        <button type="button" class="tab" data-cwhen="weekend">Weekend</button>
+      </div>
+      <button class="btn btn-primary" id="chefHost">Host · fake-invite</button>
+      <button class="btn btn-ghost" id="backChefsHome">All Mates</button>
+      <p class="dark">Fake only · no real texts</p>
     </footer>
   </section>
 
@@ -331,7 +354,7 @@ function blankJob(){
   };
 }
 function show(id){
-  ['home','post','invite','confirm','live','wait'].forEach(s=>{
+  ['home','chefs','post','invite','confirm','live','wait'].forEach(s=>{
     $('screen-'+s).classList.toggle('hidden', s!==id);
   });
 }
@@ -624,6 +647,41 @@ function cycleReply(i){
   }
   renderLive();
 }
+
+let chefWhen = 'tonight';
+let chefs = [
+  {meal:"Mia’s stir-fry", when:'Tonight · 7pm', place:"Mia’s place", kind:'Quick cook · learn', hands:['Tom Blake','Sara Nguyen']},
+  {meal:"Tom’s nonna pasta", when:'Sat · 6pm', place:"Tom’s place", kind:'Favourite meal', hands:['Mia Chen']}
+];
+function renderChefs(){
+  $('chefList').innerHTML = chefs.map(c=>`<div class="card job-card">
+    <strong>${esc(c.meal)}</strong>
+    <span class="job-meta">${esc(c.when)} · ${esc(c.place)} · ${esc(c.kind)}</span>
+    <span class="job-meta">${c.hands.length? 'Coming: '+c.hands.map(esc).join(', ') : 'Waiting on mates'}</span>
+  </div>`).join('');
+  [...document.querySelectorAll('#chefWhen .tab')].forEach(t=>{
+    t.classList.toggle('on', t.dataset.cwhen===chefWhen);
+  });
+}
+$('goChefs').onclick=()=>{ renderChefs(); show('chefs'); };
+$('backChefsHome').onclick=()=>show('home');
+$('chefWhen').onclick=e=>{
+  const t=e.target.closest('.tab'); if(!t) return;
+  chefWhen=t.dataset.cwhen;
+  renderChefs();
+};
+$('chefHost').onclick=()=>{
+  const meal=($('chefMeal').value||'').trim() || (chefWhen==='tonight' ? 'Quick cook' : 'Favourite meal');
+  chefs.unshift({
+    meal,
+    when: chefWhen==='tonight' ? 'Tonight · 7pm' : 'Weekend · Sat 6pm',
+    place:"Al’s place",
+    kind: chefWhen==='tonight' ? 'Quick cook' : 'Favourite meal',
+    hands:['Mia Chen','Lily Martin']
+  });
+  $('chefMeal').value='';
+  renderChefs();
+};
 
 $('presetIkea').onclick=()=>applyPreset('ikea');
 $('presetGarage').onclick=()=>applyPreset('garage');
