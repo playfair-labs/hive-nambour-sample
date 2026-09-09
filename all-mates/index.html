@@ -7,12 +7,12 @@
 <meta name="apple-mobile-web-app-title" content="All Mates On Deck" />
 <meta name="theme-color" content="#0f1412" />
 <title>All Mates On Deck</title>
-<meta name="allmates-build" content="chefs-door" />
+<meta name="allmates-build" content="red-purple" />
 <style>
   :root {
     --bg:#0f1412; --card:#1a221e; --hive:#c8f54a; --hive-dim:#8fb82e;
     --text:#f4f7f2; --muted:#9aa89c; --line:#2a3530; --ok:#5ddea8; --warn:#f0c14a;
-    --red:#ff5a5a; --red-dim:#4a1818; --sea:#1a2a28;
+    --red:#ff5a5a; --red-dim:#4a1818; --sea:#1a2a28; --hot:#7b4dff; --hot-dim:#2a1844;
   }
   *{box-sizing:border-box}
   body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
@@ -32,6 +32,12 @@
   .btn-primary:disabled{opacity:.35;cursor:not-allowed}
   .btn-ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
   .btn-alert{background:var(--red);color:#fff}
+  .btn-hot{background:var(--hot);color:#fff}
+  .btn-can{background:var(--ok);color:#10200a;font-size:28px;padding:26px}
+  .btn-cant{background:var(--card);color:var(--text);border:1px solid var(--line);font-size:28px;padding:26px}
+  .banner-hot{background:var(--hot-dim);border:1px solid var(--hot);border-radius:14px;padding:12px 14px}
+  .banner-hot strong{color:#d7c2ff;display:block;font-size:15px}
+  .thin{font-size:18px;font-weight:700;letter-spacing:.01em}
   .tabs{display:flex;gap:6px}
   .tab{flex:1;text-align:center;padding:10px 8px;border-radius:12px;font-size:13px;color:var(--muted);
     background:var(--card);border:1px solid var(--line);cursor:pointer;font-weight:650;font-family:inherit}
@@ -123,8 +129,80 @@
     </div>
     <footer>
       <button class="btn btn-primary" id="goPost">Post a house job</button>
+      <button type="button" class="btn btn-alert" id="goHands">All Hands on Deck</button>
+      <button type="button" class="btn btn-hot" id="goHot">Hot opportunity</button>
       <button type="button" class="btn btn-ghost" id="goChefs" style="font-size:14px;padding:12px">All Chefs on Deck</button>
       <p class="dark">Fake roster only · no real texts · no real numbers</p>
+    </footer>
+  </section>
+
+  <section id="screen-urgent" class="screen hidden">
+    <header>
+      <div class="logo" id="urgentLogo">ALL <span>HANDS</span> ON DECK</div>
+      <div class="pill" id="urgentPill">Red alert</div>
+    </header>
+    <div>
+      <h1 id="urgentH">Need someone now</h1>
+      <p class="sub" id="urgentSub">One fake text at a time. First Can stops the rest. No chat.</p>
+    </div>
+    <div class="scroll">
+      <div>
+        <div class="block-label">What</div>
+        <div class="chips" id="urgentNeeds"></div>
+      </div>
+      <div>
+        <div class="block-label">How many people</div>
+        <div class="hands-row">
+          <button type="button" class="step" id="uMinus">−</button>
+          <div class="hands-n" id="uSeats">1</div>
+          <button type="button" class="step" id="uPlus">+</button>
+        </div>
+        <p class="count" id="uSeatsHint">Need 1. First Can stops the cascade.</p>
+      </div>
+      <div class="card msg thin" id="urgentSms"></div>
+    </div>
+    <footer>
+      <button class="btn btn-primary" id="urgentGo">Fake-text first mate</button>
+      <button class="btn btn-ghost" id="urgentBack">Back</button>
+      <p class="dark">Fake SMS · no gateway · no ping-pong</p>
+    </footer>
+  </section>
+
+  <section id="screen-ublast" class="screen hidden">
+    <header>
+      <div class="logo" id="ublastLogo">ALL <span>HANDS</span> ON DECK</div>
+      <div class="pill" id="ublastPill">Cascade</div>
+    </header>
+    <div>
+      <h1 id="ublastTitle">Waiting</h1>
+      <p class="sub" id="ublastSub">One mate at a time.</p>
+    </div>
+    <div class="banner-red hidden" id="ublastStop">
+      <strong>Stopped</strong>
+      <span class="meta">Got enough. Nobody else is texted.</span>
+    </div>
+    <div class="card live" id="ublastList" style="flex:1;min-height:0"></div>
+    <footer>
+      <button class="btn btn-primary" id="uOpenMate">Open mate’s text</button>
+      <button class="btn btn-ghost" id="uNoReply">No reply · next</button>
+      <button class="btn btn-ghost" id="uBackHome">All Mates</button>
+      <p class="note">Tap opens this app. Huge Can / Can’t. No extra texts.</p>
+    </footer>
+  </section>
+
+  <section id="screen-umate" class="screen hidden">
+    <header>
+      <div class="logo">ALL <span>MATES</span> ON DECK</div>
+      <div class="pill warn">Fake text</div>
+    </header>
+    <p class="sub" id="umateWho">Mia</p>
+    <div class="card msg thin" id="umateSms"></div>
+    <h1 id="umateH" style="font-size:28px">Can you?</h1>
+    <p class="sub" id="umateSub">One tap. No chat.</p>
+    <footer>
+      <button class="btn btn-can" id="uCan">Can</button>
+      <button class="btn btn-cant" id="uCant">Can’t</button>
+      <p class="dark">Reply lands with Al. No extra SMS.</p>
     </footer>
   </section>
 
@@ -354,7 +432,7 @@ function blankJob(){
   };
 }
 function show(id){
-  ['home','chefs','post','invite','confirm','live','wait'].forEach(s=>{
+  ['home','chefs','urgent','ublast','umate','post','invite','confirm','live','wait'].forEach(s=>{
     $('screen-'+s).classList.toggle('hidden', s!==id);
   });
 }
@@ -663,6 +741,152 @@ function renderChefs(){
     t.classList.toggle('on', t.dataset.cwhen===chefWhen);
   });
 }
+const RED_NEEDS = [
+  {id:'keys', label:'Keys locked out', sms:'Al · keys locked out. Can you? →'},
+  {id:'chemist', label:'Chemist pickup', sms:'Al · chemist pickup. Can you? →'},
+  {id:'lift', label:'Need a lift', sms:'Al · need a lift. Can you? →'}
+];
+const HOT_NEEDS = [
+  {id:'tickets', label:'2 spare movie tickets', sms:'Al · 2 movie tickets. 12 min. Can you? →'},
+  {id:'concert', label:'Extra concert seat', sms:'Al · extra seat. 8 min. Can you? →'}
+];
+let urgent = blankUrgent('red');
+function blankUrgent(kind){
+  return {
+    kind,
+    needId: kind==='red' ? 'keys' : 'tickets',
+    seats: 1,
+    got: 0,
+    idx: 0,
+    list: SAMPLE.slice(0,5).map((p,i)=>({...p,id:i})),
+    log: []
+  };
+}
+function uNeeds(){ return urgent.kind==='red' ? RED_NEEDS : HOT_NEEDS; }
+function uNeed(){ return uNeeds().find(n=>n.id===urgent.needId) || uNeeds()[0]; }
+function uFilled(){ return urgent.got >= urgent.seats; }
+function uCurrent(){ return urgent.list[urgent.idx] || null; }
+function renderUrgent(){
+  const red = urgent.kind==='red';
+  $('urgentLogo').innerHTML = red ? 'ALL <span>HANDS</span> ON DECK' : 'ALL <span>MATES</span> ON DECK';
+  $('urgentPill').textContent = red ? 'Red alert' : 'Hot · minutes';
+  $('urgentPill').style.borderColor = red ? 'var(--red)' : 'var(--hot)';
+  $('urgentPill').style.color = red ? '#ffb4b4' : '#d7c2ff';
+  $('urgentH').textContent = red ? 'Need someone now' : 'Hot opportunity';
+  $('urgentSub').textContent = red
+    ? 'One fake text at a time. First Can stops the rest. No chat.'
+    : 'Lasts minutes. Same cascade. First Can can take it.';
+  $('urgentNeeds').innerHTML = uNeeds().map(n=>
+    `<button type="button" class="chip ${urgent.needId===n.id?'on':''}" data-uid="${n.id}">${n.label}</button>`
+  ).join('');
+  $('uSeats').textContent = String(urgent.seats);
+  $('uSeatsHint').textContent = urgent.seats===1
+    ? 'Need 1 person. First Can stops the cascade.'
+    : `Need ${urgent.seats}. Keep cascading until ${urgent.seats} Can.`;
+  $('urgentSms').innerHTML = `<em>${esc(uNeed().sms)}</em>`;
+  $('urgentGo').className = red ? 'btn btn-alert' : 'btn btn-hot';
+  $('urgentGo').textContent = `Fake-text ${urgent.list[0] ? urgent.list[0].name.split(' ')[0] : 'first mate'}`;
+}
+function startUrgent(kind){
+  urgent = blankUrgent(kind);
+  renderUrgent();
+  show('urgent');
+}
+function renderUblast(){
+  const red = urgent.kind==='red';
+  const full = uFilled();
+  const cur = uCurrent();
+  $('ublastLogo').innerHTML = red ? 'ALL <span>HANDS</span> ON DECK' : 'ALL <span>MATES</span> ON DECK';
+  $('ublastPill').textContent = full ? 'Stopped' : 'Cascade';
+  $('ublastTitle').textContent = full ? 'Got them' : (cur ? `Texted ${cur.name.split(' ')[0]}` : 'Done');
+  $('ublastSub').textContent = full
+    ? 'Stop. Do not text anyone else.'
+    : `${urgent.got}/${urgent.seats} Can · one mate at a time`;
+  $('ublastStop').classList.toggle('hidden', !full);
+  $('ublastStop').className = full ? (red ? 'banner-red' : 'banner-hot') : 'banner-red hidden';
+  $('ublastList').innerHTML = urgent.log.map(r=>{
+    const cls = r.kind==='can' ? 'win' : r.kind==='cant' ? 'taken' : r.kind==='skip' ? 'taken' : 'wait';
+    return `<div class="live-row"><span>${esc(r.name)}</span><span class="${cls}">${esc(r.label)}</span></div>`;
+  }).join('') || `<div class="empty">Nobody texted yet.</div>`;
+  $('uOpenMate').disabled = full || !cur;
+  $('uOpenMate').textContent = full ? 'Stopped' : (cur ? `Open ${cur.name.split(' ')[0]}’s text` : 'Done');
+  $('uOpenMate').className = full ? 'btn btn-ghost' : (red ? 'btn btn-alert' : 'btn btn-hot');
+  $('uNoReply').disabled = full || !cur;
+  $('uNoReply').classList.toggle('hidden', full);
+}
+function cascadeStart(){
+  urgent.got=0; urgent.idx=0; urgent.log=[];
+  const first = uCurrent();
+  if(first) urgent.log.push({id:first.id,name:first.name,kind:'sent',label:'texted… · waiting'});
+  show('ublast');
+  renderUblast();
+}
+function cascadeNext(reason){
+  const cur = uCurrent();
+  if(cur){
+    const row = urgent.log.find(r=>r.id===cur.id);
+    if(row && row.kind==='sent'){ row.kind='skip'; row.label = reason==='noreply' ? 'no reply · skipped' : 'Can’t'; }
+  }
+  urgent.idx += 1;
+  if(uFilled() || urgent.idx>=urgent.list.length){
+    renderUblast();
+    return;
+  }
+  const next = uCurrent();
+  urgent.log.push({id:next.id,name:next.name,kind:'sent',label:'texted… · waiting'});
+  renderUblast();
+}
+function mateAnswer(can){
+  const cur = uCurrent(); if(!cur) { show('ublast'); renderUblast(); return; }
+  const row = urgent.log.find(r=>r.id===cur.id) || urgent.log[urgent.log.length-1];
+  if(can){
+    urgent.got += 1;
+    if(row){ row.kind='can'; row.label = uFilled() && urgent.seats===1 ? 'CAN · coming · stop' : 'CAN · coming'; }
+    if(uFilled()){
+      urgent.list.slice(urgent.idx+1).forEach(p=>{
+        if(!urgent.log.some(r=>r.id===p.id)) urgent.log.push({id:p.id,name:p.name,kind:'skip',label:'not texted'});
+      });
+      urgent.idx = urgent.list.length;
+    } else {
+      urgent.idx += 1;
+      const next = uCurrent();
+      if(next) urgent.log.push({id:next.id,name:next.name,kind:'sent',label:'texted… · waiting'});
+    }
+  } else {
+    if(row){ row.kind='cant'; row.label='Can’t'; }
+    urgent.idx += 1;
+    const next = uCurrent();
+    if(next && !uFilled()) urgent.log.push({id:next.id,name:next.name,kind:'sent',label:'texted… · waiting'});
+  }
+  show('ublast');
+  renderUblast();
+}
+function openMate(){
+  const cur = uCurrent(); if(!cur || uFilled()) return;
+  $('umateWho').textContent = `${cur.name} · ${cur.phone}`;
+  $('umateSms').innerHTML = `<em>${esc(uNeed().sms)}</em>`;
+  $('umateH').textContent = uNeed().label;
+  $('umateSub').textContent = urgent.kind==='red'
+    ? 'Al needs someone now. One tap.'
+    : 'Hot — minutes left. One tap.';
+  show('umate');
+}
+$('goHands').onclick=()=>startUrgent('red');
+$('goHot').onclick=()=>startUrgent('purple');
+$('urgentBack').onclick=()=>show('home');
+$('urgentNeeds').onclick=e=>{
+  const c=e.target.closest('[data-uid]'); if(!c) return;
+  urgent.needId=c.dataset.uid; renderUrgent();
+};
+$('uMinus').onclick=()=>{ urgent.seats=Math.max(1,urgent.seats-1); renderUrgent(); };
+$('uPlus').onclick=()=>{ urgent.seats=Math.min(3,urgent.seats+1); renderUrgent(); };
+$('urgentGo').onclick=()=>cascadeStart();
+$('uOpenMate').onclick=()=>openMate();
+$('uNoReply').onclick=()=>cascadeNext('noreply');
+$('uBackHome').onclick=()=>show('home');
+$('uCan').onclick=()=>mateAnswer(true);
+$('uCant').onclick=()=>mateAnswer(false);
+
 $('goChefs').onclick=()=>{ renderChefs(); show('chefs'); };
 $('backChefsHome').onclick=()=>show('home');
 $('chefWhen').onclick=e=>{
