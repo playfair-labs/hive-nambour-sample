@@ -442,9 +442,11 @@ function renderMeter(){
   $('meter').innerHTML = html;
   $('fullBanner').classList.toggle('hidden', !full);
   $('liveTitle').textContent = full ? 'Ship full' : 'Waiting on yes';
+  $('liveTitle').classList.toggle('hidden', full);
   $('liveSub').textContent = full
     ? 'Stop inviting. Extra mates sit on the wait-list.'
     : `${esc(job.title)} · ${whenLine()}`;
+  $('liveSub').classList.toggle('hidden', full);
   $('livePill').textContent = full ? 'Ship full' : 'Filling';
 }
 
@@ -453,7 +455,10 @@ function renderLive(){
   if(!replies.length){
     $('liveList').innerHTML = `<div class="empty">No fake texts in this burst.</div>`;
   } else {
-    $('liveList').innerHTML = replies.map((r,i)=>{
+    const rank = k => k==='yes'?0 : k==='opened'?1 : k==='sent'?2 : 3;
+    $('liveList').innerHTML = replies.map((r,i)=>({r,i}))
+      .sort((a,b)=>rank(a.r.kind)-rank(b.r.kind))
+      .map(({r,i})=>{
       const full = shipFull() && r.kind!=='yes';
       let cls='wait', label=r.label;
       if(r.kind==='yes'){ cls='ok'; }
