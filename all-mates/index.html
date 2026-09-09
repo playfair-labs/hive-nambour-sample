@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-title" content="All Mates On Deck" />
 <meta name="theme-color" content="#0f1412" />
 <title>All Mates On Deck</title>
-<meta name="allmates-build" content="red-purple" />
+<meta name="allmates-build" content="lean-activities" />
 <style>
   :root {
     --bg:#0f1412; --card:#1a221e; --hive:#c8f54a; --hive-dim:#8fb82e;
@@ -104,6 +104,14 @@
     min-width:56px;padding:10px 8px;font-size:15px}
   .chip.day .d{font-size:11px;font-weight:650;color:var(--muted)}
   .chip.day.on .d{color:var(--hive-dim)}
+  s{text-decoration:line-through;color:var(--muted);font-weight:650}
+  .more-link{appearance:none;background:none;border:0;color:var(--muted);font-size:13px;font-weight:700;
+    padding:8px;cursor:pointer;font-family:inherit;width:100%;text-align:center}
+  .tuck{display:flex;flex-direction:column;gap:8px}
+  .pics{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .pic{aspect-ratio:1;border-radius:12px;background:#243028;border:1px solid var(--line);
+    overflow:hidden;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px}
+  .pic img{width:100%;height:100%;object-fit:cover}
 </style>
 </head>
 <body>
@@ -114,24 +122,32 @@
       <div class="pill warn">Fake sample</div>
     </header>
     <div>
-      <h1>Neighbour jobs</h1>
-      <p class="sub">Invite mates. Some jobs need many hands, some need few. When the ship is full, stop.</p>
+      <h1>Neighbour <s>jobs</s> activities</h1>
+      <p class="sub">What’s on. Some <s>jobs</s> activities need many hands, some need few. When the ship is full, stop.</p>
     </div>
     <div class="scroll">
+      <div class="block-label">On now / coming</div>
       <button type="button" class="card job-card" id="presetIkea">
         <strong>IKEA wardrobe</strong>
-        <span class="job-meta">4 hands · Weekend · 6am to 10pm</span>
+        <span class="job-meta">Coming · 4 hands · Weekend · 6am to 10pm</span>
       </button>
       <button type="button" class="card job-card" id="presetGarage">
         <strong>Garage tidy</strong>
-        <span class="job-meta">2 hands · Sun 13 Sep · specific time 10am</span>
+        <span class="job-meta">Coming · 2 hands · Sun 13 Sep · 10am</span>
+      </button>
+      <button type="button" class="card job-card" id="goEvent">
+        <strong>Street tidy</strong>
+        <span class="job-meta">Today · event · 2 photos</span>
       </button>
     </div>
     <footer>
-      <button class="btn btn-primary" id="goPost">Post a house job</button>
-      <button type="button" class="btn btn-alert" id="goHands">All Hands on Deck</button>
-      <button type="button" class="btn btn-hot" id="goHot">Hot opportunity</button>
-      <button type="button" class="btn btn-ghost" id="goChefs" style="font-size:14px;padding:12px">All Chefs on Deck</button>
+      <button type="button" class="more-link" id="moreToggle">More</button>
+      <div class="tuck hidden" id="moreDoors">
+        <button class="btn btn-primary" id="goPost">Post an activity</button>
+        <button type="button" class="btn btn-alert" id="goHands">All Hands on Deck</button>
+        <button type="button" class="btn btn-hot" id="goHot">Hot opportunity</button>
+        <button type="button" class="btn btn-ghost" id="goChefs" style="font-size:14px;padding:12px">All Chefs on Deck</button>
+      </div>
       <p class="dark">Fake roster only · no real texts · no real numbers</p>
     </footer>
   </section>
@@ -231,11 +247,11 @@
   <section id="screen-post" class="screen hidden">
     <header>
       <div class="logo">ALL <span>MATES</span> ON DECK</div>
-      <div class="pill">Job</div>
+      <div class="pill"><s>Job</s> activity</div>
     </header>
     <div class="scroll">
       <div>
-        <div class="block-label">House job</div>
+        <div class="block-label"><s>House job</s> Activity</div>
         <input class="field" id="jobTitle" maxlength="48" placeholder="e.g. IKEA wardrobe" />
       </div>
       <div>
@@ -354,7 +370,29 @@
     <div class="card live" id="waitList" style="flex:1;min-height:0"></div>
     <footer>
       <button class="btn btn-ghost" id="backLive">Back to ship</button>
-      <button class="btn btn-ghost" id="resetHome">New job</button>
+      <button class="btn btn-ghost" id="resetHome">New activity</button>
+    </footer>
+  </section>
+
+  <section id="screen-photos" class="screen hidden">
+    <header>
+      <div class="logo">ALL <span>MATES</span> ON DECK</div>
+      <div class="pill">Event</div>
+    </header>
+    <div>
+      <h1>Street tidy</h1>
+      <p class="sub">This <s>job</s> activity is now an event. Photos live here.</p>
+    </div>
+    <div class="pics" id="picGrid">
+      <div class="pic" style="background:#2a3a28">Sat morning</div>
+      <div class="pic" style="background:#1a2830">After</div>
+    </div>
+    <footer>
+      <label class="btn btn-primary" style="text-align:center">Add photo
+        <input type="file" accept="image/*" hidden id="picFile"/>
+      </label>
+      <button class="btn btn-ghost" id="backPhotos">Back</button>
+      <p class="note">Stays on this phone. Fake sample · not uploaded.</p>
     </footer>
   </section>
 </div>
@@ -432,7 +470,7 @@ function blankJob(){
   };
 }
 function show(id){
-  ['home','chefs','urgent','ublast','umate','post','invite','confirm','live','wait'].forEach(s=>{
+  ['home','chefs','urgent','ublast','umate','post','invite','confirm','live','wait','photos'].forEach(s=>{
     $('screen-'+s).classList.toggle('hidden', s!==id);
   });
 }
@@ -573,7 +611,7 @@ function renderPost(){
 function renderInvite(){
   const q = nameQ.trim().toLowerCase();
   const rows = people.filter(p => !q || p.name.toLowerCase().includes(q));
-  $('inviteSub').textContent = `${job.title||'House job'} · ${handsWord(job.hands)} · ${whenLine()}`;
+  $('inviteSub').textContent = `${job.title||'Activity'} · ${handsWord(job.hands)} · ${whenLine()}`;
   if(!rows.length){
     $('list').innerHTML = `<div class="empty">${q?'No names match.':'Nobody on this fake roster.'}</div>`;
   } else {
@@ -871,6 +909,21 @@ function openMate(){
     : 'Hot — minutes left. One tap.';
   show('umate');
 }
+$('moreToggle').onclick=()=>{
+  $('moreDoors').classList.toggle('hidden');
+  $('moreToggle').textContent = $('moreDoors').classList.contains('hidden') ? 'More' : 'Less';
+};
+$('goEvent').onclick=()=>show('photos');
+$('backPhotos').onclick=()=>show('home');
+$('picFile').onchange=e=>{
+  const f=e.target.files&&e.target.files[0]; if(!f) return;
+  const url=URL.createObjectURL(f);
+  const el=document.createElement('div');
+  el.className='pic';
+  el.innerHTML=`<img alt="event photo" src="${url}"/>`;
+  $('picGrid').appendChild(el);
+  e.target.value='';
+};
 $('goHands').onclick=()=>startUrgent('red');
 $('goHot').onclick=()=>startUrgent('purple');
 $('urgentBack').onclick=()=>show('home');
@@ -958,7 +1011,7 @@ $('endChips').onclick=e=>{
 };
 
 $('goInvite').onclick=()=>{
-  job.title = ($('jobTitle').value||'').trim() || 'House job';
+  job.title = ($('jobTitle').value||'').trim() || 'Activity';
   if(!jobReady()) return;
   show('invite');
   renderInvite();
