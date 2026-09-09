@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-title" content="All Mates On Deck" />
+<meta name="theme-color" content="#0f1412" />
+<title>All Mates On Deck</title>
+<meta name="allmates-build" content="fake-sample" />
+<style>
+  :root {
+    --bg:#0f1412; --card:#1a221e; --hive:#c8f54a; --hive-dim:#8fb82e;
+    --text:#f4f7f2; --muted:#9aa89c; --line:#2a3530; --ok:#5ddea8; --warn:#f0c14a;
+    --red:#ff5a5a; --red-dim:#4a1818; --sea:#1a2a28;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    background:#070a09;color:var(--text);min-height:100dvh;display:flex;justify-content:center}
+  .phone{width:100%;max-width:390px;height:100dvh;max-height:100dvh;min-height:100dvh;background:var(--bg);
+    padding:16px 16px max(16px, env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:14px;overflow:hidden}
+  header{display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+  .logo{font-weight:700;letter-spacing:.03em;font-size:14px;line-height:1.2}
+  .logo span{color:var(--hive)}
+  .pill{font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:4px 10px}
+  .pill.warn{border-color:var(--warn);color:var(--warn)}
+  h1{font-size:26px;margin:0;font-weight:650}
+  .sub{color:var(--muted);font-size:13px;margin:0;line-height:1.35}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px}
+  .btn{appearance:none;border:0;border-radius:14px;padding:16px 16px;font-weight:650;font-size:17px;cursor:pointer;width:100%;font-family:inherit}
+  .btn-primary{background:var(--hive);color:#10200a}
+  .btn-primary:disabled{opacity:.35;cursor:not-allowed}
+  .btn-ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
+  .btn-alert{background:var(--red);color:#fff}
+  .tabs{display:flex;gap:6px}
+  .tab{flex:1;text-align:center;padding:10px 8px;border-radius:12px;font-size:13px;color:var(--muted);
+    background:var(--card);border:1px solid var(--line);cursor:pointer;font-weight:650;font-family:inherit}
+  .tab.on{color:#10200a;background:var(--hive);border-color:var(--hive)}
+  .list{display:flex;flex-direction:column;gap:8px;overflow:auto;-webkit-overflow-scrolling:touch}
+  .row{display:grid;grid-template-columns:28px 1fr auto;gap:10px;align-items:center;
+    padding:10px 12px;border-radius:12px;background:#121916;border:1px solid var(--line)}
+  .row.plain{grid-template-columns:1fr auto}
+  .row input{width:18px;height:18px;accent-color:var(--hive)}
+  .name{font-size:14px;font-weight:600}
+  .meta{font-size:11px;color:var(--muted)}
+  .badge{font-size:10px;text-transform:uppercase;letter-spacing:.04em;padding:4px 8px;
+    border-radius:999px;background:#243028;color:var(--hive)}
+  .live{display:flex;flex-direction:column;gap:8px;overflow:auto}
+  .live-row{display:flex;justify-content:space-between;align-items:flex-start;font-size:13px;gap:8px;
+    padding:8px 0;border-bottom:1px solid var(--line);cursor:pointer}
+  .live-row:last-child{border-bottom:0}
+  .ok{color:var(--ok)}.wait{color:var(--warn)}.taken{color:var(--muted);text-decoration:line-through}.win{color:var(--ok);font-weight:700}
+  footer{margin-top:auto;display:flex;flex-direction:column;gap:8px;flex-shrink:0}
+  .note{font-size:11px;color:var(--muted);text-align:center;line-height:1.4}
+  .hidden{display:none!important}
+  .screen{display:flex;flex-direction:column;gap:14px;flex:1;min-height:0;overflow:hidden}
+  .scroll{flex:1;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;gap:12px}
+  .msg{font-size:13px;line-height:1.45;background:#121916;border-radius:12px;padding:12px;border:1px solid var(--line)}
+  .msg em{color:var(--hive);font-style:normal}
+  .banner-red{background:var(--red-dim);border:1px solid var(--red);border-radius:14px;padding:12px 14px}
+  .banner-red strong{color:#ffb4b4;display:block;font-size:13px}
+  .banner-ok{background:#14301f;border:1px solid var(--ok);border-radius:14px;padding:12px 14px}
+  .banner-ok strong{color:var(--ok);display:block;font-size:15px}
+  .count{font-size:12px;color:var(--muted)}
+  .search{width:100%;padding:14px 16px;border-radius:14px;border:2px solid var(--hive-dim);
+    background:#121916;color:var(--text);font-size:18px;outline:none;font-family:inherit}
+  .search:focus{border-color:var(--hive)}
+  .search::placeholder{color:var(--muted)}
+  .field{width:100%;padding:14px 16px;border-radius:14px;border:1px solid var(--line);
+    background:#121916;color:var(--text);font-size:17px;outline:none;font-family:inherit}
+  .field:focus{border-color:var(--hive)}
+  .block-label{font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.02em;margin:0 0 6px}
+  .empty{text-align:center;padding:28px 12px;color:var(--muted);font-size:14px;line-height:1.4}
+  .job-card{text-align:left;width:100%;cursor:pointer;display:flex;flex-direction:column;gap:6px}
+  .job-card strong{font-size:16px}
+  .hands-row{display:flex;align-items:center;gap:10px}
+  .step{width:48px;height:48px;border-radius:14px;border:1px solid var(--line);background:var(--card);
+    color:var(--text);font-size:22px;font-weight:700;cursor:pointer;font-family:inherit}
+  .hands-n{flex:1;text-align:center;font-size:28px;font-weight:700;color:var(--hive)}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{appearance:none;border:1px solid var(--line);background:var(--card);color:var(--text);
+    border-radius:999px;padding:10px 12px;font-size:13px;font-weight:650;cursor:pointer;font-family:inherit}
+  .chip.on{border-color:var(--hive);background:#1c2a14;color:var(--hive)}
+  .meter{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .dot{width:16px;height:16px;border-radius:50%;border:2px solid var(--hive-dim);background:transparent}
+  .dot.on{background:var(--hive);border-color:var(--hive)}
+  .dot.wait{background:var(--warn);border-color:var(--warn)}
+  .dark{font-size:11px;color:var(--warn);text-align:center;letter-spacing:.03em;text-transform:uppercase}
+  .job-meta{font-size:12px;color:var(--muted);line-height:1.4}
+</style>
+</head>
+<body>
+<div class="phone">
+  <section id="screen-home" class="screen">
+    <header>
+      <div class="logo">ALL <span>MATES</span> ON DECK</div>
+      <div class="pill warn">Fake sample</div>
+    </header>
+    <div>
+      <h1>Neighbour jobs</h1>
+      <p class="sub">Invite mates. Some jobs need many hands, some need few. When the ship is full, stop.</p>
+    </div>
+    <div class="scroll">
+      <button type="button" class="card job-card" id="presetIkea">
+        <strong>IKEA wardrobe</strong>
+        <span class="job-meta">4 hands · Sat 12 Sep · time window 9am–4pm</span>
+      </button>
+      <button type="button" class="card job-card" id="presetGarage">
+        <strong>Garage tidy</strong>
+        <span class="job-meta">2 hands · Sun 13 Sep · specific time 10am</span>
+      </button>
+    </div>
+    <footer>
+      <button class="btn btn-primary" id="goPost">Post a house job</button>
+      <p class="dark">Fake roster only · no real texts · no real numbers</p>
+    </footer>
+  </section>
+
+  <section id="screen-post" class="screen hidden">
+    <header>
+      <div class="logo">ALL <span>MATES</span> ON DECK</div>
+      <div class="pill">Job</div>
+    </header>
+    <div class="scroll">
+      <div>
+        <div class="block-label">House job</div>
+        <input class="field" id="jobTitle" maxlength="48" placeholder="e.g. IKEA wardrobe" />
+      </div>
+      <div>
+        <div class="block-label">Hands needed</div>
+        <div class="hands-row">
+          <button type="button" class="step" id="handsMinus" aria-label="Fewer hands">−</button>
+          <div class="hands-n" id="handsN">4</div>
+          <button type="button" class="step" id="handsPlus" aria-label="More hands">+</button>
+        </div>
+        <p class="count" id="handsHint">Many hands. Ship full at 4 yes.</p>
+      </div>
+      <div>
+        <div class="block-label">When</div>
+        <div class="tabs" id="modeTabs">
+          <button type="button" class="tab on" data-mode="specific">Specific time</button>
+          <button type="button" class="tab" data-mode="window">Time window</button>
+        </div>
+      </div>
+      <div>
+        <div class="block-label">Day</div>
+        <div class="chips" id="dayChips"></div>
+      </div>
+      <div id="specificBlock">
+        <div class="block-label">Time</div>
+        <div class="chips" id="timeChips"></div>
+      </div>
+      <div id="windowBlock" class="hidden">
+        <div class="block-label">Window start</div>
+        <div class="chips" id="startChips"></div>
+        <div class="block-label" style="margin-top:10px">Window end</div>
+        <div class="chips" id="endChips"></div>
+        <p class="count" id="slotHint" style="margin-top:8px"></p>
+      </div>
+    </div>
+    <footer>
+      <button class="btn btn-primary" id="goInvite">Pick mates</button>
+      <button class="btn btn-ghost" id="backHome">Back</button>
+    </footer>
+  </section>
+
+  <section id="screen-invite" class="screen hidden">
+    <header>
+      <div class="logo">ALL <span>MATES</span> ON DECK</div>
+      <div class="pill">Pick</div>
+    </header>
+    <div>
+      <p class="sub" id="inviteSub">Tick who gets a fake text.</p>
+      <input class="search" id="nameSearch" type="search" enterkeyhint="search" autocomplete="off" placeholder="Find a name" />
+    </div>
+    <div class="list card" id="list" style="flex:1;min-height:0"></div>
+    <footer>
+      <button class="btn btn-primary" id="reviewBtn" disabled>Next</button>
+      <button class="btn btn-ghost" id="backPost">Back</button>
+      <p class="note">Made-up names · 0400 000 xxx · never sent</p>
+    </footer>
+  </section>
+
+  <section id="screen-confirm" class="screen hidden">
+    <header>
+      <div class="logo">ALL <span>MATES</span> ON DECK</div>
+      <div class="pill">Check</div>
+    </header>
+    <div>
+      <h1 id="confirmTitle">Send these?</h1>
+      <p class="sub" id="confirmSub">Fake texts only. Nobody is contacted.</p>
+    </div>
+    <div class="card msg" id="smsPreview"></div>
+    <div class="list card" id="confirmList" style="flex:1;min-height:0"></div>
+    <footer>
+      <button class="btn btn-primary" id="confirmSend">Yes · fake-send texts</button>
+      <button class="btn btn-ghost" id="backPick">Change list</button>
+    </footer>
+  </section>
+
+  <section id="screen-live" class="screen hidden">
+    <header>
+      <div class="logo">ALL <span>MATES</span> ON DECK</div>
+      <div class="pill" id="livePill">Filling</div>
+    </header>
+    <div>
+      <h1 id="liveTitle">Waiting on yes</h1>
+      <p class="sub" id="liveSub">Hands come aboard as mates reply.</p>
+    </div>
+    <div class="card" id="shipCard">
+      <div class="block-label" id="meterLabel">Hands aboard</div>
+      <div class="meter" id="meter"></div>
+    </div>
+    <div class="banner-ok hidden" id="fullBanner">
+      <strong>Ship full</strong>
+      <span class="meta">Stop inviting. Extra mates go to the wait-list.</span>
+    </div>
+    <div class="card live" id="liveList" style="flex:1;min-height:0"></div>
+    <footer>
+      <button class="btn btn-primary" id="nextBurst" disabled>Send more</button>
+      <button class="btn btn-ghost" id="seeWait">Wait-list</button>
+      <button class="btn btn-ghost" id="backInvite">Back</button>
+      <p class="note">Tap a row to cycle a fake reply. No real SMS.</p>
+    </footer>
+  </section>
+
+  <section id="screen-wait" class="screen hidden">
+    <header>
+      <div class="logo">ALL <span>MATES</span> ON DECK</div>
+      <div class="pill">Wait-list</div>
+    </header>
+    <div>
+      <h1>Wait-list</h1>
+      <p class="sub" id="waitSub">Ship is full. These mates stay on deck-standby.</p>
+    </div>
+    <div class="card live" id="waitList" style="flex:1;min-height:0"></div>
+    <footer>
+      <button class="btn btn-ghost" id="backLive">Back to ship</button>
+      <button class="btn btn-ghost" id="resetHome">New job</button>
+    </footer>
+  </section>
+</div>
+<script>
+const SAMPLE = [
+  {name:'Mia Chen',phone:'0400 000 000'},
+  {name:'Tom Blake',phone:'0400 000 001'},
+  {name:'Sara Nguyen',phone:'0400 000 002'},
+  {name:'James Patel',phone:'0400 000 003'},
+  {name:'Ava Kim',phone:'0400 000 004'},
+  {name:'Noah Walsh',phone:'0400 000 005'},
+  {name:'Lily Martin',phone:'0400 000 006'},
+  {name:'Owen Santos',phone:'0400 000 007'},
+  {name:'Zoe Wright',phone:'0400 000 008'},
+  {name:'Leo Rahman',phone:'0400 000 009'},
+  {name:'Emma Lee',phone:'0400 000 010'},
+  {name:'Jack Brown',phone:'0400 000 011'},
+  {name:'Helen Walker',phone:'0400 000 012'},
+  {name:'Priya Thompson',phone:'0400 000 013'},
+  {name:'Jan Rodriguez',phone:'0400 000 014'},
+  {name:'Claire Park',phone:'0400 000 015'},
+  {name:'Ruth Singh',phone:'0400 000 016'},
+  {name:'Ben Murphy',phone:'0400 000 017'},
+  {name:'Tahlia Taylor',phone:'0400 000 018'},
+  {name:'Lachlan Anderson',phone:'0400 000 019'},
+  {name:'Maya White',phone:'0400 000 020'},
+  {name:'Jordan Harris',phone:'0400 000 021'},
+  {name:'Olivia Hall',phone:'0400 000 022'},
+  {name:'Liam Allen',phone:'0400 000 023'}
+];
+const DAYS = [
+  {id:'sat', label:'Sat 12 Sep'},
+  {id:'sun', label:'Sun 13 Sep'},
+  {id:'mon', label:'Mon 14 Sep'}
+];
+const TIMES = ['08:00','09:00','10:00','11:00','13:00','14:00','16:00','18:00'];
+const $ = id => document.getElementById(id);
+function esc(s){
+  return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function surnameKey(name){
+  const parts = String(name||'').trim().split(/\s+/).filter(Boolean);
+  return (parts[parts.length-1]||'').toLocaleLowerCase();
+}
+SAMPLE.sort((a,b)=>{
+  const c = surnameKey(a.name).localeCompare(surnameKey(b.name), undefined, {sensitivity:'base'});
+  if (c) return c;
+  return a.name.localeCompare(b.name, undefined, {sensitivity:'base'});
+});
+
+let people = SAMPLE.map((p,i)=>({...p,id:i,on:false}));
+let job = blankJob();
+let nameQ = '';
+let pendingBurst = [];
+let sentCount = 0;
+let replies = [];
+let timers = [];
+
+function blankJob(){
+  return {
+    title:'',
+    hands:4,
+    mode:'specific',
+    day:'sat',
+    time:'09:00',
+    start:'09:00',
+    end:'16:00'
+  };
+}
+function show(id){
+  ['home','post','invite','confirm','live','wait'].forEach(s=>{
+    $('screen-'+s).classList.toggle('hidden', s!==id);
+  });
+}
+function handsWord(n){ return n===1 ? '1 hand' : `${n} hands`; }
+function peopleWord(n){ return n===1 ? '1 mate' : `${n} mates`; }
+function picked(){ return people.filter(p=>p.on); }
+function dayLabel(){ return (DAYS.find(d=>d.id===job.day)||DAYS[0]).label; }
+function hhmm(t){
+  const [h,m] = t.split(':').map(Number);
+  const am = h<12;
+  let h12 = h%12; if(!h12) h12=12;
+  return m ? `${h12}:${String(m).padStart(2,'0')}${am?'am':'pm'}` : `${h12}${am?'am':'pm'}`;
+}
+function toMin(t){ const [h,m]=t.split(':').map(Number); return h*60+m; }
+function slots(){
+  if(job.mode!=='window') return [];
+  const a=toMin(job.start), b=toMin(job.end);
+  if(!(b>a)) return [];
+  const out=[];
+  for(let t=a; t<b; t+=120){
+    out.push(`${hhmm(minsToT(t))}–${hhmm(minsToT(Math.min(t+120,b)))}`);
+  }
+  return out;
+}
+function minsToT(m){
+  const h=Math.floor(m/60), mm=m%60;
+  return `${String(h).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;
+}
+function whenLine(){
+  if(job.mode==='window') return `${dayLabel()} · window ${hhmm(job.start)}–${hhmm(job.end)}`;
+  return `${dayLabel()} · ${hhmm(job.time)}`;
+}
+function shipFull(){
+  return replies.filter(r=>r.kind==='yes').length >= job.hands;
+}
+function aboardN(){ return replies.filter(r=>r.kind==='yes').length; }
+
+function applyPreset(kind){
+  job = blankJob();
+  if(kind==='ikea'){
+    job.title='IKEA wardrobe';
+    job.hands=4;
+    job.mode='window';
+    job.day='sat';
+    job.start='09:00';
+    job.end='16:00';
+  } else {
+    job.title='Garage tidy';
+    job.hands=2;
+    job.mode='specific';
+    job.day='sun';
+    job.time='10:00';
+  }
+  people.forEach(p=>p.on=false);
+  sentCount=0; pendingBurst=[]; replies=[];
+  renderPost();
+  show('post');
+}
+
+function renderPost(){
+  $('jobTitle').value = job.title;
+  $('handsN').textContent = String(job.hands);
+  $('handsHint').textContent = job.hands<=2
+    ? `${handsWord(job.hands)}. Few hands. Ship full at ${job.hands} yes.`
+    : `${handsWord(job.hands)}. Many hands. Ship full at ${job.hands} yes.`;
+  [...document.querySelectorAll('#modeTabs .tab')].forEach(t=>{
+    t.classList.toggle('on', t.dataset.mode===job.mode);
+  });
+  $('specificBlock').classList.toggle('hidden', job.mode!=='specific');
+  $('windowBlock').classList.toggle('hidden', job.mode!=='window');
+  $('dayChips').innerHTML = DAYS.map(d=>
+    `<button type="button" class="chip ${job.day===d.id?'on':''}" data-day="${d.id}">${d.label}</button>`
+  ).join('');
+  const timeHtml = (sel, key) => TIMES.map(t=>
+    `<button type="button" class="chip ${job[key]===t?'on':''}" data-${sel}="${t}">${hhmm(t)}</button>`
+  ).join('');
+  $('timeChips').innerHTML = timeHtml('time','time');
+  $('startChips').innerHTML = timeHtml('start','start');
+  $('endChips').innerHTML = timeHtml('end','end');
+  const sl = slots();
+  $('slotHint').textContent = sl.length
+    ? `Mates can say “can’t this slot, can do that slot” inside ${sl.join(', ')}.`
+    : 'End must be after start.';
+}
+
+function renderInvite(){
+  const q = nameQ.trim().toLowerCase();
+  const rows = people.filter(p => !q || p.name.toLowerCase().includes(q));
+  $('inviteSub').textContent = `${job.title||'House job'} · ${handsWord(job.hands)} · ${whenLine()}`;
+  if(!rows.length){
+    $('list').innerHTML = `<div class="empty">${q?'No names match.':'Nobody on this fake roster.'}</div>`;
+  } else {
+    $('list').innerHTML = rows.map(p=>`<label class="row"><input type="checkbox" data-id="${p.id}" ${p.on?'checked':''}/>
+      <div><div class="name">${esc(p.name)}</div><div class="meta">${esc(p.phone)}</div></div>
+      <span class="badge">mate</span></label>`).join('');
+  }
+  const n = picked().length;
+  $('reviewBtn').disabled = n===0;
+  $('reviewBtn').textContent = n ? `Next · ${peopleWord(n)}` : 'Next';
+}
+
+function smsBody(name){
+  const who = name || 'Mia';
+  if(job.mode==='window'){
+    return `Hi <em>${esc(who)}</em> — it’s Al. ${esc(job.title)} · ${esc(whenLine())}. Need ${handsWord(job.hands)}. Tap a slot or yes →`;
+  }
+  return `Hi <em>${esc(who)}</em> — it’s Al. ${esc(job.title)} · ${esc(whenLine())}. Need ${handsWord(job.hands)}. Tap yes →`;
+}
+
+function renderConfirm(){
+  const all = picked();
+  pendingBurst = all.slice(sentCount, sentCount+8);
+  if(!pendingBurst.length){ pendingBurst = all.slice(0,8); sentCount=0; }
+  $('confirmTitle').textContent = `Send these ${pendingBurst.length}?`;
+  $('confirmSub').textContent = `From your ${all.length} picks. Fake texts only.`;
+  $('smsPreview').innerHTML = smsBody(pendingBurst[0]&&pendingBurst[0].name);
+  $('confirmList').innerHTML = pendingBurst.map(p=>`<div class="row plain">
+    <div><div class="name">${esc(p.name)}</div><div class="meta">${esc(p.phone)}</div></div>
+    <span class="badge">fake</span></div>`).join('');
+}
+
+function renderMeter(){
+  const n = aboardN();
+  const full = shipFull();
+  $('meterLabel').textContent = full
+    ? `Ship full · ${n}/${job.hands} ${job.hands===1?'hand':'hands'}`
+    : `${n}/${job.hands} ${job.hands===1?'hand':'hands'} aboard`;
+  let html = '';
+  for(let i=0;i<job.hands;i++){
+    html += `<span class="dot ${i<n?'on':''}"></span>`;
+  }
+  $('meter').innerHTML = html;
+  $('fullBanner').classList.toggle('hidden', !full);
+  $('liveTitle').textContent = full ? 'Ship full' : 'Waiting on yes';
+  $('liveTitle').classList.toggle('hidden', full);
+  $('liveSub').textContent = full
+    ? 'Stop inviting. Extra mates sit on the wait-list.'
+    : `${esc(job.title)} · ${whenLine()}`;
+  $('liveSub').classList.toggle('hidden', full);
+  $('livePill').textContent = full ? 'Ship full' : 'Filling';
+}
+
+function renderLive(){
+  renderMeter();
+  if(!replies.length){
+    $('liveList').innerHTML = `<div class="empty">No fake texts in this burst.</div>`;
+  } else {
+    const rank = k => k==='yes'?0 : k==='opened'?1 : k==='sent'?2 : 3;
+    $('liveList').innerHTML = replies.map((r,i)=>({r,i}))
+      .sort((a,b)=>rank(a.r.kind)-rank(b.r.kind))
+      .map(({r,i})=>{
+      const full = shipFull() && r.kind!=='yes';
+      let cls='wait', label=r.label;
+      if(r.kind==='yes'){ cls='ok'; }
+      else if(r.kind==='wait' || (full && r.kind!=='sent' && r.kind!=='opened')){ cls='taken'; label = r.kind==='wait' ? r.label : 'ship full · wait-list'; }
+      else if(r.kind==='opened'){ cls='wait'; }
+      return `<div class="live-row" data-ri="${i}"><span>${esc(r.name)}</span><span class="${cls}">${esc(label)}</span></div>`;
+    }).join('');
+  }
+  const remaining = picked().length - sentCount;
+  const full = shipFull();
+  $('nextBurst').disabled = full || remaining<=0;
+  $('nextBurst').textContent = full ? 'Ship full · stop' : (remaining>0 ? `Send next ${Math.min(8,remaining)}` : 'Done');
+}
+
+function renderWait(){
+  const extra = replies.filter(r=>r.kind==='wait' || (shipFull() && r.kind!=='yes'));
+  $('waitSub').textContent = extra.length
+    ? `${peopleWord(extra.length)} on standby. Ship already has ${handsWord(aboardN())}.`
+    : 'Nobody on the wait-list yet.';
+  $('waitList').innerHTML = extra.length
+    ? extra.map(r=>`<div class="live-row"><span>${esc(r.name)}</span><span class="taken">wait-list</span></div>`).join('')
+    : `<div class="empty">No extra mates. Invite more only if the ship is not full.</div>`;
+}
+
+function clearTimers(){ timers.forEach(t=>clearTimeout(t)); timers=[]; }
+
+function simulateBurst(burst){
+  const sl = slots();
+  burst.forEach((p,i)=>{
+    const t = setTimeout(()=>{
+      const row = replies.find(r=>r.id===p.id);
+      if(!row) return;
+      if(shipFull()){
+        row.kind='wait'; row.label='ship full · wait-list';
+        renderLive();
+        return;
+      }
+      if(job.mode==='window' && sl.length){
+        if(i%3===0){
+          row.kind='yes'; row.label=`Yes · ${sl[0]}`; row.slot=sl[0];
+        } else if(i%3===1){
+          const alt = sl[Math.min(sl.length-1, 1)] || sl[0];
+          row.kind='yes'; row.label=`can’t ${sl[0]}, can ${alt}`; row.slot=alt;
+        } else {
+          row.kind='opened'; row.label='opened';
+        }
+      } else {
+        if(i%3===1){ row.kind='yes'; row.label='Yes ✓'; }
+        else if(i%3===0){ row.kind='opened'; row.label='opened'; }
+        else { row.kind='sent'; row.label='…'; }
+      }
+      if(shipFull()){
+        replies.forEach(r=>{
+          if(r.kind!=='yes'){ r.kind='wait'; r.label='ship full · wait-list'; }
+        });
+      }
+      renderLive();
+    }, 500+i*400);
+    timers.push(t);
+  });
+}
+
+function cycleReply(i){
+  const r = replies[i]; if(!r) return;
+  const sl = slots();
+  const order = job.mode==='window' && sl.length
+    ? [
+        {kind:'sent', label:'sent…'},
+        {kind:'opened', label:'opened'},
+        {kind:'yes', label:`Yes · ${sl[0]}`, slot:sl[0]},
+        {kind:'yes', label:`can’t ${sl[0]}, can ${sl[Math.min(1,sl.length-1)]}`, slot:sl[Math.min(1,sl.length-1)]},
+        {kind:'wait', label:'ship full · wait-list'}
+      ]
+    : [
+        {kind:'sent', label:'sent…'},
+        {kind:'opened', label:'opened'},
+        {kind:'yes', label:'Yes ✓'},
+        {kind:'wait', label:'ship full · wait-list'}
+      ];
+  const idx = order.findIndex(o=>o.kind===r.kind && o.label===r.label);
+  const next = order[(idx+1+order.length)%order.length] || order[0];
+  Object.assign(r, next);
+  if(shipFull()){
+    replies.forEach(x=>{
+      if(x.kind!=='yes'){ x.kind='wait'; x.label='ship full · wait-list'; }
+    });
+  }
+  renderLive();
+}
+
+$('presetIkea').onclick=()=>applyPreset('ikea');
+$('presetGarage').onclick=()=>applyPreset('garage');
+$('goPost').onclick=()=>{
+  clearTimers();
+  job = blankJob();
+  people.forEach(p=>p.on=false);
+  sentCount=0; pendingBurst=[]; replies=[];
+  renderPost();
+  show('post');
+};
+$('backHome').onclick=()=>show('home');
+$('jobTitle').oninput=e=>{ job.title = e.target.value; };
+$('handsMinus').onclick=()=>{ job.hands=Math.max(1, job.hands-1); renderPost(); };
+$('handsPlus').onclick=()=>{ job.hands=Math.min(8, job.hands+1); renderPost(); };
+$('modeTabs').onclick=e=>{
+  const t=e.target.closest('.tab'); if(!t) return;
+  job.mode=t.dataset.mode;
+  renderPost();
+};
+$('dayChips').onclick=e=>{
+  const c=e.target.closest('[data-day]'); if(!c) return;
+  job.day=c.dataset.day; renderPost();
+};
+$('timeChips').onclick=e=>{
+  const c=e.target.closest('[data-time]'); if(!c) return;
+  job.time=c.dataset.time; renderPost();
+};
+$('startChips').onclick=e=>{
+  const c=e.target.closest('[data-start]'); if(!c) return;
+  job.start=c.dataset.start;
+  if(toMin(job.end)<=toMin(job.start)){
+    const next = TIMES.find(t=>toMin(t)>toMin(job.start));
+    if(next) job.end=next;
+  }
+  renderPost();
+};
+$('endChips').onclick=e=>{
+  const c=e.target.closest('[data-end]'); if(!c) return;
+  job.end=c.dataset.end; renderPost();
+};
+
+$('goInvite').onclick=()=>{
+  job.title = ($('jobTitle').value||'').trim() || 'House job';
+  if(job.mode==='window' && toMin(job.end)<=toMin(job.start)) return;
+  show('invite');
+  renderInvite();
+};
+$('backPost').onclick=()=>{ renderPost(); show('post'); };
+$('nameSearch').oninput=e=>{ nameQ=e.target.value||''; renderInvite(); };
+$('list').onchange=e=>{
+  const p=people.find(x=>x.id===+e.target.dataset.id);
+  if(p){ p.on=!!e.target.checked; renderInvite(); }
+};
+$('reviewBtn').onclick=()=>{
+  if(!picked().length) return;
+  show('confirm');
+  renderConfirm();
+};
+$('backPick').onclick=()=>show('invite');
+$('confirmSend').onclick=()=>{
+  if(!pendingBurst.length) return;
+  const burst = pendingBurst.filter(p=>p.on);
+  if(!burst.length) return;
+  sentCount += burst.length;
+  burst.forEach(p=>{
+    if(!replies.some(r=>r.id===p.id)){
+      replies.push({id:p.id,name:p.name,kind:'sent',label:'sent…'});
+    }
+  });
+  show('live');
+  renderLive();
+  simulateBurst(burst);
+};
+$('nextBurst').onclick=()=>{
+  if($('nextBurst').disabled) return;
+  show('invite');
+  setTimeout(()=>$('reviewBtn').click(), 50);
+};
+$('liveList').onclick=e=>{
+  const row=e.target.closest('[data-ri]'); if(!row) return;
+  cycleReply(+row.dataset.ri);
+};
+$('seeWait').onclick=()=>{ renderWait(); show('wait'); };
+$('backLive').onclick=()=>{ renderLive(); show('live'); };
+$('backInvite').onclick=()=>show('invite');
+$('resetHome').onclick=()=>{
+  clearTimers();
+  job=blankJob();
+  people.forEach(p=>p.on=false);
+  sentCount=0; pendingBurst=[]; replies=[]; nameQ='';
+  show('home');
+};
+
+renderPost();
+show('home');
+</script>
+</body>
+</html>
