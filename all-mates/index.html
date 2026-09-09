@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-title" content="All Mates On Deck" />
 <meta name="theme-color" content="#0f1412" />
 <title>All Mates On Deck</title>
-<meta name="allmates-build" content="fake-sample" />
+<meta name="allmates-build" content="multiday" />
 <style>
   :root {
     --bg:#0f1412; --card:#1a221e; --hive:#c8f54a; --hive-dim:#8fb82e;
@@ -87,6 +87,17 @@
   .dot.wait{background:var(--warn);border-color:var(--warn)}
   .dark{font-size:11px;color:var(--warn);text-align:center;letter-spacing:.03em;text-transform:uppercase}
   .job-meta{font-size:12px;color:var(--muted);line-height:1.4}
+  .say{background:#1c2a14;border:2px solid var(--hive);border-radius:16px;padding:14px 16px;
+    font-size:18px;font-weight:700;line-height:1.3;color:var(--hive)}
+  .say .dim{display:block;font-size:13px;font-weight:650;color:var(--muted);margin-top:6px}
+  .pack{flex:1;min-width:0;text-align:center;padding:14px 8px;border-radius:14px;font-size:16px;
+    font-weight:700;border:1px solid var(--line);background:var(--card);color:var(--text);
+    cursor:pointer;font-family:inherit}
+  .pack.on{border-color:var(--hive);background:#1c2a14;color:var(--hive);box-shadow:0 0 0 1px var(--hive)}
+  .chip.day{display:flex;flex-direction:column;align-items:center;gap:2px;border-radius:14px;
+    min-width:56px;padding:10px 8px;font-size:15px}
+  .chip.day .d{font-size:11px;font-weight:650;color:var(--muted)}
+  .chip.day.on .d{color:var(--hive-dim)}
 </style>
 </head>
 <body>
@@ -103,7 +114,7 @@
     <div class="scroll">
       <button type="button" class="card job-card" id="presetIkea">
         <strong>IKEA wardrobe</strong>
-        <span class="job-meta">4 hands · Sat 12 Sep · time window 9am–4pm</span>
+        <span class="job-meta">4 hands · Weekend · 6am to 10pm</span>
       </button>
       <button type="button" class="card job-card" id="presetGarage">
         <strong>Garage tidy</strong>
@@ -137,23 +148,29 @@
       </div>
       <div>
         <div class="block-label">When</div>
-        <div class="tabs" id="modeTabs">
-          <button type="button" class="tab on" data-mode="specific">Specific time</button>
-          <button type="button" class="tab" data-mode="window">Time window</button>
-        </div>
+        <div class="say" id="whenSay"></div>
       </div>
       <div>
-        <div class="block-label">Day</div>
+        <div class="block-label">Days — tap more than one</div>
+        <div class="tabs" id="dayPacks" style="margin-bottom:8px"></div>
         <div class="chips" id="dayChips"></div>
       </div>
-      <div id="specificBlock">
-        <div class="block-label">Time</div>
+      <div>
+        <div class="block-label">Time on those days</div>
+        <div class="tabs" id="modeTabs">
+          <button type="button" class="tab" data-mode="anytime">Any time</button>
+          <button type="button" class="tab on" data-mode="window">These hours</button>
+          <button type="button" class="tab" data-mode="specific">One time</button>
+        </div>
+      </div>
+      <div id="specificBlock" class="hidden">
+        <div class="block-label">Clock time</div>
         <div class="chips" id="timeChips"></div>
       </div>
-      <div id="windowBlock" class="hidden">
-        <div class="block-label">Window start</div>
+      <div id="windowBlock">
+        <div class="block-label">From</div>
         <div class="chips" id="startChips"></div>
-        <div class="block-label" style="margin-top:10px">Window end</div>
+        <div class="block-label" style="margin-top:10px">To</div>
         <div class="chips" id="endChips"></div>
         <p class="count" id="slotHint" style="margin-top:8px"></p>
       </div>
@@ -268,11 +285,18 @@ const SAMPLE = [
   {name:'Liam Allen',phone:'0400 000 023'}
 ];
 const DAYS = [
-  {id:'sat', label:'Sat 12 Sep'},
-  {id:'sun', label:'Sun 13 Sep'},
-  {id:'mon', label:'Mon 14 Sep'}
+  {id:'fri', short:'Fri', date:'11 Sep', label:'Fri 11 Sep'},
+  {id:'sat', short:'Sat', date:'12 Sep', label:'Sat 12 Sep'},
+  {id:'sun', short:'Sun', date:'13 Sep', label:'Sun 13 Sep'},
+  {id:'mon', short:'Mon', date:'14 Sep', label:'Mon 14 Sep'},
+  {id:'tue', short:'Tue', date:'15 Sep', label:'Tue 15 Sep'},
+  {id:'wed', short:'Wed', date:'16 Sep', label:'Wed 16 Sep'}
 ];
-const TIMES = ['08:00','09:00','10:00','11:00','13:00','14:00','16:00','18:00'];
+const PACKS = [
+  {id:'weekend', label:'Weekend', say:'Weekend', days:['sat','sun']},
+  {id:'span', label:'Sat to Mon', say:'Sat to Mon', days:['sat','sun','mon']}
+];
+const TIMES = ['06:00','08:00','09:00','10:00','11:00','13:00','14:00','16:00','18:00','22:00'];
 const $ = id => document.getElementById(id);
 function esc(s){
   return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -299,11 +323,11 @@ function blankJob(){
   return {
     title:'',
     hands:4,
-    mode:'specific',
-    day:'sat',
+    mode:'window',
+    days:['sat','sun'],
     time:'09:00',
-    start:'09:00',
-    end:'16:00'
+    start:'06:00',
+    end:'22:00'
   };
 }
 function show(id){
@@ -314,7 +338,20 @@ function show(id){
 function handsWord(n){ return n===1 ? '1 hand' : `${n} hands`; }
 function peopleWord(n){ return n===1 ? '1 mate' : `${n} mates`; }
 function picked(){ return people.filter(p=>p.on); }
-function dayLabel(){ return (DAYS.find(d=>d.id===job.day)||DAYS[0]).label; }
+function sameDays(a,b){
+  const x=[...a].slice().sort().join(',');
+  const y=[...b].slice().sort().join(',');
+  return x===y;
+}
+function selectedDays(){ return DAYS.filter(d => job.days.includes(d.id)); }
+function daysLine(){
+  const ds = selectedDays();
+  if(!ds.length) return '';
+  const pack = PACKS.find(p => sameDays(p.days, job.days));
+  if(pack) return pack.say;
+  if(ds.length===1) return ds[0].label;
+  return ds.map(d=>d.short).join(' + ');
+}
 function hhmm(t){
   const [h,m] = t.split(':').map(Number);
   const am = h<12;
@@ -322,10 +359,18 @@ function hhmm(t){
   return m ? `${h12}:${String(m).padStart(2,'0')}${am?'am':'pm'}` : `${h12}${am?'am':'pm'}`;
 }
 function toMin(t){ const [h,m]=t.split(':').map(Number); return h*60+m; }
+function hoursOk(){ return job.mode!=='window' || toMin(job.end)>toMin(job.start); }
 function slots(){
-  if(job.mode!=='window') return [];
+  const ds = selectedDays();
+  if(!ds.length) return [];
+  if(job.mode==='anytime') return ds.map(d=>d.short);
+  if(job.mode==='specific'){
+    if(ds.length>1) return ds.map(d=>`${d.short} ${hhmm(job.time)}`);
+    return [];
+  }
+  if(!hoursOk()) return [];
+  if(ds.length>1) return ds.map(d=>`${d.short} ${hhmm(job.start)}–${hhmm(job.end)}`);
   const a=toMin(job.start), b=toMin(job.end);
-  if(!(b>a)) return [];
   const out=[];
   for(let t=a; t<b; t+=120){
     out.push(`${hhmm(minsToT(t))}–${hhmm(minsToT(Math.min(t+120,b)))}`);
@@ -336,10 +381,30 @@ function minsToT(m){
   const h=Math.floor(m/60), mm=m%60;
   return `${String(h).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;
 }
-function whenLine(){
-  if(job.mode==='window') return `${dayLabel()} · window ${hhmm(job.start)}–${hhmm(job.end)}`;
-  return `${dayLabel()} · ${hhmm(job.time)}`;
+function whenSay(){
+  const days = daysLine();
+  if(!job.days.length){
+    return {big:'Pick the days', dim:'Tap Weekend, or tap every day mates can come.'};
+  }
+  if(job.mode==='anytime'){
+    return {big:`${days} · any time`, dim:'Any hour is fine. Mates pick a day.'};
+  }
+  if(job.mode==='window'){
+    if(!hoursOk()) return {big:'End must be after start', dim:'Tap a later “to” hour.'};
+    return {
+      big:`${days} · ${hhmm(job.start)} to ${hhmm(job.end)}`,
+      dim: job.days.length>1
+        ? 'Same hours on each of those days. Mates can swap a day or a slot.'
+        : 'Mates can say “can’t this slot, can do that slot”.'
+    };
+  }
+  if(job.days.length>1){
+    return {big:`${hhmm(job.time)} on ${days}`, dim:'Mates pick which day.'};
+  }
+  return {big:`${days} · ${hhmm(job.time)}`, dim:'One time. Yes or no.'};
 }
+function whenLine(){ return whenSay().big; }
+function jobReady(){ return job.days.length>0 && hoursOk(); }
 function shipFull(){
   return replies.filter(r=>r.kind==='yes').length >= job.hands;
 }
@@ -351,14 +416,14 @@ function applyPreset(kind){
     job.title='IKEA wardrobe';
     job.hands=4;
     job.mode='window';
-    job.day='sat';
-    job.start='09:00';
-    job.end='16:00';
+    job.days=['sat','sun'];
+    job.start='06:00';
+    job.end='22:00';
   } else {
     job.title='Garage tidy';
     job.hands=2;
     job.mode='specific';
-    job.day='sun';
+    job.days=['sun'];
     job.time='10:00';
   }
   people.forEach(p=>p.on=false);
@@ -378,8 +443,11 @@ function renderPost(){
   });
   $('specificBlock').classList.toggle('hidden', job.mode!=='specific');
   $('windowBlock').classList.toggle('hidden', job.mode!=='window');
+  $('dayPacks').innerHTML = PACKS.map(p=>
+    `<button type="button" class="pack ${sameDays(p.days, job.days)?'on':''}" data-pack="${p.id}">${p.label}</button>`
+  ).join('');
   $('dayChips').innerHTML = DAYS.map(d=>
-    `<button type="button" class="chip ${job.day===d.id?'on':''}" data-day="${d.id}">${d.label}</button>`
+    `<button type="button" class="chip day ${job.days.includes(d.id)?'on':''}" data-day="${d.id}">${d.short}<span class="d">${d.date}</span></button>`
   ).join('');
   const timeHtml = (sel, key) => TIMES.map(t=>
     `<button type="button" class="chip ${job[key]===t?'on':''}" data-${sel}="${t}">${hhmm(t)}</button>`
@@ -387,10 +455,18 @@ function renderPost(){
   $('timeChips').innerHTML = timeHtml('time','time');
   $('startChips').innerHTML = timeHtml('start','start');
   $('endChips').innerHTML = timeHtml('end','end');
+  const say = whenSay();
+  $('whenSay').innerHTML = `${esc(say.big)}${say.dim?`<span class="dim">${esc(say.dim)}</span>`:''}`;
   const sl = slots();
-  $('slotHint').textContent = sl.length
-    ? `Mates can say “can’t this slot, can do that slot” inside ${sl.join(', ')}.`
-    : 'End must be after start.';
+  if(job.mode==='window'){
+    $('slotHint').textContent = sl.length
+      ? (job.days.length>1
+        ? `Mates can say “can’t ${selectedDays()[0].short}, can ${selectedDays()[1]?selectedDays()[1].short:'another day'}”.`
+        : `Mates can say “can’t this slot, can do that slot” inside ${sl.join(', ')}.`)
+      : 'End must be after start.';
+  }
+  $('goInvite').disabled = !jobReady();
+  $('goInvite').textContent = job.days.length ? 'Pick mates' : 'Pick days first';
 }
 
 function renderInvite(){
@@ -411,10 +487,10 @@ function renderInvite(){
 
 function smsBody(name){
   const who = name || 'Mia';
-  if(job.mode==='window'){
-    return `Hi <em>${esc(who)}</em> — it’s Al. ${esc(job.title)} · ${esc(whenLine())}. Need ${handsWord(job.hands)}. Tap a slot or yes →`;
+  if(job.mode==='specific' && selectedDays().length===1){
+    return `Hi <em>${esc(who)}</em> — it’s Al. ${esc(job.title)} · ${esc(whenLine())}. Need ${handsWord(job.hands)}. Tap yes →`;
   }
-  return `Hi <em>${esc(who)}</em> — it’s Al. ${esc(job.title)} · ${esc(whenLine())}. Need ${handsWord(job.hands)}. Tap yes →`;
+  return `Hi <em>${esc(who)}</em> — it’s Al. ${esc(job.title)} · ${esc(whenLine())}. Need ${handsWord(job.hands)}. Tap a day or yes →`;
 }
 
 function renderConfirm(){
@@ -496,7 +572,7 @@ function simulateBurst(burst){
         renderLive();
         return;
       }
-      if(job.mode==='window' && sl.length){
+      if(sl.length){
         if(i%3===0){
           row.kind='yes'; row.label=`Yes · ${sl[0]}`; row.slot=sl[0];
         } else if(i%3===1){
@@ -524,7 +600,7 @@ function simulateBurst(burst){
 function cycleReply(i){
   const r = replies[i]; if(!r) return;
   const sl = slots();
-  const order = job.mode==='window' && sl.length
+  const order = sl.length
     ? [
         {kind:'sent', label:'sent…'},
         {kind:'opened', label:'opened'},
@@ -568,9 +644,18 @@ $('modeTabs').onclick=e=>{
   job.mode=t.dataset.mode;
   renderPost();
 };
+$('dayPacks').onclick=e=>{
+  const c=e.target.closest('[data-pack]'); if(!c) return;
+  const pack=PACKS.find(p=>p.id===c.dataset.pack); if(!pack) return;
+  job.days=pack.days.slice();
+  renderPost();
+};
 $('dayChips').onclick=e=>{
   const c=e.target.closest('[data-day]'); if(!c) return;
-  job.day=c.dataset.day; renderPost();
+  const id=c.dataset.day;
+  if(job.days.includes(id)) job.days=job.days.filter(d=>d!==id);
+  else job.days=DAYS.map(d=>d.id).filter(d=>d===id || job.days.includes(d));
+  renderPost();
 };
 $('timeChips').onclick=e=>{
   const c=e.target.closest('[data-time]'); if(!c) return;
@@ -592,7 +677,7 @@ $('endChips').onclick=e=>{
 
 $('goInvite').onclick=()=>{
   job.title = ($('jobTitle').value||'').trim() || 'House job';
-  if(job.mode==='window' && toMin(job.end)<=toMin(job.start)) return;
+  if(!jobReady()) return;
   show('invite');
   renderInvite();
 };
