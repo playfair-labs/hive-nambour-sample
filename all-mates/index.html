@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-title" content="All Mates On Deck" />
 <meta name="theme-color" content="#0f1412" />
 <title>All Mates On Deck</title>
-<meta name="allmates-build" content="lean-activities" />
+<meta name="allmates-build" content="join-gate" />
 <style>
   :root {
     --bg:#0f1412; --card:#1a221e; --hive:#c8f54a; --hive-dim:#8fb82e;
@@ -112,6 +112,8 @@
   .pic{aspect-ratio:1;border-radius:12px;background:#243028;border:1px solid var(--line);
     overflow:hidden;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px}
   .pic img{width:100%;height:100%;object-fit:cover}
+  .ghosts{font-size:22px;letter-spacing:.2em;color:var(--muted);margin:8px 0}
+  .mind{font-size:42px;text-align:center;line-height:1;margin:0}
 </style>
 </head>
 <body>
@@ -123,24 +125,29 @@
     </header>
     <div>
       <h1>Neighbour <s>jobs</s> activities</h1>
-      <p class="sub">What’s on. Some <s>jobs</s> activities need many hands, some need few. When the ship is full, stop.</p>
+      <p class="sub" id="homeSub">What’s on. Some <s>jobs</s> activities need many hands, some need few. When the ship is full, stop.</p>
     </div>
     <div class="scroll">
       <div class="block-label">On now / coming</div>
       <button type="button" class="card job-card" id="presetIkea">
         <strong>IKEA wardrobe</strong>
         <span class="job-meta">Coming · 4 hands · Weekend · 6am to 10pm</span>
+        <span class="job-meta" id="ikeaWho"></span>
       </button>
       <button type="button" class="card job-card" id="presetGarage">
         <strong>Garage tidy</strong>
         <span class="job-meta">Coming · 2 hands · Sun 13 Sep · 10am</span>
+        <span class="job-meta" id="garageWho"></span>
       </button>
       <button type="button" class="card job-card" id="goEvent">
         <strong>Street tidy</strong>
         <span class="job-meta">Today · event · 2 photos</span>
+        <span class="job-meta" id="eventWho"></span>
       </button>
+      <div id="myFirstCard" class="hidden"></div>
     </div>
     <footer>
+      <button class="btn btn-primary" id="goJoin">This sounds great</button>
       <button type="button" class="more-link" id="moreToggle">More</button>
       <div class="tuck hidden" id="moreDoors">
         <button class="btn btn-primary" id="goPost">Post an activity</button>
@@ -381,7 +388,7 @@
     </header>
     <div>
       <h1>Street tidy</h1>
-      <p class="sub">This <s>job</s> activity is now an event. Photos live here.</p>
+      <p class="sub" id="photoSub">This <s>job</s> activity is now an event. Photos live here.</p>
     </div>
     <div class="pics" id="picGrid">
       <div class="pic" style="background:#2a3a28">Sat morning</div>
@@ -393,6 +400,67 @@
       </label>
       <button class="btn btn-ghost" id="backPhotos">Back</button>
       <p class="note">Stays on this phone. Fake sample · not uploaded.</p>
+    </footer>
+  </section>
+
+  <section id="screen-tease" class="screen hidden">
+    <header>
+      <div class="logo">ALL <span>MATES</span> ON DECK</div>
+      <div class="pill">Looking in</div>
+    </header>
+    <div>
+      <h1 id="teaseTitle">Activity</h1>
+      <p class="sub" id="teaseWhen"></p>
+    </div>
+    <div class="card">
+      <div class="block-label">People are coming</div>
+      <div class="ghosts">● ● ●</div>
+      <p class="sub">Looks full of life. You can’t see who yet.</p>
+    </div>
+    <footer>
+      <button class="btn btn-primary" id="teaseJoin">This sounds great</button>
+      <button class="btn btn-ghost" id="teaseBack">Keep looking</button>
+    </footer>
+  </section>
+
+  <section id="screen-join" class="screen hidden">
+    <header>
+      <div class="logo">ALL <span>MATES</span> ON DECK</div>
+      <div class="pill">Join</div>
+    </header>
+    <div class="scroll">
+      <h1>Come aboard</h1>
+      <p class="sub">Neighbour <s>jobs</s> activities. Invite mates. When the ship is full, stop.</p>
+      <div class="card">
+        <p class="sub">You’re looking in. Not a member yet. The only way on is to post one <s>job</s> activity — the thing that’s been weighing on your mind.</p>
+      </div>
+    </div>
+    <footer>
+      <button class="btn btn-primary" id="joinYes">This sounds great</button>
+      <button class="btn btn-ghost" id="joinBack">Keep looking</button>
+    </footer>
+  </section>
+
+  <section id="screen-first" class="screen hidden">
+    <header>
+      <div class="logo">ALL <span>MATES</span> ON DECK</div>
+      <div class="pill">First activity</div>
+    </header>
+    <div class="scroll">
+      <p class="mind" aria-hidden="true">⚖</p>
+      <h1>What’s been weighing on your mind?</h1>
+      <p class="sub">The thing you’ve been putting off. Big or small. Not a fun invite — no tennis, no night out. First activity has to be the weight.</p>
+      <textarea class="field" id="firstText" rows="3" maxlength="80" placeholder="e.g. Garage has been staring at me" style="min-height:96px;resize:none"></textarea>
+      <p class="count" id="firstWarn"></p>
+      <div id="firstPic" class="pic hidden" style="max-width:160px"></div>
+    </div>
+    <footer>
+      <label class="btn btn-ghost" style="text-align:center">Text + picture
+        <input type="file" accept="image/*" hidden id="firstFile"/>
+      </label>
+      <button class="btn btn-primary" id="firstPost">Post this activity</button>
+      <button class="btn btn-ghost" id="firstBack">Back</button>
+      <p class="note">Text only is fine. Fake sample.</p>
     </footer>
   </section>
 </div>
@@ -470,7 +538,7 @@ function blankJob(){
   };
 }
 function show(id){
-  ['home','chefs','urgent','ublast','umate','post','invite','confirm','live','wait','photos'].forEach(s=>{
+  ['home','chefs','urgent','ublast','umate','post','invite','confirm','live','wait','photos','tease','join','first'].forEach(s=>{
     $('screen-'+s).classList.toggle('hidden', s!==id);
   });
 }
@@ -909,12 +977,71 @@ function openMate(){
     : 'Hot — minutes left. One tap.';
   show('umate');
 }
+const FUN = /tennis|party|brunch|drinks|movie night|night out|game night|picnic/i;
+let member = new URLSearchParams(location.search).has('member')
+  || sessionStorage.getItem('amod-member')==='1';
+if(new URLSearchParams(location.search).has('invite')){
+  member=false;
+  sessionStorage.removeItem('amod-member');
+}
+let firstPicUrl = '';
+let myFirst = null;
+function renderHome(){
+  $('homeSub').innerHTML = member
+    ? `What’s on. Some <s>jobs</s> activities need many hands, some need few. When the ship is full, stop.`
+    : `Looking in. You can see what’s on — not who is coming.`;
+  $('ikeaWho').textContent = member ? 'Mia Chen + 3 coming' : 'People are coming · names hidden';
+  $('garageWho').textContent = member ? 'Tom Blake + 1 coming' : 'People are coming · names hidden';
+  $('eventWho').textContent = member ? 'Helen Walker was there' : 'People were there · names hidden';
+  $('goJoin').classList.toggle('hidden', member);
+  $('moreToggle').classList.toggle('hidden', !member);
+  if(!member) $('moreDoors').classList.add('hidden');
+  if(myFirst){
+    $('myFirstCard').classList.remove('hidden');
+    $('myFirstCard').innerHTML = `<div class="card job-card"><strong>${esc(myFirst)}</strong><span class="job-meta">Your first activity · the weight</span></div>`;
+  }
+}
+function peek(title, when){
+  if(member) return false;
+  $('teaseTitle').textContent = title;
+  $('teaseWhen').textContent = when;
+  show('tease');
+  return true;
+}
 $('moreToggle').onclick=()=>{
   $('moreDoors').classList.toggle('hidden');
   $('moreToggle').textContent = $('moreDoors').classList.contains('hidden') ? 'More' : 'Less';
 };
-$('goEvent').onclick=()=>show('photos');
-$('backPhotos').onclick=()=>show('home');
+$('goEvent').onclick=()=>{
+  if(peek('Street tidy','Today · event · photos')) return;
+  $('photoSub').innerHTML = `This <s>job</s> activity is now an event. Photos live here.`;
+  show('photos');
+};
+$('goJoin').onclick=$('teaseJoin').onclick=()=>show('join');
+$('teaseBack').onclick=$('joinBack').onclick=()=>{ renderHome(); show('home'); };
+$('joinYes').onclick=()=>show('first');
+$('firstBack').onclick=()=>show('join');
+$('firstText').oninput=()=>{ $('firstWarn').textContent=''; };
+$('firstFile').onchange=e=>{
+  const f=e.target.files&&e.target.files[0]; if(!f) return;
+  firstPicUrl=URL.createObjectURL(f);
+  $('firstPic').classList.remove('hidden');
+  $('firstPic').innerHTML=`<img alt="" src="${firstPicUrl}"/>`;
+};
+$('firstPost').onclick=()=>{
+  const t=($('firstText').value||'').trim();
+  if(!t){ $('firstWarn').textContent='Write the thing on your mind. Text only is fine.'; return; }
+  if(FUN.test(t)){ $('firstWarn').textContent='That sounds like fun. First activity has to be the weight on your mind.'; return; }
+  myFirst=t;
+  member=true;
+  sessionStorage.setItem('amod-member','1');
+  renderHome();
+  show('home');
+};
+$('backPhotos').onclick=()=>{ renderHome(); show('home'); };
+$('photoSub').innerHTML = member
+  ? `This <s>job</s> activity is now an event. Photos live here.`
+  : `This <s>job</s> activity is now an event. People were there — you can’t see who.`;
 $('picFile').onchange=e=>{
   const f=e.target.files&&e.target.files[0]; if(!f) return;
   const url=URL.createObjectURL(f);
@@ -924,8 +1051,8 @@ $('picFile').onchange=e=>{
   $('picGrid').appendChild(el);
   e.target.value='';
 };
-$('goHands').onclick=()=>startUrgent('red');
-$('goHot').onclick=()=>startUrgent('purple');
+$('goHands').onclick=()=>{ if(!member){ show('join'); return; } startUrgent('red'); };
+$('goHot').onclick=()=>{ if(!member){ show('join'); return; } startUrgent('purple'); };
 $('urgentBack').onclick=()=>show('home');
 $('urgentNeeds').onclick=e=>{
   const c=e.target.closest('[data-uid]'); if(!c) return;
@@ -940,7 +1067,7 @@ $('uBackHome').onclick=()=>show('home');
 $('uCan').onclick=()=>mateAnswer(true);
 $('uCant').onclick=()=>mateAnswer(false);
 
-$('goChefs').onclick=()=>{ renderChefs(); show('chefs'); };
+$('goChefs').onclick=()=>{ if(peek('Tonight cook',"Mia’s place")) return; renderChefs(); show('chefs'); };
 $('backChefsHome').onclick=()=>show('home');
 $('chefWhen').onclick=e=>{
   const t=e.target.closest('.tab'); if(!t) return;
@@ -960,9 +1087,10 @@ $('chefHost').onclick=()=>{
   renderChefs();
 };
 
-$('presetIkea').onclick=()=>applyPreset('ikea');
-$('presetGarage').onclick=()=>applyPreset('garage');
+$('presetIkea').onclick=()=>{ if(peek('IKEA wardrobe','Weekend · 6am to 10pm · 4 hands')) return; applyPreset('ikea'); };
+$('presetGarage').onclick=()=>{ if(peek('Garage tidy','Sun 13 Sep · 10am · 2 hands')) return; applyPreset('garage'); };
 $('goPost').onclick=()=>{
+  if(!member){ show('join'); return; }
   clearTimers();
   job = blankJob();
   people.forEach(p=>p.on=false);
@@ -1059,10 +1187,12 @@ $('resetHome').onclick=()=>{
   job=blankJob();
   people.forEach(p=>p.on=false);
   sentCount=0; pendingBurst=[]; replies=[]; nameQ='';
+  renderHome();
   show('home');
 };
 
 renderPost();
+renderHome();
 show('home');
 </script>
 </body>
