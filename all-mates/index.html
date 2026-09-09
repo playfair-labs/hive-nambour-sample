@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-title" content="All Mates On Deck" />
 <meta name="theme-color" content="#0f1412" />
 <title>All Mates On Deck</title>
-<meta name="allmates-build" content="join-gate" />
+<meta name="allmates-build" content="hat-picker" />
 <style>
   :root {
     --bg:#0f1412; --card:#1a221e; --hive:#c8f54a; --hive-dim:#8fb82e;
@@ -114,6 +114,16 @@
   .pic img{width:100%;height:100%;object-fit:cover}
   .ghosts{font-size:22px;letter-spacing:.2em;color:var(--muted);margin:8px 0}
   .mind{font-size:42px;text-align:center;line-height:1;margin:0}
+  .face{position:relative;width:168px;height:168px;margin:8px auto;border-radius:50%;
+    overflow:hidden;background:#243028;border:2px solid var(--line)}
+  .face img{width:100%;height:100%;object-fit:cover}
+  .hat-svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+  .board{display:flex;gap:12px;overflow:auto;padding:4px 0 8px}
+  .aboard{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:64px}
+  .aboard .mini{width:56px;height:56px;border-radius:50%;overflow:hidden;position:relative;background:#243028;border:1px solid var(--line);flex-shrink:0}
+  .aboard .mini img{width:100%;height:100%;object-fit:cover}
+  .aboard .mini .hat-svg{position:absolute;inset:0}
+  .aboard .n{font-size:11px;color:var(--muted);font-weight:650}
 </style>
 </head>
 <body>
@@ -128,6 +138,8 @@
       <p class="sub" id="homeSub">What’s on. Some <s>jobs</s> activities need many hands, some need few. When the ship is full, stop.</p>
     </div>
     <div class="scroll">
+      <div class="block-label hidden" id="boardLabel">Who’s on board</div>
+      <div class="board hidden" id="board"></div>
       <div class="block-label">On now / coming</div>
       <button type="button" class="card job-card" id="presetIkea">
         <strong>IKEA wardrobe</strong>
@@ -441,6 +453,42 @@
     </footer>
   </section>
 
+  <section id="screen-selfie" class="screen hidden">
+    <header>
+      <div class="logo">ALL <span>MATES</span> ON DECK</div>
+      <div class="pill">Selfie</div>
+    </header>
+    <div>
+      <h1>Your face</h1>
+      <p class="sub">Hat goes on this. No costume. No outfit.</p>
+    </div>
+    <div class="face" id="selfieFace"><img id="selfieImg" alt="" class="hidden"/></div>
+    <footer>
+      <label class="btn btn-primary" style="text-align:center">Take selfie
+        <input type="file" accept="image/*" capture="user" hidden id="selfieFile"/>
+      </label>
+      <button class="btn btn-primary hidden" id="selfieNext">Pick a hat</button>
+      <button class="btn btn-ghost" id="selfieBack">Back</button>
+    </footer>
+  </section>
+
+  <section id="screen-hat" class="screen hidden">
+    <header>
+      <div class="logo">ALL <span>MATES</span> ON DECK</div>
+      <div class="pill">Hat</div>
+    </header>
+    <div>
+      <h1>Pick your hat</h1>
+      <p class="sub">Hat only. This is who shows when you’re turning up.</p>
+    </div>
+    <div class="face" id="hatFace"><img id="hatImg" alt=""/><svg class="hat-svg" id="hatSvg" viewBox="0 0 100 100"></svg></div>
+    <div class="chips" id="hatChips"></div>
+    <footer>
+      <button class="btn btn-primary" id="hatNext">That’s me</button>
+      <button class="btn btn-ghost" id="hatBack">Back</button>
+    </footer>
+  </section>
+
   <section id="screen-first" class="screen hidden">
     <header>
       <div class="logo">ALL <span>MATES</span> ON DECK</div>
@@ -538,7 +586,7 @@ function blankJob(){
   };
 }
 function show(id){
-  ['home','chefs','urgent','ublast','umate','post','invite','confirm','live','wait','photos','tease','join','first'].forEach(s=>{
+  ['home','chefs','urgent','ublast','umate','post','invite','confirm','live','wait','photos','tease','join','selfie','hat','first'].forEach(s=>{
     $('screen-'+s).classList.toggle('hidden', s!==id);
   });
 }
@@ -1000,6 +1048,7 @@ function renderHome(){
     $('myFirstCard').classList.remove('hidden');
     $('myFirstCard').innerHTML = `<div class="card job-card"><strong>${esc(myFirst)}</strong><span class="job-meta">Your first activity · the weight</span></div>`;
   }
+  renderBoard();
 }
 function peek(title, when){
   if(member) return false;
@@ -1019,8 +1068,66 @@ $('goEvent').onclick=()=>{
 };
 $('goJoin').onclick=$('teaseJoin').onclick=()=>show('join');
 $('teaseBack').onclick=$('joinBack').onclick=()=>{ renderHome(); show('home'); };
-$('joinYes').onclick=()=>show('first');
-$('firstBack').onclick=()=>show('join');
+const HATS = [
+  {id:'sailor', label:'Sailor cap'},
+  {id:'pirate', label:'Pirate hat'},
+  {id:'captain', label:'Captain cap'},
+  {id:'beret', label:'French beret'},
+  {id:'turban', label:'Turban'}
+];
+function hatMarkup(id){
+  if(id==='sailor') return '<ellipse cx="50" cy="30" rx="40" ry="11" fill="#f4f7f2"/><rect x="20" y="12" width="60" height="18" rx="9" fill="#f4f7f2"/><rect x="20" y="22" width="60" height="7" fill="#1a2744"/>';
+  if(id==='pirate') return '<path d="M8 34 Q50 6 92 34 L80 40 Q50 20 20 40 Z" fill="#141414"/><circle cx="50" cy="18" r="5" fill="#c8f54a"/>';
+  if(id==='captain') return '<ellipse cx="50" cy="38" rx="42" ry="9" fill="#1a2744"/><rect x="26" y="10" width="48" height="24" rx="10" fill="#1a2744"/><rect x="38" y="18" width="24" height="6" rx="2" fill="#c8a227"/>';
+  if(id==='beret') return '<ellipse cx="46" cy="26" rx="38" ry="16" fill="#5a1d33"/><circle cx="80" cy="18" r="5" fill="#5a1d33"/>';
+  return '<path d="M16 42 Q22 10 50 8 Q78 10 84 42 Q50 28 16 42 Z" fill="#c8a227"/><path d="M22 38 Q50 18 78 38" stroke="#8a7020" fill="none" stroke-width="3"/>';
+}
+let selfieUrl = '';
+let myHat = 'sailor';
+function paintHat(){
+  $('hatSvg').innerHTML = hatMarkup(myHat);
+  [...document.querySelectorAll('#hatChips .chip')].forEach(c=>c.classList.toggle('on', c.dataset.hat===myHat));
+}
+function faceHtml(photo, hat, color){
+  const img = photo ? `<img alt="" src="${photo}"/>` : `<div style="width:100%;height:100%;background:${color||'#243028'}"></div>`;
+  return `${img}<svg class="hat-svg" viewBox="0 0 100 100">${hatMarkup(hat)}</svg>`;
+}
+function renderBoard(){
+  const showB = member;
+  $('boardLabel').classList.toggle('hidden', !showB);
+  $('board').classList.toggle('hidden', !showB);
+  if(!showB) return;
+  const row = [
+    {name:'You', photo:selfieUrl, hat:myHat, color:'#3a4a20'},
+    {name:'Mia', photo:'', hat:'sailor', color:'#3a5a48'},
+    {name:'Tom', photo:'', hat:'pirate', color:'#4a3a28'},
+    {name:'Sara', photo:'', hat:'beret', color:'#3a2a40'}
+  ];
+  $('board').innerHTML = row.map(p=>`<div class="aboard"><div class="mini">${faceHtml(p.photo,p.hat,p.color)}</div><div class="n">${esc(p.name)}</div></div>`).join('');
+}
+$('joinYes').onclick=()=>show('selfie');
+$('selfieBack').onclick=()=>show('join');
+$('selfieFile').onchange=e=>{
+  const f=e.target.files&&e.target.files[0]; if(!f) return;
+  selfieUrl=URL.createObjectURL(f);
+  $('selfieImg').src=selfieUrl;
+  $('selfieImg').classList.remove('hidden');
+  $('hatImg').src=selfieUrl;
+  $('selfieNext').classList.remove('hidden');
+};
+$('selfieNext').onclick=()=>{
+  if(!selfieUrl) return;
+  $('hatChips').innerHTML = HATS.map(h=>`<button type="button" class="chip ${myHat===h.id?'on':''}" data-hat="${h.id}">${h.label}</button>`).join('');
+  paintHat();
+  show('hat');
+};
+$('hatChips').onclick=e=>{
+  const c=e.target.closest('[data-hat]'); if(!c) return;
+  myHat=c.dataset.hat; paintHat();
+};
+$('hatNext').onclick=()=>show('first');
+$('hatBack').onclick=()=>show('selfie');
+$('firstBack').onclick=()=>show('hat');
 $('firstText').oninput=()=>{ $('firstWarn').textContent=''; };
 $('firstFile').onchange=e=>{
   const f=e.target.files&&e.target.files[0]; if(!f) return;
