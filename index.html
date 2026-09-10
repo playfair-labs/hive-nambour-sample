@@ -49,6 +49,7 @@
   .note{font-size:11px;color:var(--muted);text-align:center;line-height:1.4}
   .hidden{display:none!important}
   .screen{display:flex;flex-direction:column;gap:14px;flex:1;min-height:0;overflow:hidden}
+  #screen-home{overflow-y:auto;-webkit-overflow-scrolling:touch}
   /* Invite pick: top chrome fixed, list scrolls, Next/Back pinned */
   #screen-invite{gap:10px}
   #screen-invite > header,
@@ -109,6 +110,10 @@
     <a class="card" href="all-mates/" style="display:block;text-decoration:none;color:inherit">
       <strong style="font-size:15px">All Mates On Deck</strong>
       <p class="sub" style="margin-top:4px">Neighbour jobs · fake sample · same invite loop</p>
+    </a>
+    <a class="card" href="decisions/" style="display:block;text-decoration:none;color:inherit">
+      <strong style="font-size:15px">Decisions</strong>
+      <p class="sub" style="margin-top:4px">One OK · talk-back · fake sample</p>
     </a>
     <footer>
       <button class="btn btn-primary" id="goPick">Pick people</button>
