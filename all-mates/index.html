@@ -5,18 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-title" content="All Mates On Deck" />
-<meta name="theme-color" content="#0f1412" />
+<meta name="theme-color" content="#f3ead8" />
 <title>All Mates On Deck</title>
-<meta name="allmates-build" content="pages-p0-face" />
+<meta name="allmates-build" content="pages-p0-ad" />
 <style>
   :root {
-    --bg:#0f1412; --card:#1a221e; --hive:#c8f54a; --hive-dim:#8fb82e;
-    --text:#f4f7f2; --muted:#9aa89c; --line:#2a3530; --ok:#5ddea8; --warn:#f0c14a;
-    --red:#ff5a5a; --red-dim:#4a1818; --sea:#1a2a28; --hot:#7b4dff; --hot-dim:#2a1844;
+    --bg:#f3ead8; --card:#fffdf6; --hive:#c8f54a; --hive-dim:#6a9a22;
+    --text:#1a2430; --muted:#5c6570; --line:#d7ccb6; --ok:#2a8f62; --warn:#c47a1a;
+    --red:#d13b3b; --red-dim:#f3d4d4; --sea:#cfe8f2; --hot:#6b3dff; --hot-dim:#ece4ff;
+    --ink:#1a1a1a; --navy:#1b2a4a; --water:#4aa3d4;
   }
   *{box-sizing:border-box}
   body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-    background:#070a09;color:var(--text);min-height:100dvh;display:flex;justify-content:center}
+    background:#e4d8c0;color:var(--text);min-height:100dvh;display:flex;justify-content:center}
   .phone{width:100%;max-width:390px;height:100dvh;max-height:100dvh;min-height:100dvh;background:var(--bg);
     padding:16px 16px max(16px, env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:14px;overflow:hidden}
   header{display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
@@ -36,7 +37,7 @@
   .btn-can{background:var(--ok);color:#10200a;font-size:28px;padding:26px}
   .btn-cant{background:var(--card);color:var(--text);border:1px solid var(--line);font-size:28px;padding:26px}
   .banner-hot{background:var(--hot-dim);border:1px solid var(--hot);border-radius:14px;padding:12px 14px}
-  .banner-hot strong{color:#d7c2ff;display:block;font-size:15px}
+  .banner-hot strong{color:#4a28a0;display:block;font-size:15px}
   .thin{font-size:18px;font-weight:700;letter-spacing:.01em}
   .tabs{display:flex;gap:6px}
   .tab{flex:1;text-align:center;padding:10px 8px;border-radius:12px;font-size:13px;color:var(--muted);
@@ -45,13 +46,13 @@
   .list{display:flex;flex-direction:column;gap:8px;overflow:auto;-webkit-overflow-scrolling:touch}
   .row-face{width:28px;height:28px;border-radius:50%;object-fit:cover;display:block}
   .row{display:grid;grid-template-columns:28px 28px 1fr auto;gap:10px;align-items:center;
-    padding:10px 12px;border-radius:12px;background:#121916;border:1px solid var(--line)}
+    padding:10px 12px;border-radius:12px;background:var(--card);border:1px solid var(--line)}
   .row.plain{grid-template-columns:1fr auto}
   .row input{width:18px;height:18px;accent-color:var(--hive)}
   .name{font-size:14px;font-weight:600}
   .meta{font-size:11px;color:var(--muted)}
   .badge{font-size:10px;text-transform:uppercase;letter-spacing:.04em;padding:4px 8px;
-    border-radius:999px;background:#243028;color:var(--hive)}
+    border-radius:999px;background:#eef5d6;color:var(--navy)}
   .live{display:flex;flex-direction:column;gap:8px;overflow:auto}
   .live-row{display:flex;justify-content:space-between;align-items:flex-start;font-size:13px;gap:8px;
     padding:8px 0;border-bottom:1px solid var(--line);cursor:pointer}
@@ -62,19 +63,19 @@
   .hidden{display:none!important}
   .screen{display:flex;flex-direction:column;gap:14px;flex:1;min-height:0;overflow:hidden}
   .scroll{flex:1;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;gap:12px}
-  .msg{font-size:13px;line-height:1.45;background:#121916;border-radius:12px;padding:12px;border:1px solid var(--line)}
+  .msg{font-size:13px;line-height:1.45;background:var(--card);border-radius:12px;padding:12px;border:1px solid var(--line)}
   .msg em{color:var(--hive);font-style:normal}
   .banner-red{background:var(--red-dim);border:1px solid var(--red);border-radius:14px;padding:12px 14px}
-  .banner-red strong{color:#ffb4b4;display:block;font-size:13px}
-  .banner-ok{background:#14301f;border:1px solid var(--ok);border-radius:14px;padding:12px 14px}
+  .banner-red strong{color:#8a2020;display:block;font-size:13px}
+  .banner-ok{background:#e4f5ea;border:1px solid var(--ok);border-radius:14px;padding:12px 14px}
   .banner-ok strong{color:var(--ok);display:block;font-size:15px}
   .count{font-size:12px;color:var(--muted)}
   .search{width:100%;padding:14px 16px;border-radius:14px;border:2px solid var(--hive-dim);
-    background:#121916;color:var(--text);font-size:18px;outline:none;font-family:inherit}
+    background:#fff;color:var(--text);font-size:18px;outline:none;font-family:inherit}
   .search:focus{border-color:var(--hive)}
   .search::placeholder{color:var(--muted)}
   .field{width:100%;padding:14px 16px;border-radius:14px;border:1px solid var(--line);
-    background:#121916;color:var(--text);font-size:17px;outline:none;font-family:inherit}
+    background:#fff;color:var(--text);font-size:17px;outline:none;font-family:inherit}
   .field:focus{border-color:var(--hive)}
   .block-label{font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.02em;margin:0 0 6px}
   .empty{text-align:center;padding:28px 12px;color:var(--muted);font-size:14px;line-height:1.4}
@@ -87,20 +88,20 @@
   .chips{display:flex;flex-wrap:wrap;gap:8px}
   .chip{appearance:none;border:1px solid var(--line);background:var(--card);color:var(--text);
     border-radius:999px;padding:10px 12px;font-size:13px;font-weight:650;cursor:pointer;font-family:inherit}
-  .chip.on{border-color:var(--hive);background:#1c2a14;color:var(--hive)}
+  .chip.on{border-color:var(--navy);background:#eef5d6;color:var(--navy)}
   .meter{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
   .dot{width:16px;height:16px;border-radius:50%;border:2px solid var(--hive-dim);background:transparent}
   .dot.on{background:var(--hive);border-color:var(--hive)}
   .dot.wait{background:var(--warn);border-color:var(--warn)}
   .dark{font-size:11px;color:var(--warn);text-align:center;letter-spacing:.03em;text-transform:uppercase}
   .job-meta{font-size:12px;color:var(--muted);line-height:1.4}
-  .say{background:#1c2a14;border:2px solid var(--hive);border-radius:16px;padding:14px 16px;
-    font-size:18px;font-weight:700;line-height:1.3;color:var(--hive)}
+  .say{background:#eef5d6;border:2px solid var(--navy);border-radius:16px;padding:14px 16px;
+    font-size:18px;font-weight:700;line-height:1.3;color:var(--navy)}
   .say .dim{display:block;font-size:13px;font-weight:650;color:var(--muted);margin-top:6px}
   .pack{flex:1;min-width:0;text-align:center;padding:14px 8px;border-radius:14px;font-size:16px;
     font-weight:700;border:1px solid var(--line);background:var(--card);color:var(--text);
     cursor:pointer;font-family:inherit}
-  .pack.on{border-color:var(--hive);background:#1c2a14;color:var(--hive);box-shadow:0 0 0 1px var(--hive)}
+  .pack.on{border-color:var(--navy);background:#eef5d6;color:var(--navy);box-shadow:0 0 0 1px var(--navy)}
   .chip.day{display:flex;flex-direction:column;align-items:center;gap:2px;border-radius:14px;
     min-width:56px;padding:10px 8px;font-size:15px}
   .chip.day .d{font-size:11px;font-weight:650;color:var(--muted)}
@@ -110,13 +111,13 @@
     padding:8px;cursor:pointer;font-family:inherit;width:100%;text-align:center}
   .tuck{display:flex;flex-direction:column;gap:8px}
   .pics{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-  .pic{aspect-ratio:1;border-radius:12px;background:#243028;border:1px solid var(--line);
+  .pic{aspect-ratio:1;border-radius:12px;background:#efe6d2;border:1px solid var(--line);
     overflow:hidden;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px}
   .pic img{width:100%;height:100%;object-fit:cover}
   .ghosts{font-size:22px;letter-spacing:.2em;color:var(--muted);margin:8px 0}
   .mind{font-size:42px;text-align:center;line-height:1;margin:0}
   .face{position:relative;width:168px;height:168px;margin:36px auto 8px;border-radius:50%;
-    overflow:hidden;background:#243028;border:2px solid var(--line)}
+    overflow:hidden;background:#efe6d2;border:2px solid var(--line)}
   #hatFace{overflow:visible;margin-top:80px}
   #screen-hat{overflow:visible}
   .face img{width:100%;height:100%;object-fit:cover;border-radius:50%;display:block}
@@ -126,37 +127,35 @@
   .aboard .mini{width:56px;height:70px;overflow:visible;position:relative;background:transparent;border:0;flex-shrink:0}
   .aboard .n{font-size:11px;color:var(--muted);font-weight:650}
   .phone{position:relative}
-  #screen-detail{position:absolute;inset:0;padding:0;gap:0;margin:0;z-index:4;background:#071018}
+  #screen-detail{position:absolute;inset:0;padding:0;gap:0;margin:0;z-index:4;background:#e8f4f8}
   .flick{height:100%;overflow-y:auto;scroll-snap-type:y mandatory;-webkit-overflow-scrolling:touch}
   .hero,.boat-pane,.after-pane{min-height:100%;height:100%;scroll-snap-align:start;scroll-snap-stop:always;position:relative}
-  .hero{display:flex;flex-direction:column;background:#0a0e0c}
+  .hero{display:flex;flex-direction:column;background:#f3ead8}
   .hero-photo{flex:2 1 66%;min-height:0;position:relative}
   .hero-photo svg{width:100%;height:100%;display:block}
   .hero-copy{flex:1 1 34%;padding:14px 16px max(16px, env(safe-area-inset-bottom));display:flex;flex-direction:column;justify-content:flex-end;gap:4px}
-  .hero-kicker{font-size:11px;font-weight:800;letter-spacing:.12em;color:var(--hive);text-transform:uppercase}
+  .hero-kicker{font-size:11px;font-weight:800;letter-spacing:.12em;color:var(--navy);text-transform:uppercase}
   .flick-hint{font-size:12px;color:var(--muted);margin-top:8px}
   .back-fab{position:absolute;top:max(10px, env(safe-area-inset-top));left:12px;z-index:5;
     width:auto;padding:8px 12px;font-size:13px;border-radius:999px}
-  .boat-pane{background:linear-gradient(180deg,#0a2430 0%,#071018 55%,#041016 100%);
+  .boat-pane{background:linear-gradient(180deg,#d7eef6 0%,#c5e4ef 55%,#b7dce8 100%);
     display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px 12px}
   .craft-wrap{position:relative;width:min(96%,360px)}
   .craft-wrap svg.hull{width:100%;height:auto;display:block;position:relative;z-index:1}
   .tub-tilt{position:relative;z-index:3;transform-origin:50% 70%;transition:transform .7s cubic-bezier(.22,.8,.25,1)}
-  svg.hull.face-left{transform:scaleX(-1)}
-  .facing-left.tipped .tub-tilt{transform:rotate(-16deg) translate(6px,-12px);transform-origin:78% 70%}
+  .facing-left.tipped .tub-tilt{transform:none}
   .facing-left.level .tub-tilt{transform:none}
   .facing-right .tub-tilt{transform:scaleX(-1)}
   .facing-right .seat{transform:translate(-50%,-70%) scaleX(-1)}
-  .water-line{position:absolute;left:-6%;right:-6%;bottom:26%;height:3px;z-index:4;pointer-events:none;
-    background:linear-gradient(90deg,transparent,#7ee0c8,#3a8aaa,#7ee0c8,transparent);
-    box-shadow:0 1px 0 #0a2430}
-  .water-fill{position:absolute;left:-10%;right:-10%;bottom:0;height:32%;z-index:2;pointer-events:none;
-    background:linear-gradient(180deg,rgba(50,130,140,.4),rgba(8,24,28,.75))}
+  .water-line{position:absolute;left:-8%;right:-8%;bottom:22%;height:4px;z-index:4;pointer-events:none;
+    background:#4aa3d4;border-radius:4px}
+  .water-fill{position:absolute;left:-10%;right:-10%;bottom:0;height:28%;z-index:2;pointer-events:none;
+    background:linear-gradient(180deg,#7ec8e8,#4aa3d4)}
   .seat{position:absolute;width:52px;height:72px;transform:translate(-50%,-70%);display:flex;flex-direction:column;align-items:center;z-index:5}
   .seat .mini{width:52px;height:64px;overflow:visible;position:relative;border:0;background:transparent}
   .bust{position:relative;width:48px;height:62px}
   .shoulders{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:46px;height:22px;
-    background:var(--skin,#3a4a20);border-radius:22px 22px 10px 10px;border:2px solid #c8a227}
+    background:var(--skin,#c4a078);border-radius:22px 22px 10px 10px;border:2px solid var(--navy)}
   .seat.crew .shoulders{border-color:var(--hive-dim)}
   .head{position:absolute;top:0;left:50%;transform:translateX(-50%);width:36px;height:36px}
   .head img{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;border:2px solid #c8a227;background:#243028}
@@ -167,17 +166,21 @@
   .ghost-face{width:100%;height:100%;border-radius:50%;background:#1a2420;border:2px solid var(--hive-dim)}
   .q-seat{width:36px;height:36px;border-radius:50%;border:2px dashed var(--hive);color:var(--hive);
     display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;background:#121916}
-  .after-pane{display:flex;flex-direction:column;background:#0a0e0c}
+  .after-pane{display:flex;flex-direction:column;background:#eef6ea}
   .after-pane .hero-photo{flex:2 1 66%}
   .after-pane .hero-copy{flex:1 1 34%}
-  .feed-card{display:grid;grid-template-columns:118px 1fr;gap:12px;align-items:center}
-  .feed-craft{width:118px;height:72px}
-  .feed-craft svg{width:100%;height:100%}
-  .feed-craft .water-fill{height:38%}
-  .feed-craft .shoulders{width:16px;height:8px;border-width:1px}
-  .feed-craft .head{width:14px;height:14px}
-  .feed-craft .head img,.feed-craft .ghost-face,.feed-craft .q-seat{border-width:1px}
-  .feed-craft .q-seat{width:14px;height:14px;font-size:10px}
+  .need-row{display:grid;grid-template-columns:56px 1fr 44px;gap:10px;align-items:center;
+    width:100%;text-align:left;cursor:pointer;padding:10px 12px}
+  .need-row.no-popeye{grid-template-columns:56px 1fr}
+  .need-who{width:56px;height:70px}
+  .need-boat{width:100%;height:78px}
+  .need-boat svg{width:100%;height:100%;display:block}
+  .popeye{width:44px;height:56px}
+  .popeye svg{width:100%;height:100%;display:block}
+  .hat-name{font-family:-apple-system,BlinkMacSystemFont,sans-serif}
+  .ad-icon{width:100%;height:100%}
+  .ad-icon svg{width:100%;height:100%;display:block}
+  .ad-icon.facing-right svg{transform:scaleX(-1)}
   .craft-rail{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;
     -webkit-overflow-scrolling:touch;padding:8px 4px 12px;margin:0 -4px}
   .craft-pick{flex:0 0 82%;scroll-snap-align:center;background:var(--card);border:2px solid var(--line);
@@ -197,7 +200,7 @@
   .agree-bar{position:absolute;left:12px;right:12px;bottom:max(12px, env(safe-area-inset-bottom));
     display:flex;flex-direction:column;gap:8px;z-index:3}
   .agree-bar .btn{font-size:16px;padding:14px}
-  .ping-card{background:#121916;border:1px solid var(--hive-dim);border-radius:16px;padding:16px}
+  .ping-card{background:var(--card);border:1px solid var(--hive-dim);border-radius:16px;padding:16px}
   .ping-card strong{display:block;font-size:18px;margin-bottom:6px}
 </style>
 </head>
@@ -209,52 +212,35 @@
       <div class="pill warn">Fake sample</div>
     </header>
     <div>
-      <h1>Neighbour <s>jobs</s> activities</h1>
+      <h1>Who needs a mate</h1>
       <p class="sub" id="homeSub">What’s on. Some <s>jobs</s> activities need many hands, some need few. When the ship is full, stop.</p>
     </div>
     <div class="scroll">
       <div class="block-label hidden" id="boardLabel">Who’s on board</div>
       <div class="board hidden" id="board"></div>
       <div class="block-label">On now / coming</div>
-      <button type="button" class="card job-card feed-card" id="presetLift">
-        <div class="feed-craft" id="liftCraft" data-extra="1" data-quick="1"></div>
-        <div>
-          <strong>Lift something heavy</strong>
-          <span class="job-meta" id="liftWho"></span>
-        </div>
+      <button type="button" class="card need-row" id="presetLift" aria-label="Lift something heavy">
+        <div class="need-who" id="liftWhoFace"></div>
+        <div class="need-boat" id="liftCraft" data-extra="1" data-quick="1"></div>
+        <div class="popeye" id="liftPopeye"></div>
       </button>
-      <button type="button" class="card job-card feed-card" id="presetBrisbane">
-        <div class="feed-craft" id="brisbaneCraft" data-extra="1"></div>
-        <div>
-          <strong>Anyone going Brisbane?</strong>
-          <span class="job-meta">Next 4 weeks · anytime</span>
-          <span class="job-meta">Pickup at Al’s brother’s</span>
-          <span class="job-meta" id="brisbaneWho"></span>
-        </div>
+      <button type="button" class="card need-row no-popeye" id="presetBrisbane" aria-label="Anyone going Brisbane">
+        <div class="need-who" id="brisbaneWhoFace"></div>
+        <div class="need-boat" id="brisbaneCraft" data-extra="1"></div>
       </button>
-      <button type="button" class="card job-card feed-card" id="presetIkea">
-        <div class="feed-craft" data-extra="4"></div>
-        <div>
-          <strong>IKEA wardrobe</strong>
-          <span class="job-meta">Weekend · 6am to 10pm</span>
-          <span class="job-meta" id="ikeaWho"></span>
-        </div>
+      <button type="button" class="card need-row" id="presetIkea" aria-label="IKEA wardrobe">
+        <div class="need-who" id="ikeaWhoFace"></div>
+        <div class="need-boat" id="ikeaCraft" data-extra="4"></div>
+        <div class="popeye" id="ikeaPopeye"></div>
       </button>
-      <button type="button" class="card job-card feed-card" id="presetGarage">
-        <div class="feed-craft" id="garageCraft" data-extra="1"></div>
-        <div>
-          <strong>Al’s garage</strong>
-          <span class="job-meta">Sun 13 Sep · 10am</span>
-          <span class="job-meta" id="garageWho"></span>
-        </div>
+      <button type="button" class="card need-row" id="presetGarage" aria-label="Al’s garage">
+        <div class="need-who" id="garageWhoFace"></div>
+        <div class="need-boat" id="garageCraft" data-extra="1"></div>
+        <div class="popeye" id="garagePopeye"></div>
       </button>
-      <button type="button" class="card job-card feed-card" id="goEvent">
-        <div class="feed-craft" data-extra="5"></div>
-        <div>
-          <strong>Street tidy</strong>
-          <span class="job-meta">Today · event · photos</span>
-          <span class="job-meta" id="eventWho"></span>
-        </div>
+      <button type="button" class="card need-row no-popeye" id="goEvent" aria-label="Street tidy">
+        <div class="need-who" id="eventWhoFace"></div>
+        <div class="need-boat" id="eventCraft" data-extra="5"></div>
       </button>
       <div id="myFirstCard" class="hidden"></div>
     </div>
@@ -1246,42 +1232,38 @@ function loadCorridor(){
 let corridor = loadCorridor() || {agreed:false, when:'2w', who:'You', hat:'sailor', photo:''};
 function saveCorridor(){ sessionStorage.setItem('amod-corridor', JSON.stringify(corridor)); }
 let tubAnimate = false;
+function askerFace(){
+  return faceHtml(AL_PHOTO, 'captain', '#2a3a20', member ? 'Al' : '');
+}
 function renderHome(){
   $('homeSub').innerHTML = member
-    ? `What’s on. Some <s>jobs</s> activities need many hands, some need few. When the ship is full, stop.`
-    : `Looking in. You can see what’s on — not who is coming.`;
-  $('ikeaWho').textContent = member ? 'Mia + 3 coming' : 'People are coming · names hidden';
-  $('garageWho').textContent = member ? 'Chris · Al’s neighbour' : 'People are coming · names hidden';
-  $('eventWho').textContent = member ? 'Val was there' : 'People were there · names hidden';
-  $('liftWho').textContent = member ? 'Need 1 · fast lift' : 'Fast job · names hidden';
-  if(corridor.agreed){
-    $('brisbaneWho').textContent = member
-      ? `${corridor.who} · ${whenLabel(corridor.when)} · app will ping`
-      : 'Someone took it · names hidden';
-  } else {
-    $('brisbaneWho').textContent = member
-      ? 'Need 1 · anytime in the next 4 weeks'
-      : 'Flexible ask · names hidden';
-  }
+    ? `Who needs a mate. Boat is the tell. Popeye means muscles.`
+    : `Looking in. Person + boat. Names on hats after you join.`;
   $('goJoin').classList.toggle('hidden', member);
   $('moreToggle').classList.toggle('hidden', !member);
   if(!member) $('moreDoors').classList.add('hidden');
+  $('liftWhoFace').innerHTML = askerFace();
+  $('brisbaneWhoFace').innerHTML = askerFace();
+  $('ikeaWhoFace').innerHTML = askerFace();
+  $('garageWhoFace').innerHTML = askerFace();
+  $('eventWhoFace').innerHTML = askerFace();
+  $('liftCraft').innerHTML = craftIcon(1, true, false);
+  $('brisbaneCraft').innerHTML = craftIcon(1, false, !!corridor.agreed);
+  $('ikeaCraft').innerHTML = craftIcon(4, false, false);
+  $('garageCraft').innerHTML = craftIcon(1, false, true);
+  $('eventCraft').innerHTML = craftIcon(5, false, true);
+  $('liftPopeye').innerHTML = popeyeSvg();
+  $('ikeaPopeye').innerHTML = popeyeSvg();
+  $('garagePopeye').innerHTML = popeyeSvg();
   if(myFirst){
     $('myFirstCard').classList.remove('hidden');
-    $('myFirstCard').innerHTML = `<button type="button" class="card job-card" id="goMine"><strong>${esc(myFirst)}</strong><span class="job-meta">Your first activity · the weight</span></button>`;
+    $('myFirstCard').innerHTML = `<button type="button" class="card need-row no-popeye" id="goMine" aria-label="${esc(myFirst)}">
+      <div class="need-who">${faceHtml(selfieUrl, myHat, '#3a4a20', 'You')}</div>
+      <div class="need-boat">${craftIcon(1,false,false)}</div>
+    </button>`;
     $('goMine').onclick=()=>openDetail('mine');
   }
   renderBoard();
-  const cap = {name:'Al', photo:AL_PHOTO, hat:'captain', color:'#2a3a20'};
-  document.querySelectorAll('.feed-craft').forEach(el=>{
-    let crew = [];
-    if(el.id==='brisbaneCraft' && corridor.agreed){
-      crew = [{name:corridor.who, photo:corridor.photo||selfieUrl||AL_PHOTO, hat:corridor.hat||myHat||'sailor', color:'#3a4a20'}];
-    } else if(el.id==='garageCraft'){
-      crew = [{name:'Chris', photo:photoFor('Chris'), hat:hatFor('Chris'), color:'#4a3a28'}];
-    }
-    el.innerHTML = miniCraft(+el.dataset.extra||1, cap, crew, el.dataset.quick==='1');
-  });
 }
 function peek(title, when){
   if(member) return false;
@@ -1299,17 +1281,24 @@ function sceneSvg(kind){
   if(kind==='heavy') return `<svg viewBox="0 0 200 260" preserveAspectRatio="xMidYMid slice"><rect width="200" height="260" fill="#1a1814"/><rect x="55" y="70" width="90" height="120" rx="4" fill="#3a3428" stroke="#c8a227"/><rect x="62" y="78" width="76" height="16" fill="#5a4a30"/><rect x="70" y="110" width="20" height="50" fill="#2a2418"/><rect x="110" y="110" width="20" height="50" fill="#2a2418"/></svg>`;
   return `<svg viewBox="0 0 200 260" preserveAspectRatio="xMidYMid slice"><rect width="200" height="260" fill="#1a2218"/><text x="100" y="130" text-anchor="middle" fill="#8fb82e" font-size="42">⚖</text></svg>`;
 }
-function hullSvg(id){
-  if(id==='ski') return `<svg class="hull face-left" viewBox="0 0 280 140"><path d="M40 92 C48 70 88 58 140 56 L210 54 C238 54 256 64 264 80 C254 96 210 104 140 106 C82 108 48 100 40 92 Z" fill="#1a4a58" stroke="#c8f54a" stroke-width="3"/><path d="M86 72 C110 62 160 60 206 64 L214 72 C170 68 120 70 94 80 Z" fill="#2a6a7a"/><path d="M214 62 L236 44 M204 64 L228 42" stroke="#e8ead0" stroke-width="4" stroke-linecap="round"/><ellipse cx="132" cy="74" rx="34" ry="9" fill="#0f3038"/><circle cx="252" cy="78" r="5" fill="#c8f54a"/></svg>`;
-  if(id==='tub') return `<svg class="hull" viewBox="0 0 280 140"><ellipse cx="46" cy="114" rx="11" ry="8" fill="#c8b888"/><ellipse cx="232" cy="114" rx="11" ry="8" fill="#c8b888"/><path d="M30 92 C30 58 58 40 96 38 L186 38 C224 40 250 58 250 92 L246 100 C246 108 226 114 140 114 C54 114 34 108 34 100 Z" fill="#f4f0e6" stroke="#c8a227" stroke-width="3"/><path d="M50 90 C50 66 74 54 100 52 L180 52 C206 54 230 66 230 90" fill="#c5d8e2" opacity=".5"/><g fill="#c8a227"><circle cx="72" cy="80" r="2.3"/><circle cx="100" cy="78" r="2.3"/><circle cx="128" cy="77" r="2.3"/><circle cx="156" cy="78" r="2.3"/><circle cx="184" cy="80" r="2.3"/><circle cx="210" cy="84" r="2.3"/></g><rect x="244" y="28" width="3" height="24" fill="#8a7020"/><path d="M247 28 L266 20 L247 40 Z" fill="#c8f54a"/></svg>`;
-  if(id==='pea') return `<svg class="hull" viewBox="0 0 280 120"><path d="M18 78 C40 48 80 42 140 42 C200 42 240 48 262 78 C240 92 200 98 140 98 C80 98 40 92 18 78 Z" fill="none" stroke="#e8ead0" stroke-width="3"/><path d="M22 76 C44 58 80 54 140 54 C200 54 236 58 258 76" fill="none" stroke="#c8a227" stroke-width="2"/></svg>`;
-  if(id==='cork') return `<svg class="hull" viewBox="0 0 280 120"><path d="M24 80 C50 52 90 46 140 46 C190 46 230 52 256 80 L248 90 C220 100 170 104 140 104 C110 104 60 100 32 90 Z" fill="none" stroke="#e8ead0" stroke-width="3"/><path d="M40 78 L8 64 M240 78 L272 64" stroke="#c8a227" stroke-width="3"/><path d="M8 64 L22 58 M272 64 L258 58" stroke="#c8a227" stroke-width="3"/></svg>`;
-  if(id==='four') return `<svg class="hull face-left" viewBox="0 0 280 130"><path d="M16 88 L40 70 L220 70 L264 88 L248 100 L32 100 Z" fill="#3d7ebd" stroke="#e8ead0" stroke-width="2"/><rect x="70" y="42" width="90" height="28" rx="4" fill="#f0ebe0" stroke="#c8a227" stroke-width="2"/><rect x="78" y="48" width="18" height="14" fill="#7ec8e8"/><rect x="102" y="48" width="18" height="14" fill="#7ec8e8"/><rect x="200" y="58" width="22" height="12" rx="3" fill="#f0ebe0"/></svg>`;
-  return `<svg class="hull face-left" viewBox="0 0 280 150"><path d="M20 96 L50 78 L210 78 L262 96 L246 108 L34 108 Z" fill="#e07a2f" stroke="#e8ead0" stroke-width="2"/><rect x="168" y="18" width="4" height="62" fill="#d8c49a"/><path d="M172 22 L230 78 L172 78 Z" fill="#f4f7f2" opacity=".85"/><rect x="70" y="58" width="40" height="20" fill="#c45a20"/></svg>`;
+function hullSvg(id, opt){
+  opt = opt || {};
+  const ink='#1a1a1a';
+  if(id==='ski') return `<svg class="hull" viewBox="0 0 280 150"><path d="M18 118 C40 118 80 122 160 122 C210 122 250 118 262 112" fill="none" stroke="#4aa3d4" stroke-width="5"/><path d="M36 96 C44 58 90 42 150 40 L210 42 C236 46 248 62 250 78 C236 98 190 108 140 110 C80 112 42 106 36 96 Z" fill="#fffdf6" stroke="${ink}" stroke-width="5"/><path d="M48 88 C70 70 120 62 200 66 L210 78 C160 74 90 80 56 94 Z" fill="#f5d031" stroke="${ink}" stroke-width="4"/><path d="M210 58 L236 34" stroke="${ink}" stroke-width="6" stroke-linecap="round"/><circle cx="238" cy="32" r="7" fill="#1a1a1a"/><ellipse cx="86" cy="86" rx="16" ry="6" fill="#1a1a1a"/></svg>`;
+  if(id==='tub' && opt.tipped) return `<svg class="hull" viewBox="0 0 320 200"><path d="M10 168 C60 160 140 172 310 166" fill="none" stroke="#4aa3d4" stroke-width="6"/><path d="M28 168 C48 150 70 168 88 176" fill="#7ec8e8" stroke="${ink}" stroke-width="3"/><path d="M44 150 L70 46 C78 28 118 18 168 22 L236 40 C258 48 268 70 260 96 L248 150 C240 168 120 176 70 168 Z" fill="#fffdf6" stroke="${ink}" stroke-width="5"/><ellipse cx="78" cy="168" rx="14" ry="9" fill="#c8a06a" stroke="${ink}" stroke-width="3"/><ellipse cx="232" cy="158" rx="14" ry="9" fill="#c8a06a" stroke="${ink}" stroke-width="3"/><path d="M210 38 L218 8" stroke="${ink}" stroke-width="4"/><path d="M200 70 L196 16 L230 22" fill="none" stroke="#8a5a28" stroke-width="5" stroke-linecap="round"/></svg>`;
+  if(id==='tub') return `<svg class="hull" viewBox="0 0 320 180"><path d="M8 150 C70 142 160 154 312 148" fill="none" stroke="#4aa3d4" stroke-width="6"/><path d="M36 128 C36 78 80 52 160 50 L230 52 C270 56 286 82 286 118 L278 138 C270 152 80 154 44 140 Z" fill="#fffdf6" stroke="${ink}" stroke-width="5"/><ellipse cx="64" cy="148" rx="14" ry="9" fill="#c8a06a" stroke="${ink}" stroke-width="3"/><ellipse cx="252" cy="148" rx="14" ry="9" fill="#c8a06a" stroke="${ink}" stroke-width="3"/></svg>`;
+  if(id==='pea') return `<svg class="hull" viewBox="0 0 300 140"><path d="M12 118 C80 112 200 120 288 114" fill="none" stroke="#4aa3d4" stroke-width="5"/><path d="M24 100 C48 58 90 48 150 48 C210 48 250 58 276 100 C250 118 200 124 150 124 C100 124 50 118 24 100 Z" fill="#fffdf6" stroke="${ink}" stroke-width="5"/><path d="M40 96 C70 78 230 78 260 96" fill="none" stroke="${ink}" stroke-width="3"/></svg>`;
+  if(id==='cork') return `<svg class="hull" viewBox="0 0 300 140"><path d="M10 118 C90 112 210 120 290 114" fill="none" stroke="#4aa3d4" stroke-width="5"/><path d="M22 98 C50 56 100 46 150 46 C200 46 248 56 278 98 L262 112 C220 122 170 126 150 126 C130 126 80 122 38 112 Z" fill="#fffdf6" stroke="${ink}" stroke-width="5"/><path d="M48 90 L16 70 M252 90 L284 70" stroke="${ink}" stroke-width="5" stroke-linecap="round"/></svg>`;
+  if(id==='four') return `<svg class="hull" viewBox="0 0 320 160"><path d="M8 132 C90 124 220 134 312 128" fill="none" stroke="#4aa3d4" stroke-width="5"/><path d="M28 118 C48 70 90 58 160 56 L250 62 C286 68 300 92 298 118 L278 132 L40 132 Z" fill="#fffdf6" stroke="${ink}" stroke-width="5"/><path d="M28 118 L298 118" stroke="${ink}" stroke-width="4"/><circle cx="44" cy="118" r="4" fill="${ink}"/><path d="M236 70 L248 48 L236 88" fill="none" stroke="${ink}" stroke-width="5" stroke-linecap="round"/></svg>`;
+  return `<svg class="hull" viewBox="0 0 340 190"><path d="M8 160 C100 150 240 162 332 154" fill="none" stroke="#4aa3d4" stroke-width="5"/><path d="M30 140 C50 88 90 70 150 66 L250 70 C300 76 318 110 312 140 L290 156 L48 156 Z" fill="#6b3d22" stroke="${ink}" stroke-width="5"/><path d="M30 140 L312 140" stroke="${ink}" stroke-width="4"/><rect x="168" y="18" width="7" height="80" fill="#3a2416" stroke="${ink}" stroke-width="3"/><path d="M175 22 L250 88 L175 88 Z" fill="#f7f1e2" stroke="${ink}" stroke-width="3"/></svg>`;
 }
-function extraSeats(id){
-  if(id==='ski') return {helm:[72,40], crew:[[46,44]]};
-  if(id==='tub') return {helm:[76,48], crew:[[28,44]]};
+function popeyeSvg(){
+  return `<svg viewBox="0 0 80 96" aria-label="Muscles needed"><ellipse cx="40" cy="90" rx="22" ry="5" fill="#d7ccb6"/><path d="M18 70 C10 58 16 48 28 50 L32 68 Z" fill="#e8b090" stroke="#1a1a1a" stroke-width="3"/><path d="M62 70 C70 58 64 48 52 50 L48 68 Z" fill="#e8b090" stroke="#1a1a1a" stroke-width="3"/><circle cx="16" cy="52" r="10" fill="#e8b090" stroke="#1a1a1a" stroke-width="3"/><circle cx="64" cy="52" r="10" fill="#e8b090" stroke="#1a1a1a" stroke-width="3"/><path d="M28 58 L52 58 L56 86 L24 86 Z" fill="#1b2a4a" stroke="#1a1a1a" stroke-width="3"/><circle cx="40" cy="36" r="16" fill="#f0c2a0" stroke="#1a1a1a" stroke-width="3"/><path d="M24 28 C28 12 52 12 56 28 L52 34 L28 34 Z" fill="#fffdf6" stroke="#1a1a1a" stroke-width="3"/><rect x="26" y="28" width="28" height="6" fill="#1b2a4a"/><path d="M52 42 L66 46" stroke="#1a1a1a" stroke-width="3"/><circle cx="68" cy="48" r="3" fill="#1a1a1a"/><circle cx="34" cy="36" r="2" fill="#1a1a1a"/><circle cx="44" cy="36" r="2" fill="#1a1a1a"/></svg>`;
+}
+function extraSeats(id, tipped){
+  if(id==='ski') return {helm:[70,42], crew:[[42,46]]};
+  if(id==='tub' && tipped) return {helm:[72,54], crew:[[36,30]]};
+  if(id==='tub') return {helm:[74,48], crew:[[30,46]]};
   if(id==='pea') return {helm:[70,50], crew:[[36,48],[52,48]]};
   if(id==='cork') return {helm:[72,50], crew:[[28,48],[44,48],[58,48]]};
   if(id==='four') return {helm:[80,46], crew:[[22,44],[38,44],[52,44],[66,44]]};
@@ -1318,20 +1307,26 @@ function extraSeats(id){
 function miniCraft(extra, captain, crew, quick){
   return paintCraft(extra, captain, crew, quick);
 }
+function craftIcon(extra, quick, full){
+  const c = craftOf(extra, quick);
+  const tipped = c.id==='tub' && !full;
+  return `<div class="ad-icon ${full?'facing-right':'facing-left'}">${hullSvg(c.id,{tipped,full})}</div>`;
+}
 function paintCraft(extra, captain, crew, quick){
   const c = craftOf(extra, quick);
-  const pos = extraSeats(c.id);
+  const filled = (crew||[]).filter(Boolean).length;
+  const full = filled >= c.extra;
+  const tipped = c.id==='tub' && !full;
+  const pos = extraSeats(c.id, tipped);
   let seats = seatAt(pos.helm[0], pos.helm[1], captain, true);
   for(let i=0;i<c.extra;i++){
     const xy = pos.crew[i]; if(!xy) continue;
     seats += seatAt(xy[0], xy[1], (crew&&crew[i])||null, false);
   }
-  const filled = (crew||[]).filter(Boolean).length;
-  const full = filled >= c.extra;
   const facing = full ? 'facing-right' : 'facing-left';
-  const tilt = (c.id==='tub' && !full) ? 'tipped' : 'level';
+  const tilt = tipped ? 'tipped' : 'level';
   const water = `<div class="water-fill"></div><div class="water-line"></div>`;
-  return `<div class="craft-wrap ${c.id==='tub'?'tub-wrap':''} ${tilt} ${facing}" style="width:100%">${water}<div class="tub-tilt">${hullSvg(c.id)}${seats}</div></div>`;
+  return `<div class="craft-wrap ${c.id==='tub'?'tub-wrap':''} ${tilt} ${facing}" style="width:100%">${water}<div class="tub-tilt">${hullSvg(c.id,{tipped,full})}${seats}</div></div>`;
 }
 function seatAt(x,y,person,isCap){
   if(!person){
@@ -1339,9 +1334,9 @@ function seatAt(x,y,person,isCap){
   }
   const hide = !member;
   const face = hide
-    ? `<div class="mini"><div class="bust" style="--skin:#243028"><div class="shoulders"></div><div class="head"><div class="ghost-face"></div></div></div></div>`
-    : `<div class="mini">${faceHtml(person.photo||'', person.hat, person.color)}</div>`;
-  const tag = hide ? '' : `<div class="tag">${isCap?'Captain':(person.name||'mate')}</div>`;
+    ? `<div class="mini"><div class="bust" style="--skin:#efe6d2"><div class="shoulders"></div><div class="head"><div class="ghost-face"></div></div></div></div>`
+    : `<div class="mini">${faceHtml(person.photo||'', person.hat, person.color, person.name||(isCap?'Al':''))}</div>`;
+  const tag = '';
   return `<div class="seat ${isCap?'helm':'crew'}" style="left:${x}%;top:${y}%">${face}${tag}</div>`;
 }
 function openDetail(key){
@@ -1436,12 +1431,13 @@ const HATS = [
   {id:'beret', label:'French beret'},
   {id:'turban', label:'Turban'}
 ];
-function hatMarkup(id){
-  if(id==='sailor') return '<ellipse cx="50" cy="60" rx="44" ry="9" fill="#f4f7f2"/><rect x="18" y="22" width="64" height="36" rx="12" fill="#f4f7f2"/><rect x="18" y="50" width="64" height="8" fill="#1a2744"/>';
-  if(id==='pirate') return '<path d="M6 66 Q50 6 94 66 L80 68 Q50 24 20 68 Z" fill="#141414"/><circle cx="50" cy="20" r="6" fill="#c8f54a"/><path d="M44 36 L56 36 L50 48 Z" fill="#f4f7f2"/>';
-  if(id==='captain') return '<ellipse cx="50" cy="62" rx="44" ry="8" fill="#1a2744"/><rect x="24" y="18" width="52" height="40" rx="12" fill="#1a2744"/><rect x="36" y="30" width="28" height="8" rx="2" fill="#c8a227"/>';
-  if(id==='beret') return '<ellipse cx="46" cy="48" rx="40" ry="18" fill="#5a1d33"/><ellipse cx="46" cy="58" rx="36" ry="8" fill="#4a1528"/><circle cx="82" cy="36" r="6" fill="#5a1d33"/>';
-  return '<path d="M16 64 Q22 16 50 12 Q78 16 84 64 Q50 48 16 64 Z" fill="#c8a227"/><path d="M24 58 Q50 28 76 58" stroke="#8a7020" fill="none" stroke-width="3"/>';
+function hatMarkup(id, name){
+  const label = name ? `<text class="hat-name" x="50" y="66" text-anchor="middle" font-size="13" font-weight="800" fill="#fffdf6">${esc(String(name).slice(0,8))}</text>` : '';
+  if(id==='sailor') return `<ellipse cx="50" cy="60" rx="44" ry="9" fill="#f4f7f2"/><rect x="18" y="22" width="64" height="36" rx="12" fill="#f4f7f2"/><rect x="18" y="48" width="64" height="14" fill="#1a2744"/>${label}`;
+  if(id==='pirate') return `<path d="M6 66 Q50 6 94 66 L80 68 Q50 24 20 68 Z" fill="#141414"/><circle cx="50" cy="20" r="6" fill="#c8f54a"/>${label}`;
+  if(id==='captain') return `<ellipse cx="50" cy="62" rx="44" ry="8" fill="#1a2744"/><rect x="24" y="18" width="52" height="40" rx="12" fill="#1a2744"/><rect x="24" y="48" width="52" height="14" fill="#c8a227"/>${name?`<text class="hat-name" x="50" y="59" text-anchor="middle" font-size="12" font-weight="800" fill="#1a2430">${esc(String(name).slice(0,8))}</text>`:''}`;
+  if(id==='beret') return `<ellipse cx="46" cy="48" rx="40" ry="18" fill="#5a1d33"/><ellipse cx="46" cy="58" rx="36" ry="8" fill="#4a1528"/><circle cx="82" cy="36" r="6" fill="#5a1d33"/>${label}`;
+  return `<path d="M16 64 Q22 16 50 12 Q78 16 84 64 Q50 48 16 64 Z" fill="#c8a227"/><path d="M24 58 Q50 28 76 58" stroke="#8a7020" fill="none" stroke-width="3"/>${name?`<text class="hat-name" x="50" y="62" text-anchor="middle" font-size="12" font-weight="800" fill="#1a2430">${esc(String(name).slice(0,8))}</text>`:''}`;
 }
 let selfieUrl = '';
 let myHat = 'sailor';
@@ -1449,9 +1445,9 @@ function paintHat(){
   $('hatSvg').innerHTML = hatMarkup(myHat);
   [...document.querySelectorAll('#hatChips .chip')].forEach(c=>c.classList.toggle('on', c.dataset.hat===myHat));
 }
-function faceHtml(photo, hat, color){
+function faceHtml(photo, hat, color, name){
   const src = photo || matePhoto((color||'x').length);
-  return `<div class="bust" style="--skin:${color||'#3a4a20'}"><div class="shoulders"></div><div class="head"><img alt="" src="${src}"/><svg class="hat-svg" viewBox="0 0 100 70">${hatMarkup(hat)}</svg></div></div>`;
+  return `<div class="bust" style="--skin:${color||'#3a4a20'}"><div class="shoulders"></div><div class="head"><img alt="" src="${src}"/><svg class="hat-svg" viewBox="0 0 100 70">${hatMarkup(hat, name)}</svg></div></div>`;
 }
 function renderBoard(){
   const showB = member;
@@ -1462,7 +1458,7 @@ function renderBoard(){
     {name:'You', photo:selfieUrl, hat:myHat, color:'#3a4a20'},
     ...SAMPLE.map(p=>({name:p.name, photo:p.photo, hat:p.hat, color:'#2a3a20', note:p.note}))
   ];
-  $('board').innerHTML = row.map(p=>`<div class="aboard"><div class="mini">${faceHtml(p.photo,p.hat,p.color)}</div><div class="n">${esc(p.name)}</div>${p.note?`<div class="n">${esc(p.note)}</div>`:''}</div>`).join('');
+  $('board').innerHTML = row.map(p=>`<div class="aboard"><div class="mini">${faceHtml(p.photo,p.hat,p.color,p.name)}</div></div>`).join('');
 }
 $('selfieBack').onclick=()=>{ renderHome(); show('home'); };
 $('selfieFile').onchange=e=>{
