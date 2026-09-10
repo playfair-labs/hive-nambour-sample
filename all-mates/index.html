@@ -122,7 +122,7 @@ const $ = id => document.getElementById(id);
 const ink = '#1a1a1a';
 /* Faces sit in the clawfoot bowl, stacked around the painted captain. */
 const SEATS = [
-  {x:33,y:58},{x:43,y:55},{x:27,y:52},{x:38,y:49},{x:49,y:54}
+  {x:34,y:62},{x:44,y:59},{x:28,y:56},{x:40,y:54},{x:50,y:58}
 ];
 const VESSELS = {
   soup:['Gravy Boat','Bisque','Stock Pot','The Ladle'],
@@ -175,11 +175,12 @@ const DUSK_H = 19;
 const T_NOON = (NOON_H - DAWN_H) / 24;
 const T_DUSK = (DUSK_H - DAWN_H) / 24;
 const T_HALF = 0.5 / 24;
-const SUN_X0 = 30;
-const SUN_X1 = 770;
-const SUN_Y_APEX = -36;
-const SUN_Y_RIM = 332;
-const SUN_Y_NIGHT = 470;
+const SUN_X0 = 32;
+const SUN_X1 = 768;
+const SUN_Y_APEX = -58;
+const SUN_Y_RIM = 338;
+const SUN_Y_NIGHT = 482;
+const SUN_HIT_PX = 30;
 
 function wrap01(t){ return ((t % 1) + 1) % 1; }
 function hourToT(h){
@@ -191,13 +192,18 @@ function tToHour(t){ return DAWN_H + wrap01(t) * 24; }
 function snapHour(h){ return Math.round(h * 2) / 2; }
 function snapT(t){ return hourToT(snapHour(tToHour(t))); }
 
+function dayRise(u){
+  /* Flatter than a circle: high plateau over the captain, low only at the rims. */
+  const s = Math.abs(2 * u - 1);
+  return 1 - Math.pow(s, 3.35);
+}
 function sunPoint(t){
   const tt = wrap01(t);
   if(tt <= T_DUSK){
     const u = tt / T_DUSK;
     return {
       x: SUN_X0 + (SUN_X1 - SUN_X0) * u,
-      y: SUN_Y_RIM - 4 * (SUN_Y_RIM - SUN_Y_APEX) * u * (1 - u)
+      y: SUN_Y_RIM - (SUN_Y_RIM - SUN_Y_APEX) * dayRise(u)
     };
   }
   const u = (tt - T_DUSK) / (1 - T_DUSK);
@@ -205,6 +211,15 @@ function sunPoint(t){
     x: SUN_X1 + (SUN_X0 - SUN_X1) * u,
     y: SUN_Y_RIM + 4 * (SUN_Y_NIGHT - SUN_Y_RIM) * u * (1 - u)
   };
+}
+function clientSunHit(x, y, svg){
+  const t = tFromPoint(x, y, svg);
+  const p = sunPoint(t);
+  const r = svg.getBoundingClientRect();
+  const vb = svg.viewBox.baseVal;
+  const cx = r.left + ((p.x - vb.x) / vb.width) * r.width;
+  const cy = r.top + ((p.y - vb.y) / vb.height) * r.height;
+  return {t, dist: Math.hypot(x - cx, y - cy)};
 }
 function sunPathD(t0, t1){
   const a = Math.max(0, Math.min(1, t0));
@@ -426,19 +441,19 @@ function sunSvg(boat){
   const pm = sunPoint(mid);
   const dayTrack = sunPathD(0, T_DUSK);
   const nightTrack = sunPathD(T_DUSK, 1);
-  const track = sunPathD(0, 1);
-  const arc = boat.allDay ? track : sunPathD(a, b);
+  const hit = sunPathD(0, 1);
+  const arc = boat.allDay ? dayTrack : sunPathD(a, b);
   const moon = isMoon(boat);
   const col = boat.must ? 'var(--must)' : (moon ? '#c5cbe0' : 'var(--sun)');
   const sunFill = isEvening(boat) ? '#d8dde8' : '#f5c431';
   return `<svg class="sundial" viewBox="0 -140 800 640" preserveAspectRatio="none" data-sun="1">
     <path d="${dayTrack}" fill="none" stroke="${ink}" stroke-width="6" opacity=".14"/>
-    <path d="${nightTrack}" fill="none" stroke="${ink}" stroke-width="5" opacity=".08"/>
+    <path d="${nightTrack}" fill="none" stroke="${ink}" stroke-width="5" opacity=".07"/>
     <path d="${arc}" fill="none" stroke="${col}" stroke-width="${boat.allDay?18:14}"
       stroke-linecap="round" opacity="${boat.allDay?.55:.9}"/>
     ${moon ? moonMark(pm.x, pm.y)
       : `<circle cx="${pm.x.toFixed(1)}" cy="${pm.y.toFixed(1)}" r="20" fill="${sunFill}" stroke="${ink}" stroke-width="3"/>`}
-    <path class="hit" d="${track}" stroke="transparent" stroke-width="52" fill="none"/>
+    <path class="hit" d="${hit}" stroke="transparent" stroke-width="34" fill="none"/>
   </svg>`;
 }
 
@@ -573,12 +588,14 @@ function onDown(e){
   const plate = e.currentTarget;
   const id = plate.dataset.id;
   const b = findBoat(id); if(!b) return;
-  const sun = e.target.closest('[data-sun]');
-  const startT = sun ? snapT(tFromPoint(e.clientX,e.clientY, sun)) : null;
+  const svg = plate.querySelector('[data-sun]');
+  const hit = (!b.must && svg) ? clientSunHit(e.clientX, e.clientY, svg) : null;
+  const onSun = !!(hit && hit.dist <= SUN_HIT_PX);
+  const startT = onSun ? snapT(hit.t) : null;
   drag = {
     id, plate, pointer:e.pointerId,
     x:e.clientX, y:e.clientY, moved:false, held:false,
-    sun: !!sun && !b.must, startT, lastT:startT,
+    sun: onSun, startT, lastT:startT,
     need0: b.need, tip0: e.clientY
   };
   try{ plate.setPointerCapture(e.pointerId); }catch(err){}
@@ -607,7 +624,7 @@ function onMove(e){
     let a = snapT(drag.startT), c = snapT(t);
     if(c<a){ const x=a; a=c; c=x; }
     if(c-a < T_HALF - 1e-9) c = snapT(Math.min(1, a + T_HALF));
-    b.allDay = (a<=0.03 && c>=0.97);
+    b.allDay = (a<=0.03 && c>=T_DUSK - 0.03);
     b.sunStart = b.allDay ? 0 : a;
     b.sunEnd = b.allDay ? 1 : c;
     const eve = isEvening(b);
