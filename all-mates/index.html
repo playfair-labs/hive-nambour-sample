@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-title" content="All Mates" />
 <meta name="theme-color" content="#fbf6ea" />
-<meta name="allmates-build" content="pages-p1-tools-voice" />
+<meta name="allmates-build" content="pages-p1-hull-tight" />
 <title>All Mates On Deck</title>
 <style>
   :root{
@@ -28,11 +28,8 @@
   .day{font-size:11px;font-weight:800;letter-spacing:.08em;color:var(--navy);opacity:.55;
     writing-mode:vertical-rl;transform:rotate(180deg);text-align:center;pointer-events:none}
   .who{position:absolute;left:6px;top:2px;z-index:6;pointer-events:none;
-    max-width:72%;color:var(--navy);line-height:1.02;filter:drop-shadow(0 1px 0 #fffdf6)}
-  .who .lead{display:block;font-size:clamp(22px,6.6vw,30px);font-weight:800;
-    letter-spacing:-.035em}
-  .who .vessel{display:block;font-size:clamp(20px,6vw,28px);font-weight:800;
-    letter-spacing:-.03em;opacity:.92}
+    max-width:72%;color:var(--navy);line-height:1.02}
+  .who:empty{display:none}
   .need{position:absolute;right:2px;top:46%;transform:translateY(-50%);z-index:6;
     pointer-events:none;font-size:clamp(64px,22vw,92px);font-weight:900;
     letter-spacing:-.07em;line-height:.8;color:var(--navy);opacity:.78;
@@ -77,7 +74,7 @@
   .who .loot{display:block;margin-top:4px;width:max-content;font-size:12px;font-weight:800;
     letter-spacing:-.02em;background:var(--hive);border:1.5px solid var(--navy);border-radius:8px;
     padding:1px 7px;pointer-events:auto}
-  .row.eve .who,.row.eve .need{color:#f4f0e6;filter:drop-shadow(0 1px 0 #1b2438)}
+  .row.eve .need{color:#f4f0e6;filter:drop-shadow(0 1px 0 #1b2438)}
   .plate{position:relative;width:100%;aspect-ratio:16/9;touch-action:none;overflow:visible}
   .plate svg{display:block;overflow:visible}
   .medium{width:100%;height:100%}
@@ -101,7 +98,14 @@
   }
   .tub-spin{position:absolute;inset:0;z-index:3;transform-origin:50% 78%;
     transition:transform .7s cubic-bezier(.22,.8,.25,1);pointer-events:none}
-  .tub-spin .tub{width:100%;height:100%;object-fit:contain;display:block;pointer-events:none}
+  .tub-spin .tub{width:100%;height:100%;object-fit:contain;display:block;pointer-events:none;
+    position:relative;z-index:1}
+  .hull-art{position:absolute;inset:0;width:100%;height:100%;z-index:0;
+    pointer-events:none;overflow:visible}
+  .hull-plug{fill:#fffdf8}
+  .hull-letter{fill:var(--navy);font-weight:800;letter-spacing:-.04em;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+  .medium .hull-mask{transform-origin:400px 390px}
   .mates{position:absolute;inset:0;z-index:5;pointer-events:none}
   .seat{position:absolute;width:18%;aspect-ratio:1;transform:translate(-50%,-50%);
     border-radius:50%;overflow:visible;z-index:1}
@@ -195,8 +199,9 @@
 /* Invite-only private mates sample. No outreach, no discovery.
    No before/after job photos. No in-app messaging server / no inbound texts.
    Voice creates a boat. Hold a listed need to claim it. Join writes Calendar .ics.
-   SOS is outbound-only native SMS — not a chat. */
-const BUILD = 'pages-p1-tools-voice';
+   SOS is outbound-only native SMS — not a chat.
+   Poster name is hull lettering on the tub. Medium stays outside the bowl. */
+const BUILD = 'pages-p1-hull-tight';
 const $ = id => document.getElementById(id);
 const ink = '#1a1a1a';
 /* Faces sit in the clawfoot bowl, stacked around the painted captain. */
@@ -634,16 +639,59 @@ function standingTool(kind){
   </g>`;
   return '';
 }
+/* Clawfoot bowl in plate space. Plug + water hole stay inside the rim so
+   the medium never paints the interior; lettering rides the left sheer. */
+function hullPlugD(){
+  return 'M120 178C110 136 116 104 150 110C214 120 308 156 416 170C508 182 556 176 568 206C584 240 576 290 542 332C502 380 420 400 332 396C234 392 148 354 126 304C112 268 116 216 120 178Z';
+}
+function hullLetterD(){
+  return 'M158 266C206 296 262 316 334 304';
+}
+function hullSpinStyle(boat){
+  if(!boat) return 'translateY(0%) rotate(0deg)';
+  return `translateY(${floodLevel(boat).lift}%) rotate(${spinDeg(boat)}deg)`;
+}
+function hullNameSize(name){
+  const n = String(name||'').length;
+  if(n<=3) return 56;
+  if(n<=4) return 50;
+  if(n<=6) return 42;
+  return 34;
+}
+function hullArt(boat){
+  const lead = leadMate(boat);
+  const name = lead.name || 'Mate';
+  const pid = 'hn-'+boat.id;
+  return `<svg class="hull-art" viewBox="0 0 800 500" aria-hidden="true"
+    xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <path class="hull-plug" d="${hullPlugD()}"/>
+    <path id="${pid}" d="${hullLetterD()}" fill="none"/>
+    <text class="hull-letter" font-size="${hullNameSize(name)}">
+      <textPath href="#${pid}" xlink:href="#${pid}" startOffset="5%"
+        dominant-baseline="middle">${esc(name)}</textPath>
+    </text>
+  </svg>`;
+}
 function mediumSvg(kind, eve, boat){
   const m = MEDIA[kind]||MEDIA.water;
   const sky = eve ? '#1b2438' : 'transparent';
   const waterY = boat ? floodLevel(boat).waterY : 352;
+  const maskId = 'dry-'+(boat && boat.id ? boat.id : 'x');
+  const spin = hullSpinStyle(boat);
   return `<svg class="medium" viewBox="0 0 800 500" aria-hidden="true">
+    <defs>
+      <mask id="${maskId}" maskUnits="userSpaceOnUse" x="-40" y="0" width="900" height="560">
+        <rect x="-40" y="0" width="900" height="560" fill="#fff"/>
+        <path class="hull-mask" d="${hullPlugD()}" fill="#000" style="transform:${spin}"/>
+      </mask>
+    </defs>
     <rect width="800" height="500" fill="${sky}"/>
-    ${waves(m, waterY)}
-    ${kind==='garden'?gardenExtra(waterY):''}
-    ${kind==='tennis'?tennisBalls(waterY):''}
-    ${kind==='soup'?soupBits(waterY):''}
+    <g mask="url(#${maskId})">
+      ${waves(m, waterY)}
+      ${kind==='garden'?gardenExtra(waterY):''}
+      ${kind==='tennis'?tennisBalls(waterY):''}
+      ${kind==='soup'?soupBits(waterY):''}
+    </g>
     ${standingTool(kind)}
   </svg>`;
 }
@@ -729,14 +777,10 @@ function render(){
 }
 function boatRow(b){
   const d = dayMeta(b.day);
-  const tip = spinDeg(b);
-  const flood = floodLevel(b);
   const eve = isEvening(b);
   const peek = peekId===b.id ? ' peek' : '';
   const compose = composeId===b.id ? ' compose' : '';
   const rem = remainNeed(b);
-  const lead = leadMate(b);
-  const vessel = b.vessel || vesselName(b.medium, 0);
   const seats = (b.mates||[]).map((id,i)=>{
     const p = mateBy(id); if(!p) return '';
     const s = SEATS[i] || {x:30+i*6, y:56};
@@ -760,12 +804,13 @@ function boatRow(b){
     <div class="day">${esc(d.short)}</div>
     <div class="plate${peek}${compose}" data-id="${b.id}" aria-label="Boat">
       ${mediumSvg(b.medium, eve, b)}
-      <div class="tub-spin" style="transform:translateY(${flood.lift}%) rotate(${tip}deg)">
+      <div class="tub-spin" style="transform:${hullSpinStyle(b)}">
+        ${hullArt(b)}
         <img class="tub" alt="" draggable="false" src="${plateSrc(b.medium)}"/>
         <div class="mates">${seats}</div>
       </div>
       ${sunSvg(b)}
-      <div class="who"><span class="lead">${esc(lead.name)}</span><span class="vessel">${esc(vessel)}</span>${(b.mine?lootFor(b,'you'):[]).map(name=>`<span class="loot" data-tool="${esc(toolSlug(name))}">${esc(name)}</span>`).join('')}</div>
+      <div class="who">${(b.mine?lootFor(b,'you'):[]).map(name=>`<span class="loot" data-tool="${esc(toolSlug(name))}">${esc(name)}</span>`).join('')}</div>
       <div class="need${rem?'' : ' off'}">${rem||''}</div>
       ${(!stock && asks)?`<div class="asks">${asks}</div>`:''}
       ${stock}
@@ -1104,9 +1149,11 @@ function onMove(e){
     const next = Math.max(1, Math.min(5, Math.round(drag.need0 + (-dy)/36)));
     if(next!==b.need){
       b.need = next;
-      const flood = floodLevel(b);
+      const spinCss = hullSpinStyle(b);
       const spin = drag.plate.querySelector('.tub-spin');
-      if(spin) spin.style.transform = `translateY(${flood.lift}%) rotate(${spinDeg(b)}deg)`;
+      if(spin) spin.style.transform = spinCss;
+      const mask = drag.plate.querySelector('.hull-mask');
+      if(mask) mask.style.transform = spinCss;
       const needEl = drag.plate.querySelector('.need');
       if(needEl){
         const rem = remainNeed(b);
