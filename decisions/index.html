@@ -40,7 +40,9 @@
   .seg{display:flex;border:1px solid var(--line);border-radius:999px;overflow:hidden}
   .seg button{appearance:none;border:0;background:transparent;color:var(--muted);font:inherit;
     font-size:11px;font-weight:700;padding:5px 10px;cursor:pointer}
-  .seg button.on{background:var(--lime);color:var(--lime-ink)}
+  .seg button.on,.btn-ghost.on{background:var(--lime);color:var(--lime-ink);border-color:var(--lime)}
+  .more-link{appearance:none;background:none;border:0;color:var(--muted);font-size:13px;font-weight:700;
+    padding:4px;cursor:pointer;font-family:inherit;width:100%;text-align:center}
   h1{font-size:26px;margin:0;font-weight:750;letter-spacing:-.03em}
   .sub{color:var(--muted);font-size:13px;margin:0;line-height:1.35}
   .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px}
@@ -164,7 +166,7 @@
         <button type="button" class="btn btn-ghost btn-sm" id="goMorning">Morning</button>
         <button type="button" class="btn btn-ghost btn-sm" id="goBusy">Busy</button>
       </div>
-      <button type="button" class="btn btn-ghost btn-sm" id="nowHide">Hide this</button>
+      <button type="button" class="more-link" id="nowHide">Hide this</button>
       <p class="dark">Fake only · no agents · Watch holds audio</p>
     </footer>
   </section>
