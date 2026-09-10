@@ -1178,6 +1178,7 @@ let member = new URLSearchParams(location.search).has('member')
 if(new URLSearchParams(location.search).has('invite')){
   member=false;
   sessionStorage.removeItem('amod-member');
+  sessionStorage.removeItem('amod-corridor');
 }
 let firstPicUrl = '';
 let myFirst = null;
