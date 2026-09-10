@@ -124,6 +124,7 @@
   .q-item{font-size:13px;color:var(--muted);padding:8px 10px;border-radius:10px;background:#191919;border:1px solid var(--line)}
   .q-item.now{color:var(--text);border-color:#3a4a14}
   .q-item s{color:#666}
+  .tuck{display:flex;flex-direction:column;gap:8px}
 </style>
 </head>
 <body>
@@ -133,13 +134,16 @@
       <div class="word">Decisions</div>
       <div class="pills">
         <div class="pill warn">Fake sample</div>
+        <div class="seg" id="voiceSeg">
+          <button type="button" data-voice="on" class="on">Voice</button>
+          <button type="button" data-voice="off">Off</button>
+        </div>
         <div class="seg" id="roleSeg">
           <button type="button" data-role="al" class="on">Al</button>
           <button type="button" data-role="cos">CoS</button>
         </div>
       </div>
     </header>
-    <div class="stamps" id="stamps"></div>
     <div class="hero" id="hero">
       <div class="say">
         <div class="next-lab" id="nowCat">Software</div>
@@ -160,14 +164,16 @@
     <footer>
       <button type="button" class="btn btn-primary" id="okBtn">OK · send to Soft Soft</button>
       <div class="dots" id="dots"></div>
-      <div class="hide-row">
-        <button type="button" class="btn btn-ghost btn-sm" id="voiceBtn">Voice on</button>
-        <button type="button" class="btn btn-ghost btn-sm" id="goBoard">Board</button>
-        <button type="button" class="btn btn-ghost btn-sm" id="goMorning">Morning</button>
-        <button type="button" class="btn btn-ghost btn-sm" id="goBusy">Busy</button>
+      <button type="button" class="more-link" id="moreToggle">More</button>
+      <div class="tuck hidden" id="moreDoors">
+        <div class="hide-row">
+          <button type="button" class="btn btn-ghost btn-sm" id="goBoard">Board</button>
+          <button type="button" class="btn btn-ghost btn-sm" id="goMorning">Morning</button>
+          <button type="button" class="btn btn-ghost btn-sm" id="goBusy">Busy</button>
+        </div>
+        <button type="button" class="more-link" id="nowHide">Hide this</button>
       </div>
-      <button type="button" class="more-link" id="nowHide">Hide this</button>
-      <p class="dark">Fake only · no agents · Watch holds audio</p>
+      <p class="dark">Fake only · no mic · Watch + Capture Spark hold audio</p>
     </footer>
   </section>
 
@@ -176,6 +182,7 @@
       <div class="word">Decisions <em>board</em></div>
       <div class="pill">Bird’s-eye</div>
     </header>
+    <div class="stamps" id="stamps"></div>
     <p class="sub" id="boardSub">Actives only. Tap a tile to talk it. No Home.</p>
     <div class="scroll board" id="board"></div>
     <footer>
@@ -415,14 +422,18 @@ function renderStamps(){
   }).join('');
 }
 
+function renderVoice(){
+  [...document.querySelectorAll('#voiceSeg button')].forEach(b=>{
+    b.classList.toggle('on', (b.dataset.voice==='on') === voiceOn);
+  });
+}
+
 function renderNow(){
-  renderStamps();
   ensureNow();
   const list = actives();
   const p = nowId ? proj(nowId) : null;
   const step = current(p);
-  $('voiceBtn').textContent = voiceOn ? 'Voice on' : 'Voice off';
-  $('voiceBtn').classList.toggle('on', voiceOn);
+  renderVoice();
   if(!p || !step){
     $('nowCat').textContent = filter ? catOf(filter).label : 'Clear';
     $('nowName').textContent = 'Nothing now';
@@ -455,6 +466,7 @@ function renderNow(){
 }
 
 function renderBoard(){
+  renderStamps();
   const rows = [...actives()].sort((a,b)=>(b.p0?1:0)-(a.p0?1:0));
   $('boardSub').textContent = rows.length
     ? `${rows.length} active · tap to talk · no Home`
@@ -684,8 +696,9 @@ $('talk').oninput = ()=>{
   save();
 };
 $('okBtn').onclick = ()=>okNow();
-$('voiceBtn').onclick = ()=>{
-  voiceOn = !voiceOn;
+$('voiceSeg').onclick = e=>{
+  const b = e.target.closest('[data-voice]'); if(!b) return;
+  voiceOn = b.dataset.voice==='on';
   if(voiceOn) voiceUnlocked = true;
   else hush();
   save();
@@ -694,6 +707,10 @@ $('voiceBtn').onclick = ()=>{
     const p = nowId ? proj(nowId) : null;
     speak(p, current(p));
   }
+};
+$('moreToggle').onclick = ()=>{
+  $('moreDoors').classList.toggle('hidden');
+  $('moreToggle').textContent = $('moreDoors').classList.contains('hidden') ? 'More' : 'Less';
 };
 $('goBoard').onclick = ()=>{ hush(); renderBoard(); show('board'); };
 $('boardBack').onclick = ()=>goNow(null, voiceOn);
