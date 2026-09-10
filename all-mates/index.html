@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-title" content="All Mates" />
 <meta name="theme-color" content="#fbf6ea" />
-<meta name="allmates-build" content="pages-p1-board4" />
+<meta name="allmates-build" content="pages-p1-board5" />
 <title>All Mates On Deck</title>
 <style>
   :root{
@@ -26,6 +26,9 @@
     min-height:38vh;padding:8px 2px}
   .day{font-size:11px;font-weight:800;letter-spacing:.08em;color:var(--navy);opacity:.55;
     writing-mode:vertical-rl;transform:rotate(180deg);text-align:center;pointer-events:none}
+  .hrs{position:absolute;right:4px;top:50%;transform:translateY(-50%);z-index:6;
+    font-size:13px;font-weight:800;color:var(--navy);opacity:.45;pointer-events:none;
+    letter-spacing:.02em;line-height:1}
   .plate{position:relative;width:100%;aspect-ratio:16/9;touch-action:none}
   .plate svg{display:block;width:100%;height:100%;overflow:visible}
   .sky,.medium,.sundial{position:absolute;inset:0;pointer-events:none}
@@ -156,6 +159,12 @@ function tipDeg(boat){
   const emptyTip = 7 + (need-1)*8;
   return emptyTip * (rem/need);
 }
+/* Hours shrink with heads in the tub. Captain counts. 5 alone → 1 with five aboard. */
+function hoursMark(boat){
+  const base = Math.max(1, (boat.hours|0) || 3);
+  const heads = 1 + (boat.mates||[]).length;
+  return Math.max(1, Math.round(base/heads));
+}
 
 const MEDIA = {
   water:{fill:'#4aa3d4',deep:'#2f86b8',splash:'#7ec8e8',foam:'#e8f6fc'},
@@ -260,9 +269,9 @@ function loadBoats(){
     }
   }catch(e){}
   return [
-    {id:'cook', day:0, medium:'soup', need:2, mates:['mia'], sunStart:hourToT(8), sunEnd:hourToT(11), must:false, allDay:false, mine:false},
-    {id:'tennis', day:1, medium:'tennis', need:3, mates:[], sunStart:hourToT(9), sunEnd:hourToT(11), must:true, allDay:false, mine:false},
-    {id:'garden', day:2, medium:'garden', need:1, mates:[], sunStart:0, sunEnd:1, must:false, allDay:true, mine:false}
+    {id:'cook', day:0, medium:'soup', need:2, mates:['mia'], hours:4, sunStart:hourToT(8), sunEnd:hourToT(11), must:false, allDay:false, mine:false},
+    {id:'tennis', day:1, medium:'tennis', need:3, mates:[], hours:5, sunStart:hourToT(9), sunEnd:hourToT(11), must:true, allDay:false, mine:false},
+    {id:'garden', day:2, medium:'garden', need:1, mates:[], hours:2, sunStart:0, sunEnd:1, must:false, allDay:true, mine:false}
   ];
 }
 let boats = loadBoats();
@@ -303,6 +312,7 @@ function boatRow(b){
         <div class="mates">${seats}</div>
       </div>
       ${sunSvg(b)}
+      <div class="hrs">${hoursMark(b)}</div>
     </div>
   </div>`;
 }
@@ -344,7 +354,7 @@ function toggleJoin(id){
 function createBoat(medium){
   const id = 'b'+Date.now();
   boats.unshift({
-    id, day:0, medium, need:1, mates:[],
+    id, day:0, medium, need:1, mates:[], hours:3,
     sunStart:hourToT(8), sunEnd:hourToT(12),
     must:false, allDay:false, mine:true
   });
