@@ -344,6 +344,7 @@ let edits = boot&&boot.edits || {};
 let nowId = boot&&boot.nowId || 'mates';
 let sheetId = null;
 let toastT = null;
+let voiceUnlocked = false;
 
 function current(p){
   if(!p || p.cursor>=p.steps.length) return null;
@@ -377,7 +378,14 @@ function hush(){
 }
 function speak(p, step){
   hush();
-  if(!voiceOn || !p || !step) { $('voiceLine').textContent = ''; return; }
+  if(!voiceOn || !p || !step){
+    $('voiceLine').textContent = '';
+    return;
+  }
+  if(!voiceUnlocked){
+    $('voiceLine').textContent = 'Voice on · tap Voice to hear this step';
+    return;
+  }
   const line = `${p.name}. What’s next? ${step.t}`;
   $('voiceLine').textContent = 'Speaking · '+p.name;
   try {
@@ -533,6 +541,7 @@ function sendOk(p, text){
 function okNow(){
   const p = nowId ? proj(nowId) : null;
   if(!p || !current(p)) return;
+  voiceUnlocked = true;
   const text = ($('talk').value||'').trim();
   if(text) edits[p.id] = text;
   const id = p.id;
@@ -648,6 +657,7 @@ function goNow(id, doSpeak){
   renderNow();
   show('now');
   if(doSpeak){
+    voiceUnlocked = true;
     const p = nowId ? proj(nowId) : null;
     speak(p, current(p));
   }
@@ -676,7 +686,8 @@ $('talk').oninput = ()=>{
 $('okBtn').onclick = ()=>okNow();
 $('voiceBtn').onclick = ()=>{
   voiceOn = !voiceOn;
-  if(!voiceOn) hush();
+  if(voiceOn) voiceUnlocked = true;
+  else hush();
   save();
   renderNow();
   if(voiceOn){
@@ -770,10 +781,6 @@ renderRole();
 renderNow();
 paintBusy();
 show('now');
-if(voiceOn){
-  const p = nowId ? proj(nowId) : null;
-  speak(p, current(p));
-}
 </script>
 </body>
 </html>
