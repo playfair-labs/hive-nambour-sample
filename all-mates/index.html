@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-title" content="All Mates" />
 <meta name="theme-color" content="#fbf6ea" />
-<meta name="allmates-build" content="pages-p1-tools-cal" />
+<meta name="allmates-build" content="pages-p1-tools-voice" />
 <title>All Mates On Deck</title>
 <style>
   :root{
@@ -22,7 +22,7 @@
   .phone{width:100%;max-width:390px;height:100dvh;background:var(--bg);position:relative;
     overflow:hidden;display:flex;flex-direction:column;overscroll-behavior-x:none}
   .cal{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;
-    padding:max(10px,env(safe-area-inset-top)) 8px 96px;scroll-behavior:smooth}
+    padding:max(10px,env(safe-area-inset-top)) 8px 118px;scroll-behavior:smooth}
   .row{display:grid;grid-template-columns:22px 1fr;align-items:center;gap:0;
     min-height:38vh;padding:8px 2px}
   .day{font-size:11px;font-weight:800;letter-spacing:.08em;color:var(--navy);opacity:.55;
@@ -127,11 +127,34 @@
     35%{transform:translate(-50%,-72%) scale(1.12)}
     100%{transform:translate(-50%,40%) scale(.2) rotate(18deg);opacity:0}
   }
-  .plus{position:absolute;left:50%;bottom:max(18px,env(safe-area-inset-bottom));
-    transform:translateX(-50%);width:58px;height:58px;border:0;border-radius:50%;
-    background:#fffdf6;color:var(--navy);font-size:34px;line-height:1;font-weight:500;
+  .plus{position:absolute;right:16px;left:auto;bottom:max(20px,env(safe-area-inset-bottom));
+    transform:none;width:46px;height:46px;border:0;border-radius:50%;
+    background:#fffdf6;color:var(--navy);font-size:28px;line-height:1;font-weight:500;
     box-shadow:0 6px 18px rgba(40,30,10,.14);cursor:pointer;z-index:8;font-family:inherit}
-  .plus:active{transform:translateX(-50%) scale(.96)}
+  .plus:active{transform:scale(.96)}
+  .mic{position:absolute;left:50%;bottom:max(16px,env(safe-area-inset-bottom));
+    transform:translateX(-50%);width:62px;height:62px;border:2px solid var(--navy);
+    border-radius:50%;background:#fffdf6;color:var(--navy);padding:0;
+    box-shadow:0 6px 18px rgba(40,30,10,.14);cursor:pointer;z-index:8}
+  .mic:active{transform:translateX(-50%) scale(.96)}
+  .mic.live{background:var(--hive);box-shadow:0 0 0 5px rgba(200,245,74,.45),0 6px 18px rgba(40,30,10,.14)}
+  .mic svg{display:block;margin:0 auto}
+  .say{position:absolute;left:12px;right:12px;z-index:9;
+    bottom:max(90px,calc(env(safe-area-inset-bottom) + 72px));
+    background:#fffdf6;border:2px solid var(--navy);border-radius:16px;padding:10px 12px 12px;
+    box-shadow:0 10px 28px rgba(40,30,10,.16);display:none}
+  .say.on{display:block}
+  .say .k{display:block;font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--muted);margin-bottom:6px}
+  .say textarea{width:100%;border:0;background:transparent;font:inherit;font-size:15px;font-weight:700;
+    letter-spacing:-.03em;color:var(--navy);outline:none;padding:0;resize:none;min-height:2.6em;
+    line-height:1.25}
+  .sos{position:absolute;left:14px;bottom:max(28px,calc(env(safe-area-inset-bottom) + 10px));
+    z-index:8;border:0;background:transparent;padding:6px 2px;font:inherit;font-size:11px;
+    font-weight:800;letter-spacing:.16em;color:var(--muted);opacity:0;pointer-events:none;
+    cursor:pointer}
+  .sos.on{opacity:.55;pointer-events:auto}
+  .sos:active{opacity:1;color:#d13b3b}
   .picker{position:absolute;left:12px;right:12px;bottom:max(86px,calc(env(safe-area-inset-bottom) + 68px));
     z-index:8;display:flex;gap:8px;justify-content:center;pointer-events:none;
     opacity:0;transform:translateY(12px);transition:opacity .22s,transform .22s}
@@ -153,14 +176,27 @@
   <div class="cal" id="cal" aria-label="Boats"></div>
   <div class="picker" id="picker" aria-hidden="true"></div>
   <div class="cal-card" id="calCard" hidden></div>
+  <div class="say" id="say" hidden>
+    <span class="k" id="sayK">Voice</span>
+    <textarea id="sayIn" rows="2" enterkeyhint="go" autocomplete="off" spellcheck="false"
+      aria-label="Voice transcript"></textarea>
+  </div>
+  <button type="button" class="sos" id="sos" aria-label="SOS text the mates">SOS</button>
+  <button type="button" class="mic" id="mic" aria-label="Speak a new boat">
+    <svg width="22" height="28" viewBox="0 0 22 28" aria-hidden="true">
+      <rect x="7" y="2" width="8" height="14" rx="4" fill="none" stroke="currentColor" stroke-width="2.2"/>
+      <path d="M4 13a7 7 0 0 0 14 0" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+      <path d="M11 20v5M7 25h8" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+    </svg>
+  </button>
   <button type="button" class="plus" id="plus" aria-label="New boat">+</button>
 </div>
 <script>
-/* Invite-only private mates sample. No outreach, no discovery, no texts.
-   No before/after job photos. No in-app messaging server.
-   Tools are listed needs on the boat. Hold a need to claim it (same family as join).
-   Join/claim writes a phone calendar event via .ics — browsers have no Calendar write API. */
-const BUILD = 'pages-p1-tools-cal';
+/* Invite-only private mates sample. No outreach, no discovery.
+   No before/after job photos. No in-app messaging server / no inbound texts.
+   Voice creates a boat. Hold a listed need to claim it. Join writes Calendar .ics.
+   SOS is outbound-only native SMS — not a chat. */
+const BUILD = 'pages-p1-tools-voice';
 const $ = id => document.getElementById(id);
 const ink = '#1a1a1a';
 /* Faces sit in the clawfoot bowl, stacked around the painted captain. */
@@ -190,15 +226,15 @@ function matePhoto(seed){
   return 'data:image/svg+xml;utf8,'+encodeURIComponent(svg);
 }
 const MATES = [
-  {id:'al',name:'Al',photo:matePhoto(1),captain:true},
-  {id:'amar',name:'Amar',photo:matePhoto(2)},
-  {id:'andy',name:'Andy',photo:matePhoto(3)},
-  {id:'chris',name:'Chris',photo:matePhoto(4)},
-  {id:'mia',name:'Mia',photo:matePhoto(5)},
-  {id:'nova',name:'Nova',photo:matePhoto(6)},
-  {id:'remi',name:'Remi',photo:matePhoto(7)},
-  {id:'renee',name:'Renee',photo:matePhoto(8)},
-  {id:'val',name:'Val',photo:matePhoto(9)}
+  {id:'al',name:'Al',phone:'0418 110 001',photo:matePhoto(1),captain:true},
+  {id:'amar',name:'Amar',phone:'0418 110 002',photo:matePhoto(2)},
+  {id:'andy',name:'Andy',phone:'0418 110 003',photo:matePhoto(3)},
+  {id:'chris',name:'Chris',phone:'0418 110 004',photo:matePhoto(4)},
+  {id:'mia',name:'Mia',phone:'0418 110 005',photo:matePhoto(5)},
+  {id:'nova',name:'Nova',phone:'0418 110 006',photo:matePhoto(6)},
+  {id:'remi',name:'Remi',phone:'0418 110 007',photo:matePhoto(7)},
+  {id:'renee',name:'Renee',phone:'0418 110 008',photo:matePhoto(8)},
+  {id:'val',name:'Val',phone:'0418 110 009',photo:matePhoto(9)}
 ];
 const YOU = {id:'you',name:'You',photo:matePhoto(21)};
 function mateBy(id){ return id==='you' ? YOU : MATES.find(m=>m.id===id); }
@@ -674,6 +710,7 @@ function save(){ sessionStorage.setItem('amod-boats-v4', JSON.stringify(boats));
 let peekId = null;
 let composeId = null;
 let pickerOn = false;
+let sayOn = false;
 const anim = {};
 
 function render(){
@@ -682,6 +719,12 @@ function render(){
   $('picker').classList.toggle('on', pickerOn);
   $('picker').setAttribute('aria-hidden', pickerOn?'false':'true');
   if(pickerOn) renderPicker();
+  const say = $('say');
+  if(say){
+    say.classList.toggle('on', sayOn);
+    say.hidden = !sayOn;
+  }
+  $('sos').classList.toggle('on', youAboard());
   bindPlates();
 }
 function boatRow(b){
@@ -824,20 +867,156 @@ function togglePosterTool(id, name){
   save(); render();
 }
 
-function createBoat(medium){
-  const id = 'b'+Date.now();
+function createBoat(medium, spec){
+  const s = spec || {};
+  const id = s.id || ('b'+Date.now());
+  const med = s.medium || medium || 'garden';
   boats.unshift({
-    id, day:0, medium, owner:'you', vessel:vesselName(medium),
-    need:1, mates:[], hours:3,
-    sunStart:hourToT(8), sunEnd:hourToT(12),
-    must:false, allDay:false, mine:true, tools:[]
+    id, day:s.day|0, medium:med, owner:'you', vessel:s.vessel || vesselName(med),
+    need:Math.max(1, Math.min(5, s.need|0 || 1)), mates:[],
+    hours:Math.max(1, Math.min(8, s.hours|0 || 3)),
+    sunStart:s.sunStart!=null ? s.sunStart : hourToT(8),
+    sunEnd:s.sunEnd!=null ? s.sunEnd : hourToT(12),
+    must:!!s.must, allDay:!!s.allDay, mine:true,
+    tools:Array.isArray(s.tools) ? s.tools : []
   });
-  composeId = id;
+  composeId = s.raw ? null : id;
   peekId = id;
   pickerOn = false;
+  sayOn = false;
   save();
   render();
   $('cal').scrollTop = 0;
+  return findBoat(id);
+}
+function parseVoice(text){
+  const raw = String(text||'').trim();
+  const t = raw.toLowerCase();
+  let medium = 'garden';
+  if(/tennis|racquet|deuce|love-?all|court/.test(t)) medium = 'tennis';
+  else if(/soup|cook|gravy|ladle|bisque|kitchen/.test(t)) medium = 'soup';
+  else if(/water|bath|tub|swim|hose/.test(t)) medium = 'water';
+  else if(/garden|rake|yard|mulch|clip|chainsaw|barrow|lawn/.test(t)) medium = 'garden';
+  const now = brisbaneNow();
+  let day = 0;
+  if(/tomorrow/.test(t)) day = 1;
+  else if(/today/.test(t)) day = 0;
+  else {
+    const names = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
+    const shorts = ['sun','mon','tue','wed','thu','fri','sat'];
+    names.forEach((name,i)=>{
+      if(t.includes(name) || new RegExp('(?:^|\\s)'+shorts[i]+'(?:\\s|$)').test(t)){
+        let delta = i - now.getDay();
+        if(delta < 0) delta += 7;
+        day = delta;
+      }
+    });
+  }
+  let allDay = /all\s*day/.test(t);
+  const must = /must|locked|strict/.test(t);
+  let sunStart = hourToT(8), sunEnd = hourToT(12);
+  if(/morning/.test(t)){ sunStart = hourToT(8); sunEnd = hourToT(11); }
+  if(/afternoon/.test(t)){ sunStart = hourToT(13); sunEnd = hourToT(16); }
+  if(/evening|night/.test(t)){ sunStart = hourToT(18); sunEnd = hourToT(21); }
+  const range = t.match(/(\d{1,2})(?::(\d{2}))?\s*(?:am|pm)?\s*(?:to|-|–|until)\s*(\d{1,2})/i);
+  if(range){
+    let a = +range[1], b = +range[3];
+    if(/pm/.test(t) && a < 12 && a >= 1 && a !== 12) {
+      /* leave 8-11 as morning unless pm mentioned next to the first number */
+    }
+    sunStart = hourToT(a);
+    sunEnd = hourToT(b);
+    allDay = false;
+  }
+  if(allDay){ sunStart = 0; sunEnd = 1; }
+  let need = 3;
+  const nm = t.match(/need(?:s|ed)?\s+(\d)/) || t.match(/(\d)\s+(?:people|mates|hands|heads|bodies)/);
+  if(nm) need = Math.max(1, Math.min(5, +nm[1]));
+  let hours = 3;
+  const hm = t.match(/(\d+)\s*hours?/) || t.match(/hours?\s*(\d+)/);
+  if(hm) hours = Math.max(1, Math.min(8, +hm[1]));
+  const tools = [];
+  Object.values(TOOLBOX).flat().forEach(name=>{
+    if(t.includes(name) && !tools.some(x=>x.id===toolSlug(name))){
+      tools.push({id:toolSlug(name), name, by:null});
+    }
+  });
+  return {medium, day, sunStart, sunEnd, allDay, must, need, hours, tools, raw};
+}
+const VOICE_EXAMPLE = 'Saturday garden all day, need 4, 5 hours, rake and chainsaw';
+let rec = null;
+function speechRec(){
+  return window.SpeechRecognition || window.webkitSpeechRecognition || null;
+}
+function hideSay(){
+  sayOn = false;
+  const el = $('say');
+  if(el){ el.classList.remove('on'); el.hidden = true; }
+  $('mic').classList.remove('live');
+  if(rec){ try{ rec.stop(); }catch(e){} rec = null; }
+}
+function showSay(live, text){
+  sayOn = true;
+  pickerOn = false;
+  const el = $('say');
+  el.hidden = false;
+  el.classList.add('on');
+  $('sayK').textContent = live ? 'Listening' : 'Voice';
+  $('sayIn').value = text || (live ? '' : VOICE_EXAMPLE);
+  if(!live) setTimeout(()=>{ try{ $('sayIn').focus(); $('sayIn').select(); }catch(e){} }, 30);
+}
+function commitVoice(text){
+  const spec = parseVoice(text);
+  hideSay();
+  createBoat(spec.medium, spec);
+}
+function startVoice(){
+  hideCalCard();
+  const Rec = speechRec();
+  if(!Rec){
+    showSay(false, VOICE_EXAMPLE);
+    return;
+  }
+  try{
+    rec = new Rec();
+    rec.lang = 'en-AU';
+    rec.interimResults = true;
+    rec.continuous = false;
+    showSay(true, '');
+    $('mic').classList.add('live');
+    rec.onresult = ev=>{
+      let bits = '';
+      for(let i=0;i<ev.results.length;i++) bits += ev.results[i][0].transcript;
+      $('sayIn').value = bits;
+      $('sayK').textContent = ev.results[ev.results.length-1].isFinal ? 'Voice' : 'Listening';
+      if(ev.results[ev.results.length-1].isFinal) commitVoice(bits);
+    };
+    rec.onerror = ()=>{ rec = null; $('mic').classList.remove('live'); showSay(false, $('sayIn').value || VOICE_EXAMPLE); };
+    rec.onend = ()=>{ $('mic').classList.remove('live'); rec = null; };
+    rec.start();
+  }catch(e){
+    showSay(false, VOICE_EXAMPLE);
+  }
+}
+function matePhones(){
+  return MATES.map(m=>String(m.phone||'').replace(/\s+/g,'')).filter(Boolean);
+}
+function sosBoat(){
+  return boats.find(b=>(b.mates||[]).includes('you')) || boats.find(b=>b.mine) || boats[0];
+}
+function sosHref(){
+  const b = sosBoat();
+  const lead = b ? leadMate(b) : YOU;
+  const vessel = b ? (b.vessel || vesselName(b.medium,0)) : 'All Mates';
+  const body = `SOS · ${poss(lead.name)} ${vessel} — open All Mates`;
+  const nums = matePhones();
+  if(isIOS()){
+    return 'sms:/open?addresses='+encodeURIComponent(nums.join(','))+'&body='+encodeURIComponent(body);
+  }
+  return 'sms:'+nums.join(',')+'?body='+encodeURIComponent(body);
+}
+function youAboard(){
+  return boats.some(b=>b.mine || (b.mates||[]).includes('you'));
 }
 
 let drag = null;
@@ -956,6 +1135,7 @@ function onUp(e){
 }
 
 $('plus').onclick = ()=>{
+  hideSay();
   pickerOn = !pickerOn;
   if(pickerOn) composeId = null;
   render();
@@ -963,6 +1143,22 @@ $('plus').onclick = ()=>{
 $('picker').onclick = e=>{
   const p = e.target.closest('[data-med]'); if(!p) return;
   createBoat(p.dataset.med);
+};
+$('mic').onclick = ()=>{
+  if(sayOn && !speechRec()){ commitVoice($('sayIn').value); return; }
+  if(rec){ hideSay(); return; }
+  pickerOn = false;
+  startVoice();
+};
+$('sayIn').addEventListener('keydown', e=>{
+  if(e.key==='Enter'){ e.preventDefault(); commitVoice($('sayIn').value); }
+});
+$('sos').onclick = e=>{
+  e.preventDefault();
+  if(!youAboard()) return;
+  const href = sosHref();
+  /* Native SMS compose only. No in-app thread, no inbound server. */
+  location.href = href;
 };
 $('cal').onclick = e=>{
   if(e.target.closest('.plate')) return;
