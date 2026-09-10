@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-title" content="All Mates On Deck" />
 <meta name="theme-color" content="#0f1412" />
 <title>All Mates On Deck</title>
-<meta name="allmates-build" content="job-detail-boat" />
+<meta name="allmates-build" content="boat-extra" />
 <style>
   :root {
     --bg:#0f1412; --card:#1a221e; --hive:#c8f54a; --hive-dim:#8fb82e;
@@ -151,6 +151,21 @@
   .after-pane{display:flex;flex-direction:column;background:#0a0e0c}
   .after-pane .hero-photo{flex:2 1 66%}
   .after-pane .hero-copy{flex:1 1 34%}
+  .feed-card{display:grid;grid-template-columns:88px 1fr;gap:12px;align-items:center}
+  .feed-craft{width:88px;height:72px}
+  .feed-craft svg{width:100%;height:100%}
+  .craft-rail{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;
+    -webkit-overflow-scrolling:touch;padding:8px 4px 12px;margin:0 -4px}
+  .craft-pick{flex:0 0 82%;scroll-snap-align:center;background:var(--card);border:2px solid var(--line);
+    border-radius:16px;padding:10px;text-align:center}
+  .craft-pick.on{border-color:var(--hive);box-shadow:0 0 0 1px var(--hive)}
+  .craft-pick .mini-boat{position:relative;width:100%;max-width:200px;margin:0 auto}
+  .empty-seat{border:2px dashed var(--hive-dim)!important;background:transparent!important}
+  .feed-craft .seat{width:16px;height:16px}
+  .feed-craft .seat .mini{width:14px;height:14px;border-width:1px}
+  .feed-craft .tag,.craft-pick .tag{display:none}
+  .craft-pick .seat{width:26px;height:26px}
+  .craft-pick .seat .mini{width:24px;height:24px}
 </style>
 </head>
 <body>
@@ -168,20 +183,29 @@
       <div class="block-label hidden" id="boardLabel">Who’s on board</div>
       <div class="board hidden" id="board"></div>
       <div class="block-label">On now / coming</div>
-      <button type="button" class="card job-card" id="presetIkea">
-        <strong>IKEA wardrobe</strong>
-        <span class="job-meta">Coming · 4 hands · Weekend · 6am to 10pm</span>
-        <span class="job-meta" id="ikeaWho"></span>
+      <button type="button" class="card job-card feed-card" id="presetIkea">
+        <div class="feed-craft" data-extra="4"></div>
+        <div>
+          <strong>IKEA wardrobe</strong>
+          <span class="job-meta">Weekend · 6am to 10pm</span>
+          <span class="job-meta" id="ikeaWho"></span>
+        </div>
       </button>
-      <button type="button" class="card job-card" id="presetGarage">
-        <strong>Al’s garage</strong>
-        <span class="job-meta">Coming · 2 hands · Sun 13 Sep · 10am</span>
-        <span class="job-meta" id="garageWho"></span>
+      <button type="button" class="card job-card feed-card" id="presetGarage">
+        <div class="feed-craft" data-extra="1"></div>
+        <div>
+          <strong>Al’s garage</strong>
+          <span class="job-meta">Sun 13 Sep · 10am</span>
+          <span class="job-meta" id="garageWho"></span>
+        </div>
       </button>
-      <button type="button" class="card job-card" id="goEvent">
-        <strong>Street tidy</strong>
-        <span class="job-meta">Today · event · 2 photos</span>
-        <span class="job-meta" id="eventWho"></span>
+      <button type="button" class="card job-card feed-card" id="goEvent">
+        <div class="feed-craft" data-extra="5"></div>
+        <div>
+          <strong>Street tidy</strong>
+          <span class="job-meta">Today · event · photos</span>
+          <span class="job-meta" id="eventWho"></span>
+        </div>
       </button>
       <div id="myFirstCard" class="hidden"></div>
     </div>
@@ -329,13 +353,9 @@
         <input class="field" id="jobTitle" maxlength="48" placeholder="e.g. IKEA wardrobe" />
       </div>
       <div>
-        <div class="block-label">Hands needed</div>
-        <div class="hands-row">
-          <button type="button" class="step" id="handsMinus" aria-label="Fewer hands">−</button>
-          <div class="hands-n" id="handsN">4</div>
-          <button type="button" class="step" id="handsPlus" aria-label="More hands">+</button>
-        </div>
-        <p class="count" id="handsHint">Many hands. Ship full at 4 yes.</p>
+        <div class="block-label">Craft — you’re already in. Empty seats = extras needed</div>
+        <div class="craft-rail" id="craftRail"></div>
+        <p class="count" id="handsHint">Flick sideways. Minimum +1.</p>
       </div>
       <div>
         <div class="block-label">When</div>
@@ -614,7 +634,7 @@ let timers = [];
 function blankJob(){
   return {
     title:'',
-    hands:4,
+    hands:1,
     mode:'window',
     days:['sat','sun'],
     time:'09:00',
@@ -627,7 +647,18 @@ function show(id){
     $('screen-'+s).classList.toggle('hidden', s!==id);
   });
 }
-function handsWord(n){ return n===1 ? '1 hand' : `${n} hands`; }
+const CRAFTS = [
+  {extra:1, id:'row', label:'Rowboat'},
+  {extra:2, id:'pea', label:'Peapod'},
+  {extra:3, id:'cork', label:'Cork raft'},
+  {extra:4, id:'four', label:'Four-hander'},
+  {extra:5, id:'ship', label:'Tall ship'}
+];
+function craftOf(extra){
+  const n = Math.max(1, extra|0);
+  return CRAFTS[Math.min(n,5)-1];
+}
+function handsWord(n){ return n===1 ? '+1 extra' : `+${n} extra`; }
 function peopleWord(n){ return n===1 ? '1 mate' : `${n} mates`; }
 function picked(){ return people.filter(p=>p.on); }
 function sameDays(a,b){
@@ -713,7 +744,7 @@ function applyPreset(kind){
     job.end='22:00';
   } else {
     job.title='Garage tidy';
-    job.hands=2;
+    job.hands=1;
     job.mode='specific';
     job.days=['sun'];
     job.time='10:00';
@@ -726,10 +757,16 @@ function applyPreset(kind){
 
 function renderPost(){
   $('jobTitle').value = job.title;
-  $('handsN').textContent = String(job.hands);
-  $('handsHint').textContent = job.hands<=2
-    ? `${handsWord(job.hands)}. Few hands. Ship full at ${job.hands} yes.`
-    : `${handsWord(job.hands)}. Many hands. Ship full at ${job.hands} yes.`;
+  const you = {name:'You', photo:selfieUrl, hat:myHat||'captain', color:'#3a4a20'};
+  $('craftRail').innerHTML = CRAFTS.map(c=>{
+    const on = job.hands===c.extra || (c.extra===5 && job.hands>=5);
+    return `<button type="button" class="craft-pick ${on?'on':''}" data-extra="${c.extra}">
+      <div class="mini-boat">${miniCraft(c.extra, you, [])}</div>
+      <strong>${c.label}</strong>
+      <div class="job-meta">${c.extra===5?'+5 or more':'You + '+c.extra+' empty'}</div>
+    </button>`;
+  }).join('');
+  $('handsHint').textContent = `${craftOf(job.hands).label} · you’re captain. Empty seats = extras.`;
   [...document.querySelectorAll('#modeTabs .tab')].forEach(t=>{
     t.classList.toggle('on', t.dataset.mode===job.mode);
   });
@@ -1087,6 +1124,10 @@ function renderHome(){
     $('goMine').onclick=()=>openDetail('mine');
   }
   renderBoard();
+  const cap = {name:'Al', hat:'captain', color:'#2a3a20'};
+  document.querySelectorAll('.feed-craft').forEach(el=>{
+    el.innerHTML = miniCraft(+el.dataset.extra||1, cap, []);
+  });
 }
 function peek(title, when){
   if(member) return false;
@@ -1102,12 +1143,34 @@ function sceneSvg(kind){
   if(kind==='street-after') return `<svg viewBox="0 0 200 260" preserveAspectRatio="xMidYMid slice"><rect width="200" height="260" fill="#142018"/><rect x="0" y="140" width="200" height="80" fill="#2a3830"/><rect x="20" y="40" width="30" height="90" fill="#2a4030"/><rect x="150" y="50" width="28" height="80" fill="#2a4030"/><circle cx="100" cy="120" r="18" fill="#c8f54a" opacity=".35"/></svg>`;
   return `<svg viewBox="0 0 200 260" preserveAspectRatio="xMidYMid slice"><rect width="200" height="260" fill="#1a2218"/><text x="100" y="130" text-anchor="middle" fill="#8fb82e" font-size="42">⚖</text></svg>`;
 }
-function hullSvg(kind){
-  if(kind==='dinghy') return `<svg class="hull" viewBox="0 0 200 260"><ellipse cx="100" cy="130" rx="48" ry="100" fill="#6a4a28" stroke="#c8a227" stroke-width="3"/><path d="M100 28 L118 70 L82 70 Z" fill="#8a6238"/><path d="M52 130 L28 138 M148 130 L172 138" stroke="#5a3a18" stroke-width="4"/></svg>`;
-  if(kind==='cutter') return `<svg class="hull" viewBox="0 0 220 300"><path d="M110 20 L138 90 L130 250 L90 250 L82 90 Z" fill="#5a3a22" stroke="#c8a227" stroke-width="3"/><rect x="106" y="40" width="8" height="160" fill="#d8c49a"/><path d="M114 50 L170 140 L114 140 Z" fill="#f4f7f2" opacity=".85"/></svg>`;
+function hullSvg(id){
+  if(id==='row') return `<svg class="hull" viewBox="0 0 200 240"><ellipse cx="100" cy="128" rx="36" ry="88" fill="#6a4a28" stroke="#c8a227" stroke-width="3"/><path d="M64 128 L40 136 M136 128 L160 136" stroke="#5a3a18" stroke-width="4"/></svg>`;
+  if(id==='pea') return `<svg class="hull" viewBox="0 0 220 220"><ellipse cx="110" cy="120" rx="78" ry="48" fill="#8a5a28" stroke="#c8a227" stroke-width="3"/><ellipse cx="110" cy="118" rx="58" ry="28" fill="#5a3a18" opacity=".35"/></svg>`;
+  if(id==='cork') return `<svg class="hull" viewBox="0 0 240 200"><ellipse cx="70" cy="110" rx="40" ry="36" fill="#c8a06a" stroke="#c8a227" stroke-width="3"/><ellipse cx="120" cy="118" rx="42" ry="38" fill="#d4b078" stroke="#c8a227" stroke-width="3"/><ellipse cx="172" cy="110" rx="40" ry="36" fill="#c8a06a" stroke="#c8a227" stroke-width="3"/></svg>`;
+  if(id==='four') return `<svg class="hull" viewBox="0 0 220 300"><path d="M110 20 L138 90 L130 250 L90 250 L82 90 Z" fill="#5a3a22" stroke="#c8a227" stroke-width="3"/><rect x="106" y="40" width="8" height="160" fill="#d8c49a"/><path d="M114 50 L170 140 L114 140 Z" fill="#f4f7f2" opacity=".85"/></svg>`;
   return `<svg class="hull" viewBox="0 0 240 340"><path d="M120 30 L160 110 L150 300 L90 300 L80 110 Z" fill="#4a2e18" stroke="#c8a227" stroke-width="3"/><rect x="116" y="36" width="8" height="200" fill="#d8c49a"/><rect x="70" y="50" width="6" height="160" fill="#c8b888"/><rect x="164" y="50" width="6" height="160" fill="#c8b888"/><path d="M124 48 L190 130 L124 130 Z" fill="#f4f7f2" opacity=".8"/><path d="M76 60 L30 130 L76 130 Z" fill="#e8ead0" opacity=".75"/><path d="M170 60 L214 130 L170 130 Z" fill="#e8ead0" opacity=".75"/></svg>`;
 }
+function extraSeats(id){
+  if(id==='row') return {helm:[50,78], crew:[[50,32]]};
+  if(id==='pea') return {helm:[50,72], crew:[[32,42],[68,42]]};
+  if(id==='cork') return {helm:[50,78], crew:[[22,48],[50,36],[78,48]]};
+  if(id==='four') return {helm:[50,80], crew:[[50,26],[32,50],[68,50],[50,62]]};
+  return {helm:[50,82], crew:[[50,22],[28,38],[72,38],[26,56],[74,56]]};
+}
+function miniCraft(extra, captain, crew){
+  const c = craftOf(extra);
+  const pos = extraSeats(c.id);
+  let seats = seatAt(pos.helm[0], pos.helm[1], captain, true);
+  for(let i=0;i<c.extra;i++){
+    const xy = pos.crew[i]; if(!xy) continue;
+    seats += seatAt(xy[0], xy[1], (crew&&crew[i])||null, false);
+  }
+  return `<div class="craft-wrap" style="width:100%">${hullSvg(c.id)}${seats}</div>`;
+}
 function seatAt(x,y,person,isCap){
+  if(!person){
+    return `<div class="seat crew" style="left:${x}%;top:${y}%"><div class="mini empty-seat"></div></div>`;
+  }
   const hide = !member;
   const face = hide
     ? `<div class="mini"><div class="ghost-face"></div></div>`
@@ -1119,27 +1182,29 @@ function openDetail(key){
   const you = {name:'You', photo:selfieUrl, hat:myHat, color:'#3a4a20'};
   const al = {name:'Al', photo:'', hat:'captain', color:'#2a3a20'};
   const jobs = {
-    garage:{title:"Al’s garage", sub:'2 hands · dinghy', hands:2, scene:'garage', after:null,
+    garage:{title:"Al’s garage", sub:'Rowboat · you + 1', extra:1, scene:'garage', after:null,
       captain:al, crew:[{name:'Tom', hat:'pirate', color:'#4a3a28'}]},
-    ikea:{title:'IKEA wardrobe', sub:'4 hands · cutter', hands:4, scene:'ikea', after:null,
+    ikea:{title:'IKEA wardrobe', extra:4, sub:'Four-hander', scene:'ikea', after:null,
       captain:al, crew:[{name:'Mia', hat:'sailor', color:'#3a5a48'},{name:'Sara', hat:'beret', color:'#3a2a40'},{name:'Jack', hat:'turban', color:'#3a4030'}]},
-    street:{title:'Street tidy', sub:'6 hands · ship · done', hands:6, scene:'street', after:'street-after',
+    street:{title:'Street tidy', extra:5, sub:'Tall ship · done', scene:'street', after:'street-after',
       captain:al, crew:[{name:'Helen', hat:'captain', color:'#2a3a28'},{name:'Mia', hat:'sailor', color:'#3a5a48'},{name:'Tom', hat:'pirate', color:'#4a3a28'},{name:'Sara', hat:'beret', color:'#3a2a40'},{name:'Priya', hat:'turban', color:'#403828'}]},
-    mine:{title: myFirst||'Your activity', sub:'Your <s>job</s> activity · dinghy', hands:2, scene:'mind', after:null,
-      captain:you, crew:[{name:'Mia', hat:'sailor', color:'#3a5a48'}]}
+    mine:{title: myFirst||'Your activity', extra:1, sub:'Your <s>job</s> activity · rowboat', scene:'mind', after:null,
+      captain:you, crew:[]}
   };
   const d = jobs[key] || jobs.garage;
-  const kind = d.hands<=2 ? 'dinghy' : d.hands<=5 ? 'cutter' : 'ship';
+  const c = craftOf(d.extra);
   $('heroTitle').textContent = d.title;
   $('heroSub').innerHTML = d.sub;
   $('heroBefore').innerHTML = sceneSvg(d.scene);
-  $('craftKind').textContent = kind==='dinghy' ? 'Longboat' : kind==='cutter' ? 'Cutter' : 'Tall ship';
-  $('craftNote').textContent = member ? 'Captain is always at the helm.' : 'People aboard. Names stay hidden.';
-  const helm = kind==='dinghy' ? [[50,78]] : kind==='cutter' ? [[50,80]] : [[50,82]];
-  const crewPos = kind==='dinghy' ? [[50,32]] : kind==='cutter' ? [[50,28],[32,52],[68,52]] : [[50,24],[30,40],[70,40],[28,58],[72,58]];
-  let seats = seatAt(helm[0][0], helm[0][1], d.captain, true);
-  d.crew.forEach((p,i)=>{ if(crewPos[i]) seats += seatAt(crewPos[i][0], crewPos[i][1], p, false); });
-  $('craft').innerHTML = hullSvg(kind) + seats;
+  $('craftKind').textContent = c.label;
+  $('craftNote').textContent = member ? 'You’re already captain. Empty = still needed.' : 'Craft size is extras needed. Names hidden.';
+  const pos = extraSeats(c.id);
+  let seats = seatAt(pos.helm[0], pos.helm[1], d.captain, true);
+  for(let i=0;i<c.extra;i++){
+    const xy = pos.crew[i]; if(!xy) continue;
+    seats += seatAt(xy[0], xy[1], d.crew[i]||null, false);
+  }
+  $('craft').innerHTML = hullSvg(c.id) + seats;
   const done = !!d.after;
   $('afterPane').classList.toggle('hidden', !done);
   if(done){
@@ -1295,8 +1360,11 @@ $('goPost').onclick=()=>{
 };
 $('backHome').onclick=()=>show('home');
 $('jobTitle').oninput=e=>{ job.title = e.target.value; };
-$('handsMinus').onclick=()=>{ job.hands=Math.max(1, job.hands-1); renderPost(); };
-$('handsPlus').onclick=()=>{ job.hands=Math.min(8, job.hands+1); renderPost(); };
+$('craftRail').onclick=e=>{
+  const p=e.target.closest('[data-extra]'); if(!p) return;
+  job.hands=+p.dataset.extra;
+  renderPost();
+};
 $('modeTabs').onclick=e=>{
   const t=e.target.closest('.tab'); if(!t) return;
   job.mode=t.dataset.mode;
