@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-title" content="All Mates" />
 <meta name="theme-color" content="#fbf6ea" />
-<meta name="allmates-build" content="pages-p1-glance-flood" />
+<meta name="allmates-build" content="pages-p1-tools-cal" />
 <title>All Mates On Deck</title>
 <style>
   :root{
@@ -38,6 +38,45 @@
     letter-spacing:-.07em;line-height:.8;color:var(--navy);opacity:.78;
     font-variant-numeric:tabular-nums;filter:drop-shadow(0 1px 0 #fffdf6)}
   .need.off{display:none}
+  .asks{position:absolute;left:6px;bottom:8px;z-index:7;display:flex;flex-direction:column;
+    align-items:flex-start;gap:5px;max-width:48%}
+  .tool{appearance:none;-webkit-appearance:none;font-family:inherit;cursor:pointer;
+    pointer-events:auto;font-size:clamp(15px,4vw,18px);font-weight:800;letter-spacing:-.03em;
+    line-height:1.05;color:var(--navy);background:rgba(255,253,246,.94);border:1.5px solid var(--navy);
+    border-radius:10px;padding:4px 8px;white-space:nowrap;box-shadow:0 1px 0 #fffdf6}
+  .tool:focus{outline:none}
+  .tool.holding{transform:scale(.96);box-shadow:0 0 0 3px var(--hive),0 1px 0 #fffdf6}
+  .tool.fly{animation:toolFly .42s cubic-bezier(.22,1.1,.3,1) both}
+  @keyframes toolFly{
+    0%{transform:translate(0,0) scale(1);opacity:1}
+    100%{transform:translate(84px,-32px) scale(.55);opacity:0}
+  }
+  .stock{position:absolute;left:6px;right:6px;bottom:6px;z-index:7;display:flex;flex-wrap:wrap;
+    justify-content:center;gap:6px}
+  .stock .tool{border-style:dashed;opacity:.72}
+  .stock .tool.on{border-style:solid;opacity:1;background:var(--hive)}
+  .seat .loots{position:absolute;left:50%;top:104%;transform:translateX(-50%);z-index:2;
+    display:flex;flex-direction:column;align-items:center;gap:2px;pointer-events:none}
+  .seat .loot{pointer-events:auto;font-size:10px;font-weight:800;letter-spacing:-.02em;
+    color:var(--navy);white-space:nowrap;background:#fffdf6;border:1.5px solid var(--navy);
+    border-radius:7px;padding:1px 5px;box-shadow:0 1px 0 rgba(0,0,0,.08)}
+  .seat.you .loot{background:var(--hive)}
+  .plate.peek .seat .tag{top:calc(108% + 15px)}
+  .cal-card{position:absolute;left:12px;right:12px;z-index:14;
+    bottom:max(86px,calc(env(safe-area-inset-bottom) + 68px));
+    background:#fffdf6;border:2px solid var(--navy);border-radius:16px;padding:12px 14px 13px;
+    box-shadow:0 10px 28px rgba(40,30,10,.16);opacity:0;transform:translateY(12px);
+    pointer-events:none;transition:opacity .2s,transform .2s}
+  .cal-card.on{opacity:1;transform:none;pointer-events:auto}
+  .cal-card .k{font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--muted)}
+  .cal-card .t{display:block;font-size:22px;font-weight:800;letter-spacing:-.03em;line-height:1.15;
+    margin:4px 0 2px}
+  .cal-card .w{display:block;font-size:14px;font-weight:650;color:var(--navy)}
+  .cal-card .h{display:block;font-size:12px;color:var(--muted);margin-top:6px;line-height:1.35}
+  .who .loot{display:block;margin-top:4px;width:max-content;font-size:12px;font-weight:800;
+    letter-spacing:-.02em;background:var(--hive);border:1.5px solid var(--navy);border-radius:8px;
+    padding:1px 7px;pointer-events:auto}
   .row.eve .who,.row.eve .need{color:#f4f0e6;filter:drop-shadow(0 1px 0 #1b2438)}
   .plate{position:relative;width:100%;aspect-ratio:16/9;touch-action:none;overflow:visible}
   .plate svg{display:block;overflow:visible}
@@ -113,11 +152,15 @@
   <div class="sun-readout" id="sunReadout" aria-hidden="true"></div>
   <div class="cal" id="cal" aria-label="Boats"></div>
   <div class="picker" id="picker" aria-hidden="true"></div>
+  <div class="cal-card" id="calCard" hidden></div>
   <button type="button" class="plus" id="plus" aria-label="New boat">+</button>
 </div>
 <script>
-/* Invite-only private mates sample. No outreach, no discovery, no texts. */
-const BUILD = 'pages-p1-glance-flood';
+/* Invite-only private mates sample. No outreach, no discovery, no texts.
+   No before/after job photos. No in-app messaging server.
+   Tools are listed needs on the boat. Hold a need to claim it (same family as join).
+   Join/claim writes a phone calendar event via .ics — browsers have no Calendar write API. */
+const BUILD = 'pages-p1-tools-cal';
 const $ = id => document.getElementById(id);
 const ink = '#1a1a1a';
 /* Faces sit in the clawfoot bowl, stacked around the painted captain. */
@@ -131,6 +174,12 @@ const VESSELS = {
   water:['Tubby','Clawfoot','Soapdish']
 };
 const INHERENT = 8; /* baked bow-up in the locked plate */
+const TOOLBOX = {
+  soup:['ladle','pot','spoons'],
+  tennis:['racquet','hopper','net'],
+  garden:['rake','chainsaw','clippers','barrow'],
+  water:['towel','soap']
+};
 
 function esc(s){
   return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -310,6 +359,112 @@ function hideReadout(){
   el.innerHTML = '';
 }
 
+function pad2(n){ return String(n).padStart(2,'0'); }
+function icsStamp(d){
+  return `${d.getFullYear()}${pad2(d.getMonth()+1)}${pad2(d.getDate())}T${pad2(d.getHours())}${pad2(d.getMinutes())}00`;
+}
+function icsDay(d){
+  return `${d.getFullYear()}${pad2(d.getMonth()+1)}${pad2(d.getDate())}`;
+}
+function boatClock(b, which){
+  const d = brisbaneNow();
+  d.setDate(d.getDate() + (b.day|0));
+  const h = b.allDay
+    ? (which==='end' ? 19 : 5)
+    : snapHour(tToHour(which==='end' ? b.sunEnd : b.sunStart));
+  d.setHours(Math.floor(h)%24, (h%1) ? 30 : 0, 0, 0);
+  return d;
+}
+function icsFold(s){
+  return String(s||'').replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\n/g,'\\n');
+}
+function toICS(evt){
+  const uid = evt.uid || ('amod-'+Date.now()+'@all-mates');
+  const now = brisbaneNow();
+  const lines = [
+    'BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//All Mates//EN','CALSCALE:GREGORIAN','METHOD:PUBLISH',
+    'BEGIN:VEVENT','UID:'+uid,'DTSTAMP:'+icsStamp(now)
+  ];
+  if(evt.allDay){
+    const a = evt.start, b = new Date(evt.end);
+    b.setDate(b.getDate()+1);
+    lines.push('DTSTART;VALUE=DATE:'+icsDay(a));
+    lines.push('DTEND;VALUE=DATE:'+icsDay(b));
+  } else {
+    lines.push('DTSTART;TZID=Australia/Brisbane:'+icsStamp(evt.start));
+    lines.push('DTEND;TZID=Australia/Brisbane:'+icsStamp(evt.end));
+  }
+  lines.push('SUMMARY:'+icsFold(evt.summary));
+  if(evt.desc) lines.push('DESCRIPTION:'+icsFold(evt.desc));
+  if(evt.where) lines.push('LOCATION:'+icsFold(evt.where));
+  lines.push('END:VEVENT','END:VCALENDAR');
+  return lines.join('\r\n');
+}
+function downloadICS(ics, filename){
+  const blob = new Blob([ics], {type:'text/calendar;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename || 'all-mates.ics';
+  a.rel = 'noopener';
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 2000);
+  return url;
+}
+let calTimer = null;
+function showCalCard(evt, how){
+  const el = $('calCard');
+  if(!el) return;
+  const howLine = how==='ics'
+    ? 'Wrote a Calendar file — iPhone opens it in Calendar. Desktop downloads .ics.'
+    : how==='cancel'
+      ? 'Calendar write cancelled.'
+      : 'Sample card. This web page cannot write the native Calendar store.';
+  el.hidden = false;
+  el.classList.add('on');
+  el.innerHTML = `<span class="k">Calendar</span>
+    <span class="t">${esc(evt.summary)}</span>
+    <span class="w">${esc(evt.when)}</span>
+    <span class="h">${esc(howLine)}</span>`;
+  if(calTimer) clearTimeout(calTimer);
+  calTimer = setTimeout(hideCalCard, 3600);
+}
+function hideCalCard(){
+  const el = $('calCard');
+  if(!el) return;
+  el.classList.remove('on');
+  el.setAttribute('hidden','');
+  if(calTimer){ clearTimeout(calTimer); calTimer=null; }
+}
+function writeCalendarFor(b){
+  if(!b) return;
+  const start = boatClock(b,'start');
+  const end = boatClock(b,'end');
+  const bring = bringLine(b);
+  const vessel = b.vessel || vesselName(b.medium, 0);
+  const evt = {
+    uid: 'amod-'+b.id+'-you@all-mates',
+    summary: calTitle(b),
+    desc: (bring ? 'What to bring: '+bring+' — ' : '') + vessel,
+    where: 'Nambour',
+    start, end,
+    allDay: !!b.allDay,
+    when: formatRange(b.sunStart, b.sunEnd, b.allDay)
+  };
+  let how = 'card';
+  try{
+    downloadICS(toICS(evt), toolSlug(evt.summary||'all-mates')+'.ics');
+    how = 'ics';
+  }catch(e){
+    how = 'card';
+  }
+  showCalCard(evt, how);
+  try{ sessionStorage.setItem('amod-cal-v1', JSON.stringify({id:b.id, summary:evt.summary, at:Date.now(), how})); }catch(err){}
+}
+
 /* Angle = remaining need. Level = finished. Nearly-flat empty = need one. Steep = many. */
 function tipDeg(boat){
   const aboard = (boat.mates||[]).length;
@@ -347,6 +502,31 @@ function vesselName(medium, seed){
   const list = VESSELS[medium] || VESSELS.water;
   if(seed==null) return list[Math.floor(Math.random()*list.length)];
   return list[Math.abs(Number(seed)||0) % list.length];
+}
+function poss(name){
+  if(name==='You') return 'Your';
+  const n = String(name||'Mate');
+  return /s$/i.test(n) ? n+"'" : n+"'s";
+}
+function toolSlug(name){ return String(name||'').toLowerCase().replace(/[^a-z0-9]+/g,''); }
+function boatTools(b){ return Array.isArray(b.tools) ? b.tools : []; }
+function openTools(b){ return boatTools(b).filter(t=>!t.by); }
+function visibleAsks(b){
+  const fly = (anim[b.id]||{}).fly;
+  return boatTools(b).filter(t=>!t.by || (t.by==='you' && t.id===fly));
+}
+function lootFor(b, mateId){
+  return boatTools(b).filter(t=>t.by===mateId).map(t=>t.name);
+}
+function bringLine(b){
+  const loot = lootFor(b,'you');
+  return loot.length ? loot.join(', ') : '';
+}
+function calTitle(b){
+  const lead = leadMate(b);
+  const bring = bringLine(b);
+  const vessel = b.vessel || vesselName(b.medium, 0);
+  return bring ? `${poss(lead.name)} · ${bring}` : `${poss(lead.name)} · ${vessel}`;
 }
 
 const MEDIA = {
@@ -457,27 +637,32 @@ function sunSvg(boat){
   </svg>`;
 }
 
+function seedTools(medium, names){
+  return (names||TOOLBOX[medium]||[]).map(name=>({id:toolSlug(name), name, by:null}));
+}
 function loadBoats(){
   if(new URLSearchParams(location.search).has('fresh')){
     sessionStorage.removeItem('amod-boats');
     sessionStorage.removeItem('amod-boats-v2');
     sessionStorage.removeItem('amod-boats-v3');
+    sessionStorage.removeItem('amod-boats-v4');
+    sessionStorage.removeItem('amod-cal-v1');
   }
   try{
-    const raw = sessionStorage.getItem('amod-boats-v3');
+    const raw = sessionStorage.getItem('amod-boats-v4');
     if(raw){
       const parsed = JSON.parse(raw);
       if(Array.isArray(parsed) && parsed.length) return parsed;
     }
   }catch(e){}
   return [
-    {id:'cook', day:0, medium:'soup', owner:'mia', vessel:'Gravy Boat', need:5, mates:['mia','andy','remi'], hours:8, sunStart:hourToT(8), sunEnd:hourToT(11), must:false, allDay:false, mine:false},
-    {id:'tennis', day:1, medium:'tennis', owner:'nova', vessel:'Love-All', need:3, mates:[], hours:5, sunStart:hourToT(9), sunEnd:hourToT(11), must:true, allDay:false, mine:false},
-    {id:'garden', day:2, medium:'garden', owner:'remi', vessel:'Sea Biscuit', need:4, mates:['remi','renee','amar','val'], hours:5, sunStart:0, sunEnd:1, must:false, allDay:true, mine:false}
+    {id:'cook', day:0, medium:'soup', owner:'mia', vessel:'Gravy Boat', need:5, mates:['mia','andy','remi'], hours:8, sunStart:hourToT(8), sunEnd:hourToT(11), must:false, allDay:false, mine:false, tools:seedTools('soup',['ladle','pot','spoons'])},
+    {id:'tennis', day:1, medium:'tennis', owner:'nova', vessel:'Love-All', need:3, mates:[], hours:5, sunStart:hourToT(9), sunEnd:hourToT(11), must:true, allDay:false, mine:false, tools:seedTools('tennis',['racquet','hopper'])},
+    {id:'garden', day:2, medium:'garden', owner:'remi', vessel:'Sea Biscuit', need:5, mates:['remi','renee','amar','val'], hours:5, sunStart:0, sunEnd:1, must:false, allDay:true, mine:false, tools:seedTools('garden',['rake','clippers','chainsaw'])}
   ];
 }
 let boats = loadBoats();
-function save(){ sessionStorage.setItem('amod-boats-v3', JSON.stringify(boats)); }
+function save(){ sessionStorage.setItem('amod-boats-v4', JSON.stringify(boats)); }
 
 let peekId = null;
 let composeId = null;
@@ -506,9 +691,21 @@ function boatRow(b){
     const p = mateBy(id); if(!p) return '';
     const s = SEATS[i] || {x:30+i*6, y:56};
     const extra = (anim[b.id]||{})[id] || '';
+    const loot = lootFor(b,id);
+    const lootHtml = loot.length ? `<div class="loots">${loot.map(name=>
+      `<span class="loot" ${id==='you'?`data-tool="${esc(toolSlug(name))}"`:''}>${esc(name)}</span>`
+    ).join('')}</div>` : '';
     return `<div class="seat ${id==='you'?'you':''} ${extra}" style="left:${s.x}%;top:${s.y}%;z-index:${i+1}">
-      <img alt="" src="${p.photo}"/><span class="tag">${esc(p.name)}</span></div>`;
+      <img alt="" src="${p.photo}"/><span class="tag">${esc(p.name)}</span>${lootHtml}</div>`;
   }).join('');
+  const asks = visibleAsks(b).map(t=>{
+    const fly = ((anim[b.id]||{}).fly===t.id) ? ' fly' : '';
+    return `<button type="button" class="tool${fly}" data-tool="${esc(t.id)}" aria-label="Need ${esc(t.name)}">${esc(t.name)}</button>`;
+  }).join('');
+  const stock = (compose && b.mine) ? `<div class="stock">${(TOOLBOX[b.medium]||[]).map(name=>{
+    const on = boatTools(b).some(t=>t.id===toolSlug(name));
+    return `<button type="button" class="tool${on?' on':''}" data-add="${esc(name)}" aria-label="List ${esc(name)}">${esc(name)}</button>`;
+  }).join('')}</div>` : '';
   return `<div class="row ${b.day===0?'now':''} ${eve?'eve':''}" data-boat="${b.id}">
     <div class="day">${esc(d.short)}</div>
     <div class="plate${peek}${compose}" data-id="${b.id}" aria-label="Boat">
@@ -518,8 +715,10 @@ function boatRow(b){
         <div class="mates">${seats}</div>
       </div>
       ${sunSvg(b)}
-      <div class="who"><span class="lead">${esc(lead.name)}</span><span class="vessel">${esc(vessel)}</span></div>
+      <div class="who"><span class="lead">${esc(lead.name)}</span><span class="vessel">${esc(vessel)}</span>${(b.mine?lootFor(b,'you'):[]).map(name=>`<span class="loot" data-tool="${esc(toolSlug(name))}">${esc(name)}</span>`).join('')}</div>
       <div class="need${rem?'' : ' off'}">${rem||''}</div>
+      ${(!stock && asks)?`<div class="asks">${asks}</div>`:''}
+      ${stock}
     </div>
   </div>`;
 }
@@ -538,24 +737,71 @@ function togglePeek(id){
   peekId = peekId===id ? null : id;
   render();
 }
-function toggleJoin(id){
+function dropYourTools(b){
+  boatTools(b).forEach(t=>{ if(t.by==='you') t.by=null; });
+}
+function toggleJoin(id, opts){
   const b = findBoat(id); if(!b || b.mine) return;
+  const silent = !!(opts && opts.silent);
   const i = b.mates.indexOf('you');
   if(i>=0){
     anim[b.id] = {you:'you leave-x pop-out'};
     render();
     setTimeout(()=>{
       b.mates = b.mates.filter(m=>m!=='you');
+      dropYourTools(b);
       delete (anim[b.id]||{}).you;
       save(); render();
     }, 400);
   } else {
-    if(b.mates.length>=Math.max(b.need,5)) return;
+    if(b.mates.length>=Math.max(b.need,5)) return false;
     b.mates = b.mates.concat('you');
-    anim[b.id] = {you:'you pop-in'};
+    anim[b.id] = Object.assign(anim[b.id]||{}, {you:'you pop-in'});
     save(); render();
     setTimeout(()=>{ if(anim[b.id]) delete anim[b.id].you; }, 500);
+    if(!silent) writeCalendarFor(b);
+    return true;
   }
+}
+function boardIfNeeded(b){
+  if(b.mine) return true;
+  if((b.mates||[]).includes('you')) return true;
+  return toggleJoin(b.id, {silent:true})!==false && (b.mates||[]).includes('you');
+}
+function claimTool(id, toolId){
+  const b = findBoat(id); if(!b) return;
+  const t = boatTools(b).find(x=>x.id===toolId);
+  if(!t) return;
+  if(t.by && t.by!=='you') return;
+  if(t.by==='you'){
+    t.by = null;
+    save(); render();
+    if((b.mates||[]).includes('you') || b.mine) writeCalendarFor(b);
+    return;
+  }
+  if(!boardIfNeeded(b)) return;
+  t.by = 'you';
+  anim[b.id] = Object.assign(anim[b.id]||{}, {fly:t.id});
+  save(); render();
+  writeCalendarFor(b);
+  setTimeout(()=>{
+    if(anim[b.id] && anim[b.id].fly===t.id) delete anim[b.id].fly;
+    render();
+  }, 420);
+}
+function togglePosterTool(id, name){
+  const b = findBoat(id);
+  if(!b || !b.mine || composeId!==id) return;
+  const tid = toolSlug(name);
+  b.tools = boatTools(b);
+  const i = b.tools.findIndex(t=>t.id===tid);
+  if(i>=0){
+    if(b.tools[i].by && b.tools[i].by!=='you') return;
+    b.tools.splice(i,1);
+  } else {
+    b.tools.push({id:tid, name, by:null});
+  }
+  save(); render();
 }
 
 function createBoat(medium){
@@ -564,7 +810,7 @@ function createBoat(medium){
     id, day:0, medium, owner:'you', vessel:vesselName(medium),
     need:1, mates:[], hours:3,
     sunStart:hourToT(8), sunEnd:hourToT(12),
-    must:false, allDay:false, mine:true
+    must:false, allDay:false, mine:true, tools:[]
   });
   composeId = id;
   peekId = id;
@@ -585,25 +831,38 @@ function bindPlates(){
 }
 
 function onDown(e){
+  hideCalCard();
   const plate = e.currentTarget;
   const id = plate.dataset.id;
   const b = findBoat(id); if(!b) return;
+  const addEl = e.target.closest('[data-add]');
+  if(addEl){
+    togglePosterTool(id, addEl.dataset.add);
+    drag = {id, plate, pointer:e.pointerId, x:e.clientX, y:e.clientY, moved:true, held:true};
+    try{ plate.setPointerCapture(e.pointerId); }catch(err){}
+    return;
+  }
+  const toolEl = e.target.closest('[data-tool]');
   const svg = plate.querySelector('[data-sun]');
-  const hit = (!b.must && svg) ? clientSunHit(e.clientX, e.clientY, svg) : null;
+  const hit = (!b.must && !toolEl && svg) ? clientSunHit(e.clientX, e.clientY, svg) : null;
   const onSun = !!(hit && hit.dist <= SUN_HIT_PX);
   const startT = onSun ? snapT(hit.t) : null;
   drag = {
     id, plate, pointer:e.pointerId,
     x:e.clientX, y:e.clientY, moved:false, held:false,
     sun: onSun, startT, lastT:startT,
-    need0: b.need, tip0: e.clientY
+    need0: b.need, tip0: e.clientY,
+    tool: toolEl ? toolEl.dataset.tool : null,
+    toolEl
   };
   try{ plate.setPointerCapture(e.pointerId); }catch(err){}
+  if(toolEl) toolEl.classList.add('holding');
   drag.hold = setTimeout(()=>{
     if(!drag || drag.sun) return;
     drag.held = true;
     if(drag.hold){ clearTimeout(drag.hold); drag.hold=null; }
-    toggleJoin(id);
+    if(drag.tool) claimTool(id, drag.tool);
+    else toggleJoin(id);
   }, 400);
   if(drag.sun){
     showReadout(formatRange(b.sunStart, b.sunEnd, b.allDay));
@@ -615,8 +874,13 @@ function onMove(e){
   const dist = Math.hypot(dx,dy);
   if(dist>36) drag.moved = true;
   if(drag.sun && dist>8) drag.moved = true;
-  if(drag.moved && drag.hold && (drag.sun || Math.abs(dy)>28)){ clearTimeout(drag.hold); drag.hold=null; }
+  if(drag.tool && dist>28) drag.moved = true;
+  if(drag.moved && drag.hold && (drag.sun || drag.tool || Math.abs(dy)>28)){
+    clearTimeout(drag.hold); drag.hold=null;
+    if(drag.toolEl) drag.toolEl.classList.remove('holding');
+  }
   const b = findBoat(drag.id); if(!b) return;
+  if(drag.tool) return;
   if(drag.sun){
     e.preventDefault();
     const svg = drag.plate.querySelector('[data-sun]');
@@ -654,13 +918,14 @@ function onMove(e){
 function onUp(e){
   if(!drag) return;
   if(drag.hold) clearTimeout(drag.hold);
+  if(drag.toolEl) drag.toolEl.classList.remove('holding');
   const id = drag.id;
   const wasSun = drag.sun;
   const moved = drag.moved;
   const held = drag.held;
   drag = null;
   if(wasSun){ hideReadout(); save(); render(); return; }
-    if(!moved && !held){
+  if(!moved && !held){
     if(composeId && composeId!==id) composeId = null;
     togglePeek(id);
     return;
@@ -681,6 +946,7 @@ $('cal').onclick = e=>{
   if(e.target.closest('.plate')) return;
   if(composeId){ composeId=null; render(); }
 };
+$('calCard').onclick = ()=> hideCalCard();
 
 render();
 </script>
