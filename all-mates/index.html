@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-title" content="All Mates" />
 <meta name="theme-color" content="#fbf6ea" />
-<meta name="allmates-build" content="pages-p1-board" />
+<meta name="allmates-build" content="pages-p1-board3" />
 <title>All Mates On Deck</title>
 <style>
   :root{
@@ -22,18 +22,18 @@
     overflow:hidden;display:flex;flex-direction:column}
   .cal{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;
     padding:max(10px,env(safe-area-inset-top)) 8px 96px;scroll-behavior:smooth}
-  .row{display:grid;grid-template-columns:28px 1fr;align-items:center;gap:2px;
-    min-height:42vh;padding:6px 0}
-  .day{font-size:11px;font-weight:700;letter-spacing:.04em;color:var(--muted);
-    writing-mode:vertical-rl;transform:rotate(180deg);text-align:center;opacity:.85}
-  .row.now .day{color:var(--navy)}
-  .plate{position:relative;width:100%;aspect-ratio:8/5;touch-action:none}
+  .row{display:grid;grid-template-columns:22px 1fr;align-items:center;gap:0;
+    min-height:38vh;padding:8px 2px}
+  .day{font-size:11px;font-weight:800;letter-spacing:.08em;color:var(--navy);opacity:.55;
+    writing-mode:vertical-rl;transform:rotate(180deg);text-align:center;pointer-events:none}
+  .plate{position:relative;width:100%;aspect-ratio:16/9;touch-action:none}
   .plate svg{display:block;width:100%;height:100%;overflow:visible}
   .sky,.medium,.sundial{position:absolute;inset:0;pointer-events:none}
   .sundial{z-index:4;pointer-events:auto}
   .sundial .hit{fill:transparent;cursor:ew-resize}
-  .tub-spin{position:absolute;inset:0;z-index:3;transform-origin:52% 72%;
+  .tub-spin{position:absolute;inset:0;z-index:3;transform-origin:50% 78%;
     transition:transform .7s cubic-bezier(.22,.8,.25,1);pointer-events:none}
+  .tub-spin .tub{width:100%;height:100%;object-fit:contain;display:block;pointer-events:none}
   .mates{position:absolute;inset:0;z-index:5;pointer-events:none}
   .seat{position:absolute;width:15%;aspect-ratio:1;transform:translate(-50%,-50%);
     border-radius:50%;overflow:visible}
@@ -67,14 +67,14 @@
     z-index:8;display:flex;gap:8px;justify-content:center;pointer-events:none;
     opacity:0;transform:translateY(12px);transition:opacity .22s,transform .22s}
   .picker.on{opacity:1;transform:none;pointer-events:auto}
-  .pick{flex:1;aspect-ratio:8/5;border:0;padding:0;background:transparent;cursor:pointer;
-    filter:drop-shadow(0 4px 8px rgba(40,30,10,.12))}
-  .pick svg{width:100%;height:100%;display:block}
+  .pick{flex:1;aspect-ratio:16/9;border:0;padding:0;background:#fffdf6;border-radius:12px;
+    cursor:pointer;overflow:hidden;box-shadow:0 4px 10px rgba(40,30,10,.1)}
+  .pick img{width:100%;height:100%;object-fit:contain;display:block}
   .hidden{display:none!important}
   .compose .sundial{filter:drop-shadow(0 0 6px rgba(245,196,49,.55))}
   .night .phone, .row.eve .plate{filter:none}
   .row.eve{background:linear-gradient(180deg,#1b2438 0%,#fbf6ea 72%)}
-  .row.eve .day{color:#d7ccb6}
+  .row.eve .day{color:#f4f0e6}
 </style>
 </head>
 <body>
@@ -89,8 +89,9 @@ const BUILD = 'pages-p1-board';
 const $ = id => document.getElementById(id);
 const ink = '#1a1a1a';
 const SEATS = [
-  {x:30,y:46},{x:18,y:34},{x:38,y:40},{x:22,y:54},{x:46,y:36}
+  {x:36,y:52},{x:22,y:38},{x:44,y:44},{x:28,y:60},{x:50,y:36}
 ];
+const INHERENT = 8; /* baked bow-up in the locked plate */
 
 function esc(s){
   return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -115,14 +116,7 @@ const YOU = {id:'you',name:'You',photo:matePhoto(21)};
 function mateBy(id){ return id==='you' ? YOU : MATES.find(m=>m.id===id); }
 
 function brisbaneNow(){
-  const parts = new Intl.DateTimeFormat('en-AU',{
-    timeZone:'Australia/Brisbane', weekday:'short', day:'numeric', month:'short',
-    year:'numeric', hour:'numeric', hour12:false
-  }).formatToParts(new Date());
-  const g = k => (parts.find(p=>p.type===k)||{}).value;
-  const week = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-  const mon = {Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11};
-  return new Date(Number(g('year')), mon[g('month')], Number(g('day')), Number(g('hour'))||0);
+  return new Date(new Date().toLocaleString('en-US',{timeZone:'Australia/Brisbane'}));
 }
 function dayMeta(offset){
   const d = brisbaneNow();
@@ -198,85 +192,23 @@ function soupBits(){
   </g>`;
 }
 function standingTool(kind){
-  if(kind==='soup') return `<g transform="translate(628,210)">
+  if(kind==='soup') return `<g transform="translate(640,250)">
     <path d="M18 8 C18 -6 42 -6 42 10 C42 38 30 48 30 78" fill="none" stroke="#8a5a28" stroke-width="10" stroke-linecap="round"/>
     <ellipse cx="30" cy="88" rx="22" ry="10" fill="#8a5a28" stroke="${ink}" stroke-width="3"/>
     <ellipse cx="30" cy="84" rx="14" ry="5" fill="#c47a32"/>
   </g>`;
-  if(kind==='tennis') return `<g transform="translate(620,188)">
+  if(kind==='tennis') return `<g transform="translate(640,230)">
     <rect x="26" y="78" width="10" height="52" rx="5" fill="#1a1a1a" stroke="${ink}" stroke-width="3"/>
     <ellipse cx="31" cy="36" rx="28" ry="36" fill="none" stroke="#8a5a28" stroke-width="7"/>
     <ellipse cx="31" cy="36" rx="22" ry="30" fill="#d8f2a8" stroke="${ink}" stroke-width="2"/>
     <path d="M14 22 L48 50 M48 22 L14 50 M31 8 L31 64 M12 36 L50 36" stroke="#8a9a60" stroke-width="1.4"/>
   </g>`;
-  if(kind==='garden') return `<g transform="translate(610,200)">
+  if(kind==='garden') return `<g transform="translate(630,240)">
     <rect x="28" y="0" width="8" height="86" rx="3" fill="#c4a06a" stroke="${ink}" stroke-width="3"/>
     <path d="M8 86 L56 86 L60 118 L4 118 Z" fill="#3d8a28" stroke="${ink}" stroke-width="3"/>
     <path d="M10 118 L6 148 M20 118 L18 152 M32 118 L32 154 M44 118 L46 152 M54 118 L58 148" stroke="#d7d7d0" stroke-width="4" stroke-linecap="round"/>
   </g>`;
   return '';
-}
-function heldTool(kind){
-  if(kind==='soup') return `<g>
-    <path d="M455 210 L520 340" stroke="#8a5a28" stroke-width="10" stroke-linecap="round"/>
-    <ellipse cx="528" cy="352" rx="24" ry="12" fill="#8a5a28" stroke="${ink}" stroke-width="3"/>
-    <ellipse cx="528" cy="348" rx="16" ry="6" fill="#c47a32"/>
-  </g>`;
-  if(kind==='tennis') return `<g>
-    <path d="M452 208 L500 300" stroke="#8fd18a" stroke-width="10" stroke-linecap="round"/>
-    <ellipse cx="518" cy="348" rx="30" ry="40" fill="none" stroke="#8a5a28" stroke-width="8"/>
-    <ellipse cx="518" cy="348" rx="23" ry="33" fill="#d8f2a8" stroke="${ink}" stroke-width="2"/>
-    <path d="M500 328 L536 368 M536 328 L500 368 M518 316 L518 380 M494 348 L542 348" stroke="#8a9a60" stroke-width="1.3"/>
-    <rect x="492" y="268" width="12" height="28" rx="5" fill="#1a1a1a"/>
-  </g>`;
-  if(kind==='garden') return `<g>
-    <path d="M452 208 L498 292" stroke="#3d8a28" stroke-width="10" stroke-linecap="round"/>
-    <path d="M470 300 L540 300 L548 348 L462 348 Z" fill="#3d8a28" stroke="${ink}" stroke-width="3"/>
-    <path d="M470 348 L464 392 M484 348 L480 398 M506 348 L506 400 M528 348 L532 396 M544 348 L550 390" stroke="#d7d7d0" stroke-width="4" stroke-linecap="round"/>
-  </g>`;
-  return `<g>
-    <path d="M450 208 L530 355" stroke="#8a5a28" stroke-width="10" stroke-linecap="round"/>
-    <path d="M518 348 L562 400 L538 408 L508 360 Z" fill="#8a5a28" stroke="${ink}" stroke-width="3"/>
-  </g>`;
-}
-
-/* Locked camera: one clawfoot tub + captain. Never swap hulls. No ghost / Olive. */
-function captainTub(){
-  return `<g>
-    <ellipse cx="168" cy="318" rx="16" ry="10" fill="#c4a06a" stroke="${ink}" stroke-width="3"/>
-    <ellipse cx="236" cy="328" rx="15" ry="9" fill="#c4a06a" stroke="${ink}" stroke-width="3"/>
-    <ellipse cx="488" cy="330" rx="15" ry="9" fill="#c4a06a" stroke="${ink}" stroke-width="3"/>
-    <ellipse cx="552" cy="318" rx="16" ry="10" fill="#c4a06a" stroke="${ink}" stroke-width="3"/>
-    <path d="M128 268 C120 188 176 132 300 118 L500 122 C600 128 648 176 652 248 L640 292 C620 318 200 322 148 300 Z" fill="#fffdf6" stroke="${ink}" stroke-width="5"/>
-    <path d="M156 250 C168 200 220 168 320 160 L500 164 C580 168 612 198 616 240" fill="none" stroke="${ink}" stroke-width="3" opacity=".35"/>
-    <circle cx="196" cy="156" r="5" fill="#d7ccb6" stroke="${ink}" stroke-width="2"/>
-    <circle cx="168" cy="248" r="7" fill="#fffdf6" stroke="${ink}" stroke-width="3"/>
-    <path d="M300 210 C310 248 360 268 430 250 L448 228 C400 248 330 236 308 206 Z" fill="#1b2a4a" stroke="${ink}" stroke-width="3"/>
-    <path d="M338 168 C348 214 390 236 448 214 L456 192 C410 220 360 200 348 166 Z" fill="#f4f0e6" stroke="${ink}" stroke-width="3"/>
-    <circle cx="318" cy="188" r="9" fill="#f4f0e6" stroke="${ink}" stroke-width="3"/>
-    <circle cx="456" cy="196" r="10" fill="#e8b898" stroke="${ink}" stroke-width="3"/>
-    <circle cx="392" cy="148" r="36" fill="#e8b898" stroke="${ink}" stroke-width="3"/>
-    <path d="M362 128 C368 104 418 100 424 128 L416 138 L368 138 Z" fill="#3a2a1c"/>
-    <ellipse cx="392" cy="108" rx="40" ry="10" fill="#f4f7f2" stroke="${ink}" stroke-width="3"/>
-    <path d="M360 108 L360 72 C360 54 424 54 424 72 L424 108 Z" fill="#f4f7f2" stroke="${ink}" stroke-width="3"/>
-    <rect x="360" y="96" width="64" height="14" fill="#1b2a4a"/>
-    <path d="M388 70 L392 58 L396 70 L408 74 L398 80 L396 92 L392 80 L380 74 Z" fill="#c8a227"/>
-    <path d="M372 150 C378 146 386 146 392 150" fill="none" stroke="${ink}" stroke-width="2.4" stroke-linecap="round"/>
-    <path d="M404 150 C410 146 418 146 424 150" fill="none" stroke="${ink}" stroke-width="2.4" stroke-linecap="round"/>
-    <path d="M376 168 C390 180 410 180 422 166 C408 178 392 178 376 168 Z" fill="#3a2a1c"/>
-    <circle cx="372" cy="226" r="3" fill="#c8a227"/><circle cx="392" cy="230" r="3" fill="#c8a227"/>
-    <circle cx="412" cy="226" r="3" fill="#c8a227"/>
-    <path d="M448 214 L458 268" stroke="#1b2a4a" stroke-width="8" stroke-linecap="round"/>
-    <rect x="440" y="250" width="22" height="10" rx="3" fill="#c8a227"/>
-    <circle cx="168" cy="248" r="11" fill="#e8b898" stroke="${ink}" stroke-width="3"/>
-    <path d="M430 300 C442 318 470 328 492 360" fill="none" stroke="#1b2a4a" stroke-width="10" stroke-linecap="round"/>
-    <path d="M486 352 C500 348 518 362 508 378 C492 386 476 368 486 352 Z" fill="#1b2a4a" stroke="${ink}" stroke-width="3"/>
-  </g>`;
-}
-function foot(){
-  return `<g>
-    <path d="M500 368 C512 390 528 404 518 418 C500 424 488 400 500 368 Z" fill="#1b2a4a" stroke="${ink}" stroke-width="3"/>
-  </g>`;
 }
 function mediumSvg(kind, eve){
   const m = MEDIA[kind]||MEDIA.water;
@@ -290,9 +222,11 @@ function mediumSvg(kind, eve){
     ${standingTool(kind)}
   </svg>`;
 }
-function tubSvg(kind){
-  return `<svg viewBox="0 0 800 500" aria-hidden="true">${captainTub()}${heldTool(kind)}${foot()}</svg>`;
+function plateSrc(kind){
+  const k = ['soup','tennis','garden','water'].includes(kind) ? kind : 'water';
+  return 'plates/tub-'+k+'.png';
 }
+function spinDeg(boat){ return tipDeg(boat) - INHERENT; }
 function sunSvg(boat){
   const a = boat.allDay ? 0 : boat.sunStart;
   const b = boat.allDay ? 1 : boat.sunEnd;
@@ -308,7 +242,7 @@ function sunSvg(boat){
     <path d="${track}" fill="none" stroke="${ink}" stroke-width="6" opacity=".12"/>
     <path d="${boat.allDay?track:arc}" fill="none" stroke="${stroke}" stroke-width="${boat.allDay?18:14}"
       stroke-linecap="round" opacity="${boat.allDay?.55:.9}"/>
-    <circle cx="${pm.x.toFixed(1)}" cy="${pm.y.toFixed(1)}" r="16" fill="${sunFill}" stroke="${ink}" stroke-width="3"/>
+    <circle cx="${pm.x.toFixed(1)}" cy="${pm.y.toFixed(1)}" r="20" fill="${sunFill}" stroke="${ink}" stroke-width="3"/>
     <path class="hit" d="${track}" stroke="transparent" stroke-width="48" fill="none"/>
   </svg>`;
 }
@@ -345,7 +279,7 @@ function render(){
 }
 function boatRow(b){
   const d = dayMeta(b.day);
-  const tip = tipDeg(b);
+  const tip = spinDeg(b);
   const eve = isEvening(b);
   const peek = peekId===b.id ? ' peek' : '';
   const compose = composeId===b.id ? ' compose' : '';
@@ -360,7 +294,8 @@ function boatRow(b){
     <div class="day">${esc(d.short)}</div>
     <div class="plate${peek}${compose}" data-id="${b.id}" aria-label="Boat">
       ${mediumSvg(b.medium, eve)}
-      <div class="tub-spin" style="transform:rotate(${tip}deg)">${tubSvg(b.medium)}
+      <div class="tub-spin" style="transform:rotate(${tip}deg)">
+        <img class="tub" alt="" draggable="false" src="${plateSrc(b.medium)}"/>
         <div class="mates">${seats}</div>
       </div>
       ${sunSvg(b)}
@@ -373,10 +308,7 @@ function renderPicker(){
   ).join('');
 }
 function tinyPlate(kind){
-  const m = MEDIA[kind]||MEDIA.water;
-  return `<svg viewBox="0 0 800 500">
-    ${waves(m)}${kind==='garden'?gardenExtra():''}${kind==='tennis'?tennisBalls():''}${kind==='soup'?soupBits():''}
-    ${standingTool(kind)}${captainTub()}${heldTool(kind)}</svg>`;
+  return `<img alt="" src="${plateSrc(kind)}"/>`;
 }
 
 function findBoat(id){ return boats.find(b=>b.id===id); }
@@ -477,7 +409,7 @@ function onMove(e){
     if(next!==b.need){
       b.need = next;
       const spin = drag.plate.querySelector('.tub-spin');
-      if(spin) spin.style.transform = `rotate(${tipDeg(b)}deg)`;
+      if(spin) spin.style.transform = `rotate(${spinDeg(b)}deg)`;
     }
   }
 }
