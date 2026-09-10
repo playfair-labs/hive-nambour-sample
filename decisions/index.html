@@ -48,6 +48,7 @@
   .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px}
   .btn{appearance:none;border:0;border-radius:14px;padding:16px;font-weight:700;font-size:17px;
     cursor:pointer;width:100%;font-family:inherit}
+  .btn-primary#okBtn{padding:20px;font-size:20px;letter-spacing:-.02em}
   .btn-primary{background:var(--lime);color:var(--lime-ink)}
   .btn-primary:disabled{opacity:.35;cursor:not-allowed}
   .btn-ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
@@ -159,10 +160,10 @@
         <div class="voice-line" id="voiceLine"></div>
         <div class="badges" id="nowBadges"></div>
       </div>
-      <textarea class="talk" id="talk" rows="2" maxlength="90" placeholder="Talk-back — change it, then OK"></textarea>
+      <textarea class="talk" id="talk" rows="2" maxlength="90" placeholder="Change it, or leave empty for yes"></textarea>
     </div>
     <footer>
-      <button type="button" class="btn btn-primary" id="okBtn">OK · send to Soft Soft</button>
+      <button type="button" class="btn btn-primary" id="okBtn">OK · next</button>
       <div class="dots" id="dots"></div>
       <button type="button" class="more-link" id="moreToggle">More</button>
       <div class="tuck hidden" id="moreDoors">
@@ -460,7 +461,7 @@ function renderNow(){
   $('talk').disabled = false;
   $('talk').value = edits[p.id] || '';
   $('okBtn').disabled = locked;
-  $('okBtn').textContent = locked ? 'Al only · CoS can’t OK' : `OK · send to ${p.bot}`;
+  $('okBtn').textContent = locked ? 'Al only · CoS can’t OK' : `OK · next · ${p.bot}`;
   $('dots').innerHTML = list.map(x=>`<span class="dot ${x.id===p.id?'on':''}"></span>`).join('');
   $('voiceLine').textContent = voiceOn ? 'Voice on · talk-back is text' : '';
 }
@@ -521,12 +522,21 @@ function openSheet(id){
   show('sheet');
 }
 
-function advanceNow(fromId){
+function nextProjectId(fromId){
+  const list = actives();
+  const i = list.findIndex(p=>p.id===fromId);
+  if(!list.length || i<0) return list[0] ? list[0].id : null;
+  return list[(i+1)%list.length].id;
+}
+function settleNow(preferredId, fromId){
   const list = actives();
   if(!list.length){ nowId = null; return; }
-  const i = list.findIndex(p=>p.id===fromId);
-  if(i<0) nowId = list[0].id;
-  else nowId = list[(i+1)%list.length].id;
+  if(preferredId && preferredId!==fromId && list.some(p=>p.id===preferredId)){
+    nowId = preferredId;
+    return;
+  }
+  const leftover = list.find(p=>p.id!==fromId);
+  nowId = leftover ? leftover.id : list[0].id;
 }
 
 function sendOk(p, text){
@@ -557,8 +567,9 @@ function okNow(){
   const text = ($('talk').value||'').trim();
   if(text) edits[p.id] = text;
   const id = p.id;
+  const preferred = nextProjectId(id);
   if(!sendOk(p, text)) return;
-  advanceNow(id);
+  settleNow(preferred, id);
   save();
   renderNow();
   const next = nowId ? proj(nowId) : null;
@@ -577,7 +588,7 @@ function okProject(id){
 function hideProject(id, mode){
   const p = proj(id); if(!p) return;
   p.hide = mode==='week' ? {mode:'week', until:WEEK} : {mode:'until', until:null};
-  if(nowId===id) advanceNow(id);
+  if(nowId===id) settleNow(nextProjectId(id), id);
   save();
   toast(mode==='week' ? `Hidden until ${WEEK}` : 'Hidden until unhide');
   renderBoard();
@@ -679,7 +690,7 @@ $('stamps').onclick = e=>{
   const b = e.target.closest('[data-cat]'); if(!b) return;
   filter = filter===b.dataset.cat ? null : b.dataset.cat;
   save();
-  renderNow();
+  renderBoard();
 };
 $('roleSeg').onclick = e=>{
   const b = e.target.closest('[data-role]'); if(!b) return;
