@@ -1,0 +1,1484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-title" content="All Mates On Deck" />
+<meta name="theme-color" content="#0f1412" />
+<title>All Mates On Deck</title>
+<meta name="allmates-build" content="pages-p0-live" />
+<style>
+  :root {
+    --bg:#0f1412; --card:#1a221e; --hive:#c8f54a; --hive-dim:#8fb82e;
+    --text:#f4f7f2; --muted:#9aa89c; --line:#2a3530; --ok:#5ddea8; --warn:#f0c14a;
+    --red:#ff5a5a; --red-dim:#4a1818; --sea:#1a2a28; --hot:#7b4dff; --hot-dim:#2a1844;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    background:#070a09;color:var(--text);min-height:100dvh;display:flex;justify-content:center}
+  .phone{width:100%;max-width:390px;height:100dvh;max-height:100dvh;min-height:100dvh;background:var(--bg);
+    padding:16px 16px max(16px, env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:14px;overflow:hidden}
+  header{display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+  .logo{font-weight:700;letter-spacing:.03em;font-size:14px;line-height:1.2}
+  .logo span{color:var(--hive)}
+  .pill{font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:4px 10px}
+  .pill.warn{border-color:var(--warn);color:var(--warn)}
+  h1{font-size:26px;margin:0;font-weight:650}
+  .sub{color:var(--muted);font-size:13px;margin:0;line-height:1.35}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px}
+  .btn{appearance:none;border:0;border-radius:14px;padding:16px 16px;font-weight:650;font-size:17px;cursor:pointer;width:100%;font-family:inherit}
+  .btn-primary{background:var(--hive);color:#10200a}
+  .btn-primary:disabled{opacity:.35;cursor:not-allowed}
+  .btn-ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
+  .btn-alert{background:var(--red);color:#fff}
+  .btn-hot{background:var(--hot);color:#fff}
+  .btn-can{background:var(--ok);color:#10200a;font-size:28px;padding:26px}
+  .btn-cant{background:var(--card);color:var(--text);border:1px solid var(--line);font-size:28px;padding:26px}
+  .banner-hot{background:var(--hot-dim);border:1px solid var(--hot);border-radius:14px;padding:12px 14px}
+  .banner-hot strong{color:#d7c2ff;display:block;font-size:15px}
+  .thin{font-size:18px;font-weight:700;letter-spacing:.01em}
+  .tabs{display:flex;gap:6px}
+  .tab{flex:1;text-align:center;padding:10px 8px;border-radius:12px;font-size:13px;color:var(--muted);
+    background:var(--card);border:1px solid var(--line);cursor:pointer;font-weight:650;font-family:inherit}
+  .tab.on{color:#10200a;background:var(--hive);border-color:var(--hive)}
+  .list{display:flex;flex-direction:column;gap:8px;overflow:auto;-webkit-overflow-scrolling:touch}
+  .row-face{width:28px;height:28px;border-radius:50%;object-fit:cover;display:block}
+  .row{display:grid;grid-template-columns:28px 28px 1fr auto;gap:10px;align-items:center;
+    padding:10px 12px;border-radius:12px;background:#121916;border:1px solid var(--line)}
+  .row.plain{grid-template-columns:1fr auto}
+  .row input{width:18px;height:18px;accent-color:var(--hive)}
+  .name{font-size:14px;font-weight:600}
+  .meta{font-size:11px;color:var(--muted)}
+  .badge{font-size:10px;text-transform:uppercase;letter-spacing:.04em;padding:4px 8px;
+    border-radius:999px;background:#243028;color:var(--hive)}
+  .live{display:flex;flex-direction:column;gap:8px;overflow:auto}
+  .live-row{display:flex;justify-content:space-between;align-items:flex-start;font-size:13px;gap:8px;
+    padding:8px 0;border-bottom:1px solid var(--line);cursor:pointer}
+  .live-row:last-child{border-bottom:0}
+  .ok{color:var(--ok)}.wait{color:var(--warn)}.taken{color:var(--muted);text-decoration:line-through}.win{color:var(--ok);font-weight:700}
+  footer{margin-top:auto;display:flex;flex-direction:column;gap:8px;flex-shrink:0}
+  .note{font-size:11px;color:var(--muted);text-align:center;line-height:1.4}
+  .hidden{display:none!important}
+  .screen{display:flex;flex-direction:column;gap:14px;flex:1;min-height:0;overflow:hidden}
+  .scroll{flex:1;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;gap:12px}
+  .msg{font-size:13px;line-height:1.45;background:#121916;border-radius:12px;padding:12px;border:1px solid var(--line)}
+  .msg em{color:var(--hive);font-style:normal}
+  .banner-red{background:var(--red-dim);border:1px solid var(--red);border-radius:14px;padding:12px 14px}
+  .banner-red strong{color:#ffb4b4;display:block;font-size:13px}
+  .banner-ok{background:#14301f;border:1px solid var(--ok);border-radius:14px;padding:12px 14px}
+  .banner-ok strong{color:var(--ok);display:block;font-size:15px}
+  .count{font-size:12px;color:var(--muted)}
+  .search{width:100%;padding:14px 16px;border-radius:14px;border:2px solid var(--hive-dim);
+    background:#121916;color:var(--text);font-size:18px;outline:none;font-family:inherit}
+  .search:focus{border-color:var(--hive)}
+  .search::placeholder{color:var(--muted)}
+  .field{width:100%;padding:14px 16px;border-radius:14px;border:1px solid var(--line);
+    background:#121916;color:var(--text);font-size:17px;outline:none;font-family:inherit}
+  .field:focus{border-color:var(--hive)}
+  .block-label{font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.02em;margin:0 0 6px}
+  .empty{text-align:center;padding:28px 12px;color:var(--muted);font-size:14px;line-height:1.4}
+  .job-card{text-align:left;width:100%;cursor:pointer;display:flex;flex-direction:column;gap:6px}
+  .job-card strong{font-size:16px}
+  .hands-row{display:flex;align-items:center;gap:10px}
+  .step{width:48px;height:48px;border-radius:14px;border:1px solid var(--line);background:var(--card);
+    color:var(--text);font-size:22px;font-weight:700;cursor:pointer;font-family:inherit}
+  .hands-n{flex:1;text-align:center;font-size:28px;font-weight:700;color:var(--hive)}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{appearance:none;border:1px solid var(--line);background:var(--card);color:var(--text);
+    border-radius:999px;padding:10px 12px;font-size:13px;font-weight:650;cursor:pointer;font-family:inherit}
+  .chip.on{border-color:var(--hive);background:#1c2a14;color:var(--hive)}
+  .meter{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .dot{width:16px;height:16px;border-radius:50%;border:2px solid var(--hive-dim);background:transparent}
+  .dot.on{background:var(--hive);border-color:var(--hive)}
+  .dot.wait{background:var(--warn);border-color:var(--warn)}
+  .dark{font-size:11px;color:var(--warn);text-align:center;letter-spacing:.03em;text-transform:uppercase}
+  .job-meta{font-size:12px;color:var(--muted);line-height:1.4}
+  .say{background:#1c2a14;border:2px solid var(--hive);border-radius:16px;padding:14px 16px;
+    font-size:18px;font-weight:700;line-height:1.3;color:var(--hive)}
+  .say .dim{display:block;font-size:13px;font-weight:650;color:var(--muted);margin-top:6px}
+  .pack{flex:1;min-width:0;text-align:center;padding:14px 8px;border-radius:14px;font-size:16px;
+    font-weight:700;border:1px solid var(--line);background:var(--card);color:var(--text);
+    cursor:pointer;font-family:inherit}
+  .pack.on{border-color:var(--hive);background:#1c2a14;color:var(--hive);box-shadow:0 0 0 1px var(--hive)}
+  .chip.day{display:flex;flex-direction:column;align-items:center;gap:2px;border-radius:14px;
+    min-width:56px;padding:10px 8px;font-size:15px}
+  .chip.day .d{font-size:11px;font-weight:650;color:var(--muted)}
+  .chip.day.on .d{color:var(--hive-dim)}
+  s{text-decoration:line-through;color:var(--muted);font-weight:650}
+  .more-link{appearance:none;background:none;border:0;color:var(--muted);font-size:13px;font-weight:700;
+    padding:8px;cursor:pointer;font-family:inherit;width:100%;text-align:center}
+  .tuck{display:flex;flex-direction:column;gap:8px}
+  .pics{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .pic{aspect-ratio:1;border-radius:12px;background:#243028;border:1px solid var(--line);
+    overflow:hidden;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px}
+  .pic img{width:100%;height:100%;object-fit:cover}
+  .ghosts{font-size:22px;letter-spacing:.2em;color:var(--muted);margin:8px 0}
+  .mind{font-size:42px;text-align:center;line-height:1;margin:0}
+  .face{position:relative;width:168px;height:168px;margin:8px auto;border-radius:50%;
+    overflow:hidden;background:#243028;border:2px solid var(--line)}
+  .face img{width:100%;height:100%;object-fit:cover}
+  .hat-svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+  .board{display:flex;gap:12px;overflow:auto;padding:4px 0 8px}
+  .aboard{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:64px}
+  .aboard .mini{width:56px;height:56px;border-radius:50%;overflow:hidden;position:relative;background:#243028;border:1px solid var(--line);flex-shrink:0}
+  .aboard .mini img{width:100%;height:100%;object-fit:cover}
+  .aboard .mini .hat-svg{position:absolute;inset:0}
+  .aboard .n{font-size:11px;color:var(--muted);font-weight:650}
+  .phone{position:relative}
+  #screen-detail{position:absolute;inset:0;padding:0;gap:0;margin:0;z-index:4;background:#071018}
+  .flick{height:100%;overflow-y:auto;scroll-snap-type:y mandatory;-webkit-overflow-scrolling:touch}
+  .hero,.boat-pane,.after-pane{min-height:100%;height:100%;scroll-snap-align:start;scroll-snap-stop:always;position:relative}
+  .hero{display:flex;flex-direction:column;background:#0a0e0c}
+  .hero-photo{flex:2 1 66%;min-height:0;position:relative}
+  .hero-photo svg{width:100%;height:100%;display:block}
+  .hero-copy{flex:1 1 34%;padding:14px 16px max(16px, env(safe-area-inset-bottom));display:flex;flex-direction:column;justify-content:flex-end;gap:4px}
+  .hero-kicker{font-size:11px;font-weight:800;letter-spacing:.12em;color:var(--hive);text-transform:uppercase}
+  .flick-hint{font-size:12px;color:var(--muted);margin-top:8px}
+  .back-fab{position:absolute;top:max(10px, env(safe-area-inset-top));left:12px;z-index:5;
+    width:auto;padding:8px 12px;font-size:13px;border-radius:999px}
+  .boat-pane{background:linear-gradient(180deg,#0a2430 0%,#071018 55%,#041016 100%);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px 12px}
+  .craft-wrap{position:relative;width:min(92%,340px)}
+  .craft-wrap svg.hull{width:100%;height:auto;display:block}
+  .seat{position:absolute;width:48px;height:48px;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center}
+  .seat .mini{width:46px;height:46px;border-radius:50%;overflow:hidden;position:relative;border:2px solid #c8a227;background:#243028}
+  .seat .mini img{width:100%;height:100%;object-fit:cover}
+  .seat .mini .hat-svg{position:absolute;inset:0}
+  .seat.crew .mini{border-color:var(--hive-dim)}
+  .seat .tag{font-size:9px;font-weight:800;letter-spacing:.06em;color:#c8a227;margin-top:2px;text-transform:uppercase}
+  .seat.crew .tag{color:var(--muted)}
+  .ghost-face{width:100%;height:100%;background:#1a2420}
+  .after-pane{display:flex;flex-direction:column;background:#0a0e0c}
+  .after-pane .hero-photo{flex:2 1 66%}
+  .after-pane .hero-copy{flex:1 1 34%}
+  .feed-card{display:grid;grid-template-columns:88px 1fr;gap:12px;align-items:center}
+  .feed-craft{width:88px;height:72px}
+  .feed-craft svg{width:100%;height:100%}
+  .craft-rail{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;
+    -webkit-overflow-scrolling:touch;padding:8px 4px 12px;margin:0 -4px}
+  .craft-pick{flex:0 0 82%;scroll-snap-align:center;background:var(--card);border:2px solid var(--line);
+    border-radius:16px;padding:10px;text-align:center}
+  .craft-pick.on{border-color:var(--hive);box-shadow:0 0 0 1px var(--hive)}
+  .craft-pick .mini-boat{position:relative;width:100%;max-width:200px;margin:0 auto}
+  .empty-seat{border:2px dashed var(--hive-dim)!important;background:transparent!important}
+  .feed-craft .seat{width:16px;height:16px}
+  .feed-craft .seat .mini{width:14px;height:14px;border-width:1px}
+  .feed-craft .tag,.craft-pick .tag{display:none}
+  .craft-pick .seat{width:26px;height:26px}
+  .craft-pick .seat .mini{width:24px;height:24px}
+</style>
+</head>
+<body>
+<div class="phone">
+  <section id="screen-home" class="screen">
+    <header>
+      <div class="logo">ALL <span>MATES</span> ON DECK</div>
+      <div class="pill warn">Fake sample</div>
+    </header>
+    <div>
+      <h1>Neighbour <s>jobs</s> activities</h1>
+      <p class="sub" id="homeSub">What’s on. Some <s>jobs</s> activities need many hands, some need few. When the ship is full, stop.</p>
+    </div>
+    <div class="scroll">
+      <div class="block-label hidden" id="boardLabel">Who’s on board</div>
+      <div class="board hidden" id="board"></div>
+      <div class="block-label">On now / coming</div>
+      <button type="button" class="card job-card feed-card" id="presetIkea">
+        <div class="feed-craft" data-extra="4"></div>
+        <div>
+          <strong>IKEA wardrobe</strong>
+          <span class="job-meta">Weekend · 6am to 10pm</span>
+          <span class="job-meta" id="ikeaWho"></span>
+        </div>
+      </button>
+      <button type="button" class="card job-card feed-card" id="presetGarage">
+        <div class="feed-craft" data-extra="1"></div>
+        <div>
+          <strong>Al’s garage</strong>
+          <span class="job-meta">Sun 13 Sep · 10am</span>
+          <span class="job-meta" id="garageWho"></span>
+        </div>
+      </button>
+      <button type="button" class="card job-card feed-card" id="goEvent">
+        <div class="feed-craft" data-extra="5"></div>
+        <div>
+          <strong>Street tidy</strong>
+          <span class="job-meta">Today · event · photos</span>
+          <span class="job-meta" id="eventWho"></span>
+        </div>
+      </button>
+      <div id="myFirstCard" class="hidden"></div>
+    </div>
+    <footer>
+      <button class="btn btn-primary" id="goJoin">Join · 3 steps</button>
+      <button type="button" class="more-link" id="moreToggle">More</button>
+      <div class="tuck hidden" id="moreDoors">
+        <button class="btn btn-primary" id="goPost">Post an activity</button>
+        <button type="button" class="btn btn-alert" id="goHands">All Hands on Deck</button>
+        <button type="button" class="btn btn-hot" id="goHot">Hot opportunity</button>
+        <button type="button" class="btn btn-ghost" id="goChefs" style="font-size:14px;padding:12px">All Chefs on Deck</button>
+      </div>
+      <p class="dark">Fake roster only · no real texts · no real numbers</p>
+    </footer>
+  </section>
+
+  <section id="screen-detail" class="screen hidden">
+    <button type="button" class="btn btn-ghost back-fab" id="detailBack">Back</button>
+    <div class="flick" id="flick">
+      <div class="hero">
+        <div class="hero-photo" id="heroBefore"></div>
+        <div class="hero-copy">
+          <div class="hero-kicker">Before</div>
+          <h1 id="heroTitle">Al’s garage</h1>
+          <p class="sub" id="heroSub"></p>
+          <p class="flick-hint">Flick up · the boat</p>
+        </div>
+      </div>
+      <div class="boat-pane">
+        <p class="hero-kicker" id="craftKind">Dinghy</p>
+        <div class="craft-wrap" id="craft"></div>
+        <p class="note" id="craftNote">Captain is always at the helm.</p>
+      </div>
+      <div class="after-pane hidden" id="afterPane">
+        <div class="hero-photo" id="heroAfter"></div>
+        <div class="hero-copy">
+          <div class="hero-kicker">After</div>
+          <h1 id="afterTitle">Done</h1>
+          <p class="sub">Same <s>job</s> activity. After photo.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="screen-urgent" class="screen hidden">
+    <header>
+      <div class="logo" id="urgentLogo">ALL <span>HANDS</span> ON DECK</div>
+      <div class="pill" id="urgentPill">Red alert</div>
+    </header>
+    <div>
+      <h1 id="urgentH">Need someone now</h1>
+      <p class="sub" id="urgentSub">One fake text at a time. First Can stops the rest. No chat.</p>
+    </div>
+    <div class="scroll">
+      <div>
+        <div class="block-label">What</div>
+        <div class="chips" id="urgentNeeds"></div>
+      </div>
+      <div>
+        <div class="block-label">How many people</div>
+        <div class="hands-row">
+          <button type="button" class="step" id="uMinus">−</button>
+          <div class="hands-n" id="uSeats">1</div>
+          <button type="button" class="step" id="uPlus">+</button>
+        </div>
+        <p class="count" id="uSeatsHint">Need 1. First Can stops the cascade.</p>
+      </div>
+      <div class="card msg thin" id="urgentSms"></div>
+    </div>
+    <footer>
+      <button class="btn btn-primary" id="urgentGo">Fake-text first mate</button>
+      <button class="btn btn-ghost" id="urgentBack">Back</button>
+      <p class="dark">Fake SMS · no gateway · no ping-pong</p>
+    </footer>
+  </section>
+
+  <section id="screen-ublast" class="screen hidden">
+    <header>
+      <div class="logo" id="ublastLogo">ALL <span>HANDS</span> ON DECK</div>
+      <div class="pill" id="ublastPill">Cascade</div>
+    </header>
+    <div>
+      <h1 id="ublastTitle">Waiting</h1>
+      <p class="sub" id="ublastSub">One mate at a time.</p>
+    </div>
+    <div class="banner-red hidden" id="ublastStop">
+      <strong>Stopped</strong>
+      <span class="meta">Got enough. Nobody else is texted.</span>
+    </div>
+    <div class="card live" id="ublastList" style="flex:1;min-height:0"></div>
+    <footer>
+      <button class="btn btn-primary" id="uOpenMate">Open mate’s text</button>
+      <button class="btn btn-ghost" id="uNoReply">No reply · next</button>
+      <button class="btn btn-ghost" id="uBackHome">All Mates</button>
+      <p class="note">Tap opens this app. Huge Can / Can’t. No extra texts.</p>
+    </footer>
+  </section>
+
+  <section id="screen-umate" class="screen hidden">
+    <header>
+      <div class="logo">ALL <span>MATES</span> ON DECK</div>
+      <div class="pill warn">Fake text</div>
+    </header>
+    <p class="sub" id="umateWho">Mia</p>
+    <div class="card msg thin" id="umateSms"></div>
+    <h1 id="umateH" style="font-size:28px">Can you?</h1>
+    <p class="sub" id="umateSub">One tap. No chat.</p>
+    <footer>
+      <button class="btn btn-can" id="uCan">Can</button>
+      <button class="btn btn-cant" id="uCant">Can’t</button>
+      <p class="dark">Reply lands with Al. No extra SMS.</p>
+    </footer>
+  </section>
+
+  <section id="screen-chefs" class="screen hidden">
+    <header>
+      <div class="logo">ALL <span>CHEFS</span> ON DECK</div>
+      <div class="pill warn">Fake sample</div>
+    </header>
+    <div>
+      <h1>Cook at a mate’s</h1>
+      <p class="sub">Host a cook or learn session at someone’s place. Tonight’s fine — not only a big meal.</p>
+    </div>
+    <div class="scroll" id="chefList"></div>
+    <footer>
+      <input class="field" id="chefMeal" maxlength="40" placeholder="Favourite meal, or a quick cook" />
+      <div class="tabs" id="chefWhen">
+        <button type="button" class="tab on" data-cwhen="tonight">Tonight</button>
+        <button type="button" class="tab" data-cwhen="weekend">Weekend</button>
+      </div>
+      <button class="btn btn-primary" id="chefHost">Host · fake-invite</button>
+      <button class="btn btn-ghost" id="backChefsHome">All Mates</button>
+      <p class="dark">Fake only · no real texts</p>
+    </footer>
+  </section>
+
+  <section id="screen-post" class="screen hidden">
+    <header>
+      <div class="logo">ALL <span>MATES</span> ON DECK</div>
+      <div class="pill"><s>Job</s> activity</div>
+    </header>
+    <div class="scroll">
+      <div>
+        <div class="block-label"><s>House job</s> Activity</div>
+        <input class="field" id="jobTitle" maxlength="48" placeholder="e.g. IKEA wardrobe" />
+      </div>
+      <div>
+        <div class="block-label">Craft — you’re already in. Empty seats = extras needed</div>
+        <div class="craft-rail" id="craftRail"></div>
+        <p class="count" id="handsHint">Flick sideways. Minimum +1.</p>
+      </div>
+      <div>
+        <div class="block-label">When</div>
+        <div class="say" id="whenSay"></div>
+      </div>
+      <div>
+        <div class="block-label">Days — tap more than one</div>
+        <div class="tabs" id="dayPacks" style="margin-bottom:8px"></div>
+        <div class="chips" id="dayChips"></div>
+      </div>
+      <div>
+        <div class="block-label">Time on those days</div>
+        <div class="tabs" id="modeTabs">
+          <button type="button" class="tab" data-mode="anytime">Any time</button>
+          <button type="button" class="tab on" data-mode="window">These hours</button>
+          <button type="button" class="tab" data-mode="specific">One time</button>
+        </div>
+      </div>
+      <div id="specificBlock" class="hidden">
+        <div class="block-label">Clock time</div>
+        <div class="chips" id="timeChips"></div>
+      </div>
+      <div id="windowBlock">
+        <div class="block-label">From</div>
+        <div class="chips" id="startChips"></div>
+        <div class="block-label" style="margin-top:10px">To</div>
+        <div class="chips" id="endChips"></div>
+        <p class="count" id="slotHint" style="margin-top:8px"></p>
+      </div>
+    </div>
+    <footer>
+      <button class="btn btn-primary" id="goInvite">Pick mates</button>
+      <button class="btn btn-ghost" id="backHome">Back</button>
+    </footer>
+  </section>
+
+  <section id="screen-invite" class="screen hidden">
+    <header>
+      <div class="logo">ALL <span>MATES</span> ON DECK</div>
+      <div class="pill">Pick</div>
+    </header>
+    <div>
+      <p class="sub" id="inviteSub">Tick who gets a fake text.</p>
+      <input class="search" id="nameSearch" type="search" enterkeyhint="search" autocomplete="off" placeholder="Find a name" />
+    </div>
+    <div class="list card" id="list" style="flex:1;min-height:0"></div>
+    <footer>
+      <button class="btn btn-primary" id="reviewBtn" disabled>Next</button>
+      <button class="btn btn-ghost" id="backPost">Back</button>
+      <p class="note">Made-up names · 0400 000 xxx · never sent</p>
+    </footer>
+  </section>
+
+  <section id="screen-confirm" class="screen hidden">
+    <header>
+      <div class="logo">ALL <span>MATES</span> ON DECK</div>
+      <div class="pill">Check</div>
+    </header>
+    <div>
+      <h1 id="confirmTitle">Send these?</h1>
+      <p class="sub" id="confirmSub">Fake texts only. Nobody is contacted.</p>
+    </div>
+    <div class="card msg" id="smsPreview"></div>
+    <div class="list card" id="confirmList" style="flex:1;min-height:0"></div>
+    <footer>
+      <button class="btn btn-primary" id="confirmSend">Yes · fake-send texts</button>
+      <button class="btn btn-ghost" id="backPick">Change list</button>
+    </footer>
+  </section>
+
+  <section id="screen-live" class="screen hidden">
+    <header>
+      <div class="logo">ALL <span>MATES</span> ON DECK</div>
+      <div class="pill" id="livePill">Filling</div>
+    </header>
+    <div>
+      <h1 id="liveTitle">Waiting on yes</h1>
+      <p class="sub" id="liveSub">Hands come aboard as mates reply.</p>
+    </div>
+    <div class="card" id="shipCard">
+      <div class="block-label" id="meterLabel">Hands aboard</div>
+      <div class="meter" id="meter"></div>
+    </div>
+    <div class="banner-ok hidden" id="fullBanner">
+      <strong>Ship full</strong>
+      <span class="meta">Stop inviting. Extra mates go to the wait-list.</span>
+    </div>
+    <div class="card live" id="liveList" style="flex:1;min-height:0"></div>
+    <footer>
+      <button class="btn btn-primary" id="nextBurst" disabled>Send more</button>
+      <button class="btn btn-ghost" id="seeWait">Wait-list</button>
+      <button class="btn btn-ghost" id="backInvite">Back</button>
+      <p class="note">Tap a row to cycle a fake reply. No real SMS.</p>
+    </footer>
+  </section>
+
+  <section id="screen-wait" class="screen hidden">
+    <header>
+      <div class="logo">ALL <span>MATES</span> ON DECK</div>
+      <div class="pill">Wait-list</div>
+    </header>
+    <div>
+      <h1>Wait-list</h1>
+      <p class="sub" id="waitSub">Ship is full. These mates stay on deck-standby.</p>
+    </div>
+    <div class="card live" id="waitList" style="flex:1;min-height:0"></div>
+    <footer>
+      <button class="btn btn-ghost" id="backLive">Back to ship</button>
+      <button class="btn btn-ghost" id="resetHome">New activity</button>
+    </footer>
+  </section>
+
+  <section id="screen-photos" class="screen hidden">
+    <header>
+      <div class="logo">ALL <span>MATES</span> ON DECK</div>
+      <div class="pill">Event</div>
+    </header>
+    <div>
+      <h1>Street tidy</h1>
+      <p class="sub" id="photoSub">This <s>job</s> activity is now an event. Photos live here.</p>
+    </div>
+    <div class="pics" id="picGrid">
+      <div class="pic" style="background:#2a3a28">Sat morning</div>
+      <div class="pic" style="background:#1a2830">After</div>
+    </div>
+    <footer>
+      <label class="btn btn-primary" style="text-align:center">Add photo
+        <input type="file" accept="image/*" hidden id="picFile"/>
+      </label>
+      <button class="btn btn-ghost" id="backPhotos">Back</button>
+      <p class="note">Stays on this phone. Fake sample · not uploaded.</p>
+    </footer>
+  </section>
+
+  <section id="screen-tease" class="screen hidden">
+    <header>
+      <div class="logo">ALL <span>MATES</span> ON DECK</div>
+      <div class="pill">Looking in</div>
+    </header>
+    <div>
+      <h1 id="teaseTitle">Activity</h1>
+      <p class="sub" id="teaseWhen"></p>
+    </div>
+    <div class="card">
+      <div class="block-label">People are coming</div>
+      <div class="ghosts">● ● ●</div>
+      <p class="sub">Looks full of life. You can’t see who yet.</p>
+    </div>
+    <footer>
+      <button class="btn btn-primary" id="teaseJoin">Join · 3 steps</button>
+      <button class="btn btn-ghost" id="teaseBack">Keep looking</button>
+    </footer>
+  </section>
+
+  <section id="screen-selfie" class="screen hidden">
+    <header>
+      <div class="logo">ALL <span>MATES</span> ON DECK</div>
+      <div class="pill">1 / 3</div>
+    </header>
+    <div>
+      <h1>Take a selfie</h1>
+      <p class="sub">Then a hat. Then post a <s>job</s> activity. Private mates group. No extra screens.</p>
+    </div>
+    <div class="face" id="selfieFace"><img id="selfieImg" alt="" class="hidden"/></div>
+    <footer>
+      <label class="btn btn-primary" style="text-align:center">Take selfie
+        <input type="file" accept="image/*" capture="user" hidden id="selfieFile"/>
+      </label>
+      <button class="btn btn-primary hidden" id="selfieNext">Pick a hat</button>
+      <button class="btn btn-ghost" id="selfieBack">Back</button>
+    </footer>
+  </section>
+
+  <section id="screen-hat" class="screen hidden">
+    <header>
+      <div class="logo">ALL <span>MATES</span> ON DECK</div>
+      <div class="pill">2 / 3</div>
+    </header>
+    <div>
+      <h1>Pick your hat</h1>
+      <p class="sub">Hat only — sailor, pirate, captain, beret, turban.</p>
+    </div>
+    <div class="face" id="hatFace"><img id="hatImg" alt=""/><svg class="hat-svg" id="hatSvg" viewBox="0 0 100 100"></svg></div>
+    <div class="chips" id="hatChips"></div>
+    <footer>
+      <button class="btn btn-primary" id="hatNext">That’s me</button>
+      <button class="btn btn-ghost" id="hatBack">Back</button>
+    </footer>
+  </section>
+
+  <section id="screen-first" class="screen hidden">
+    <header>
+      <div class="logo">ALL <span>MATES</span> ON DECK</div>
+      <div class="pill">3 / 3</div>
+    </header>
+    <div class="scroll">
+      <p class="mind" aria-hidden="true">⚖</p>
+      <h1>Post a <s>job</s> activity</h1>
+      <p class="sub">What’s been weighing on your mind? Big or small. Not a fun invite.</p>
+      <textarea class="field" id="firstText" rows="3" maxlength="80" placeholder="e.g. Garage has been staring at me" style="min-height:96px;resize:none"></textarea>
+      <p class="count" id="firstWarn"></p>
+      <div id="firstPic" class="pic hidden" style="max-width:160px"></div>
+    </div>
+    <footer>
+      <label class="btn btn-ghost" style="text-align:center">Text + picture
+        <input type="file" accept="image/*" hidden id="firstFile"/>
+      </label>
+      <button class="btn btn-primary" id="firstPost">Post this <s>job</s> activity</button>
+      <button class="btn btn-ghost" id="firstBack">Back</button>
+      <p class="note">Text only is fine. Fake sample.</p>
+    </footer>
+  </section>
+</div>
+<script>
+const SAMPLE = [
+  {name:'Mia Chen',phone:'0400 000 000'},
+  {name:'Tom Blake',phone:'0400 000 001'},
+  {name:'Sara Nguyen',phone:'0400 000 002'},
+  {name:'James Patel',phone:'0400 000 003'},
+  {name:'Ava Kim',phone:'0400 000 004'},
+  {name:'Noah Walsh',phone:'0400 000 005'},
+  {name:'Lily Martin',phone:'0400 000 006'},
+  {name:'Owen Santos',phone:'0400 000 007'},
+  {name:'Zoe Wright',phone:'0400 000 008'},
+  {name:'Leo Rahman',phone:'0400 000 009'},
+  {name:'Emma Lee',phone:'0400 000 010'},
+  {name:'Jack Brown',phone:'0400 000 011'},
+  {name:'Helen Walker',phone:'0400 000 012'},
+  {name:'Priya Thompson',phone:'0400 000 013'},
+  {name:'Jan Rodriguez',phone:'0400 000 014'},
+  {name:'Claire Park',phone:'0400 000 015'},
+  {name:'Ruth Singh',phone:'0400 000 016'},
+  {name:'Ben Murphy',phone:'0400 000 017'},
+  {name:'Tahlia Taylor',phone:'0400 000 018'},
+  {name:'Lachlan Anderson',phone:'0400 000 019'},
+  {name:'Maya White',phone:'0400 000 020'},
+  {name:'Jordan Harris',phone:'0400 000 021'},
+  {name:'Olivia Hall',phone:'0400 000 022'},
+  {name:'Liam Allen',phone:'0400 000 023'}
+];
+const DAYS = [
+  {id:'fri', short:'Fri', date:'11 Sep', label:'Fri 11 Sep'},
+  {id:'sat', short:'Sat', date:'12 Sep', label:'Sat 12 Sep'},
+  {id:'sun', short:'Sun', date:'13 Sep', label:'Sun 13 Sep'},
+  {id:'mon', short:'Mon', date:'14 Sep', label:'Mon 14 Sep'},
+  {id:'tue', short:'Tue', date:'15 Sep', label:'Tue 15 Sep'},
+  {id:'wed', short:'Wed', date:'16 Sep', label:'Wed 16 Sep'}
+];
+const PACKS = [
+  {id:'weekend', label:'Weekend', say:'Weekend', days:['sat','sun']},
+  {id:'span', label:'Sat to Mon', say:'Sat to Mon', days:['sat','sun','mon']}
+];
+const TIMES = ['06:00','08:00','09:00','10:00','11:00','13:00','14:00','16:00','18:00','22:00'];
+const $ = id => document.getElementById(id);
+function esc(s){
+  return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function surnameKey(name){
+  const parts = String(name||'').trim().split(/\s+/).filter(Boolean);
+  return (parts[parts.length-1]||'').toLocaleLowerCase();
+}
+function matePhoto(seed){
+  const h = Math.abs(Number(seed)*47)%360;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80"><rect width="80" height="80" fill="hsl(${h},32%,22%)"/><circle cx="40" cy="30" r="15" fill="hsl(${(h+24)%360},38%,58%)"/><ellipse cx="40" cy="70" rx="22" ry="20" fill="hsl(${h},28%,40%)"/></svg>`;
+  return 'data:image/svg+xml;utf8,'+encodeURIComponent(svg);
+}
+const HAT_CYCLE = ['sailor','pirate','captain','beret','turban'];
+SAMPLE.forEach((p,i)=>{ p.photo = matePhoto(i+1); p.hat = HAT_CYCLE[i%5]; });
+const AL_PHOTO = matePhoto(99);
+function photoFor(name){
+  const n = String(name||'').split(/\s+/)[0];
+  const hit = SAMPLE.find(p=>p.name.split(/\s+/)[0]===n);
+  return (hit&&hit.photo) || matePhoto((n||'x').length+7);
+}
+function hatFor(name){
+  const n = String(name||'').split(/\s+/)[0];
+  const hit = SAMPLE.find(p=>p.name.split(/\s+/)[0]===n);
+  return (hit&&hit.hat) || 'sailor';
+}
+SAMPLE.sort((a,b)=>{
+  const c = surnameKey(a.name).localeCompare(surnameKey(b.name), undefined, {sensitivity:'base'});
+  if (c) return c;
+  return a.name.localeCompare(b.name, undefined, {sensitivity:'base'});
+});
+
+let people = SAMPLE.map((p,i)=>({...p,id:i,on:false}));
+let job = blankJob();
+let nameQ = '';
+let pendingBurst = [];
+let sentCount = 0;
+let replies = [];
+let timers = [];
+
+function blankJob(){
+  return {
+    title:'',
+    hands:1,
+    mode:'window',
+    days:['sat','sun'],
+    time:'09:00',
+    start:'06:00',
+    end:'22:00'
+  };
+}
+function show(id){
+  ['home','chefs','urgent','ublast','umate','post','invite','confirm','live','wait','photos','tease','selfie','hat','first','detail'].forEach(s=>{
+    $('screen-'+s).classList.toggle('hidden', s!==id);
+  });
+}
+const CRAFTS = [
+  {extra:1, id:'row', label:'Rowboat'},
+  {extra:2, id:'pea', label:'Peapod'},
+  {extra:3, id:'cork', label:'Cork raft'},
+  {extra:4, id:'four', label:'Four-hander'},
+  {extra:5, id:'ship', label:'Tall ship'}
+];
+function craftOf(extra){
+  const n = Math.max(1, extra|0);
+  return CRAFTS[Math.min(n,5)-1];
+}
+function handsWord(n){ return n===1 ? '+1 extra' : `+${n} extra`; }
+function peopleWord(n){ return n===1 ? '1 mate' : `${n} mates`; }
+function picked(){ return people.filter(p=>p.on); }
+function sameDays(a,b){
+  const x=[...a].slice().sort().join(',');
+  const y=[...b].slice().sort().join(',');
+  return x===y;
+}
+function selectedDays(){ return DAYS.filter(d => job.days.includes(d.id)); }
+function daysLine(){
+  const ds = selectedDays();
+  if(!ds.length) return '';
+  const pack = PACKS.find(p => sameDays(p.days, job.days));
+  if(pack) return pack.say;
+  if(ds.length===1) return ds[0].label;
+  return ds.map(d=>d.short).join(' + ');
+}
+function hhmm(t){
+  const [h,m] = t.split(':').map(Number);
+  const am = h<12;
+  let h12 = h%12; if(!h12) h12=12;
+  return m ? `${h12}:${String(m).padStart(2,'0')}${am?'am':'pm'}` : `${h12}${am?'am':'pm'}`;
+}
+function toMin(t){ const [h,m]=t.split(':').map(Number); return h*60+m; }
+function hoursOk(){ return job.mode!=='window' || toMin(job.end)>toMin(job.start); }
+function slots(){
+  const ds = selectedDays();
+  if(!ds.length) return [];
+  if(job.mode==='anytime') return ds.map(d=>d.short);
+  if(job.mode==='specific'){
+    if(ds.length>1) return ds.map(d=>`${d.short} ${hhmm(job.time)}`);
+    return [];
+  }
+  if(!hoursOk()) return [];
+  if(ds.length>1) return ds.map(d=>`${d.short} ${hhmm(job.start)}–${hhmm(job.end)}`);
+  const a=toMin(job.start), b=toMin(job.end);
+  const out=[];
+  for(let t=a; t<b; t+=120){
+    out.push(`${hhmm(minsToT(t))}–${hhmm(minsToT(Math.min(t+120,b)))}`);
+  }
+  return out;
+}
+function minsToT(m){
+  const h=Math.floor(m/60), mm=m%60;
+  return `${String(h).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;
+}
+function whenSay(){
+  const days = daysLine();
+  if(!job.days.length){
+    return {big:'Pick the days', dim:'Tap Weekend, or tap every day mates can come.'};
+  }
+  if(job.mode==='anytime'){
+    return {big:`${days} · any time`, dim:'Any hour is fine. Mates pick a day.'};
+  }
+  if(job.mode==='window'){
+    if(!hoursOk()) return {big:'End must be after start', dim:'Tap a later “to” hour.'};
+    return {
+      big:`${days} · ${hhmm(job.start)} to ${hhmm(job.end)}`,
+      dim: job.days.length>1
+        ? 'Same hours on each of those days. Mates can swap a day or a slot.'
+        : 'Mates can say “can’t this slot, can do that slot”.'
+    };
+  }
+  if(job.days.length>1){
+    return {big:`${hhmm(job.time)} on ${days}`, dim:'Mates pick which day.'};
+  }
+  return {big:`${days} · ${hhmm(job.time)}`, dim:'One time. Yes or no.'};
+}
+function whenLine(){ return whenSay().big; }
+function jobReady(){ return job.days.length>0 && hoursOk(); }
+function shipFull(){
+  return replies.filter(r=>r.kind==='yes').length >= job.hands;
+}
+function aboardN(){ return replies.filter(r=>r.kind==='yes').length; }
+
+function applyPreset(kind){
+  job = blankJob();
+  if(kind==='ikea'){
+    job.title='IKEA wardrobe';
+    job.hands=4;
+    job.mode='window';
+    job.days=['sat','sun'];
+    job.start='06:00';
+    job.end='22:00';
+  } else {
+    job.title='Garage tidy';
+    job.hands=1;
+    job.mode='specific';
+    job.days=['sun'];
+    job.time='10:00';
+  }
+  people.forEach(p=>p.on=false);
+  sentCount=0; pendingBurst=[]; replies=[];
+  renderPost();
+  show('post');
+}
+
+function renderPost(){
+  $('jobTitle').value = job.title;
+  const you = {name:'You', photo:selfieUrl, hat:myHat||'captain', color:'#3a4a20'};
+  $('craftRail').innerHTML = CRAFTS.map(c=>{
+    const on = job.hands===c.extra || (c.extra===5 && job.hands>=5);
+    return `<button type="button" class="craft-pick ${on?'on':''}" data-extra="${c.extra}">
+      <div class="mini-boat">${miniCraft(c.extra, you, [])}</div>
+      <strong>${c.label}</strong>
+      <div class="job-meta">${c.extra===5?'+5 or more':'You + '+c.extra+' empty'}</div>
+    </button>`;
+  }).join('');
+  $('handsHint').textContent = `${craftOf(job.hands).label} · you’re captain. Empty seats = extras.`;
+  [...document.querySelectorAll('#modeTabs .tab')].forEach(t=>{
+    t.classList.toggle('on', t.dataset.mode===job.mode);
+  });
+  $('specificBlock').classList.toggle('hidden', job.mode!=='specific');
+  $('windowBlock').classList.toggle('hidden', job.mode!=='window');
+  $('dayPacks').innerHTML = PACKS.map(p=>
+    `<button type="button" class="pack ${sameDays(p.days, job.days)?'on':''}" data-pack="${p.id}">${p.label}</button>`
+  ).join('');
+  $('dayChips').innerHTML = DAYS.map(d=>
+    `<button type="button" class="chip day ${job.days.includes(d.id)?'on':''}" data-day="${d.id}">${d.short}<span class="d">${d.date}</span></button>`
+  ).join('');
+  const timeHtml = (sel, key) => TIMES.map(t=>
+    `<button type="button" class="chip ${job[key]===t?'on':''}" data-${sel}="${t}">${hhmm(t)}</button>`
+  ).join('');
+  $('timeChips').innerHTML = timeHtml('time','time');
+  $('startChips').innerHTML = timeHtml('start','start');
+  $('endChips').innerHTML = timeHtml('end','end');
+  const say = whenSay();
+  $('whenSay').innerHTML = `${esc(say.big)}${say.dim?`<span class="dim">${esc(say.dim)}</span>`:''}`;
+  const sl = slots();
+  if(job.mode==='window'){
+    $('slotHint').textContent = sl.length
+      ? (job.days.length>1
+        ? `Mates can say “can’t ${selectedDays()[0].short}, can ${selectedDays()[1]?selectedDays()[1].short:'another day'}”.`
+        : `Mates can say “can’t this slot, can do that slot” inside ${sl.join(', ')}.`)
+      : 'End must be after start.';
+  }
+  $('goInvite').disabled = !jobReady();
+  $('goInvite').textContent = job.days.length ? 'Pick mates' : 'Pick days first';
+}
+
+function renderInvite(){
+  const q = nameQ.trim().toLowerCase();
+  const rows = people.filter(p => !q || p.name.toLowerCase().includes(q));
+  $('inviteSub').textContent = `${job.title||'Activity'} · ${handsWord(job.hands)} · ${whenLine()}`;
+  if(!rows.length){
+    $('list').innerHTML = `<div class="empty">${q?'No names match.':'Nobody on this fake roster.'}</div>`;
+  } else {
+    $('list').innerHTML = rows.map(p=>`<label class="row"><input type="checkbox" data-id="${p.id}" ${p.on?'checked':''}/>
+      <img class="row-face" alt="" src="${p.photo}"/>
+      <div><div class="name">${esc(p.name)}</div><div class="meta">${esc(p.phone)}</div></div>
+      <span class="badge">mate</span></label>`).join('');
+  }
+  const n = picked().length;
+  $('reviewBtn').disabled = n===0;
+  $('reviewBtn').textContent = n ? `Next · ${peopleWord(n)}` : 'Next';
+}
+
+function smsBody(name){
+  const who = name || 'Mia';
+  if(job.mode==='specific' && selectedDays().length===1){
+    return `Hi <em>${esc(who)}</em> — it’s Al. ${esc(job.title)} · ${esc(whenLine())}. Need ${handsWord(job.hands)}. Tap yes →`;
+  }
+  return `Hi <em>${esc(who)}</em> — it’s Al. ${esc(job.title)} · ${esc(whenLine())}. Need ${handsWord(job.hands)}. Tap a day or yes →`;
+}
+
+function renderConfirm(){
+  const all = picked();
+  pendingBurst = all.slice(sentCount, sentCount+8);
+  if(!pendingBurst.length){ pendingBurst = all.slice(0,8); sentCount=0; }
+  $('confirmTitle').textContent = `Send these ${pendingBurst.length}?`;
+  $('confirmSub').textContent = `From your ${all.length} picks. Fake texts only.`;
+  $('smsPreview').innerHTML = smsBody(pendingBurst[0]&&pendingBurst[0].name);
+  $('confirmList').innerHTML = pendingBurst.map(p=>`<div class="row plain" style="grid-template-columns:28px 1fr auto">
+    <img class="row-face" alt="" src="${p.photo}"/>
+    <div><div class="name">${esc(p.name)}</div><div class="meta">${esc(p.phone)}</div></div>
+    <span class="badge">fake</span></div>`).join('');
+}
+
+function renderMeter(){
+  const n = aboardN();
+  const full = shipFull();
+  $('meterLabel').textContent = full
+    ? `Ship full · ${n}/${job.hands} ${job.hands===1?'hand':'hands'}`
+    : `${n}/${job.hands} ${job.hands===1?'hand':'hands'} aboard`;
+  let html = '';
+  for(let i=0;i<job.hands;i++){
+    html += `<span class="dot ${i<n?'on':''}"></span>`;
+  }
+  $('meter').innerHTML = html;
+  $('fullBanner').classList.toggle('hidden', !full);
+  $('liveTitle').textContent = full ? 'Ship full' : 'Waiting on yes';
+  $('liveTitle').classList.toggle('hidden', full);
+  $('liveSub').textContent = full
+    ? 'Stop inviting. Extra mates sit on the wait-list.'
+    : `${esc(job.title)} · ${whenLine()}`;
+  $('liveSub').classList.toggle('hidden', full);
+  $('livePill').textContent = full ? 'Ship full' : 'Filling';
+}
+
+function renderLive(){
+  renderMeter();
+  if(!replies.length){
+    $('liveList').innerHTML = `<div class="empty">No fake texts in this burst.</div>`;
+  } else {
+    const rank = k => k==='yes'?0 : k==='opened'?1 : k==='sent'?2 : 3;
+    $('liveList').innerHTML = replies.map((r,i)=>({r,i}))
+      .sort((a,b)=>rank(a.r.kind)-rank(b.r.kind))
+      .map(({r,i})=>{
+      const full = shipFull() && r.kind!=='yes';
+      let cls='wait', label=r.label;
+      if(r.kind==='yes'){ cls='ok'; }
+      else if(r.kind==='wait' || (full && r.kind!=='sent' && r.kind!=='opened')){ cls='taken'; label = r.kind==='wait' ? r.label : 'ship full · wait-list'; }
+      else if(r.kind==='opened'){ cls='wait'; }
+      return `<div class="live-row" data-ri="${i}"><span>${esc(r.name)}</span><span class="${cls}">${esc(label)}</span></div>`;
+    }).join('');
+  }
+  const remaining = picked().length - sentCount;
+  const full = shipFull();
+  $('nextBurst').disabled = full || remaining<=0;
+  $('nextBurst').textContent = full ? 'Ship full · stop' : (remaining>0 ? `Send next ${Math.min(8,remaining)}` : 'Done');
+}
+
+function renderWait(){
+  const extra = replies.filter(r=>r.kind==='wait' || (shipFull() && r.kind!=='yes'));
+  $('waitSub').textContent = extra.length
+    ? `${peopleWord(extra.length)} on standby. Ship already has ${handsWord(aboardN())}.`
+    : 'Nobody on the wait-list yet.';
+  $('waitList').innerHTML = extra.length
+    ? extra.map(r=>`<div class="live-row"><span>${esc(r.name)}</span><span class="taken">wait-list</span></div>`).join('')
+    : `<div class="empty">No extra mates. Invite more only if the ship is not full.</div>`;
+}
+
+function clearTimers(){ timers.forEach(t=>clearTimeout(t)); timers=[]; }
+
+function simulateBurst(burst){
+  const sl = slots();
+  burst.forEach((p,i)=>{
+    const t = setTimeout(()=>{
+      const row = replies.find(r=>r.id===p.id);
+      if(!row) return;
+      if(shipFull()){
+        row.kind='wait'; row.label='ship full · wait-list';
+        renderLive();
+        return;
+      }
+      if(sl.length){
+        if(i%3===0){
+          row.kind='yes'; row.label=`Yes · ${sl[0]}`; row.slot=sl[0];
+        } else if(i%3===1){
+          const alt = sl[Math.min(sl.length-1, 1)] || sl[0];
+          row.kind='yes'; row.label=`can’t ${sl[0]}, can ${alt}`; row.slot=alt;
+        } else {
+          row.kind='opened'; row.label='opened';
+        }
+      } else {
+        if(i%3===1){ row.kind='yes'; row.label='Yes ✓'; }
+        else if(i%3===0){ row.kind='opened'; row.label='opened'; }
+        else { row.kind='sent'; row.label='…'; }
+      }
+      if(shipFull()){
+        replies.forEach(r=>{
+          if(r.kind!=='yes'){ r.kind='wait'; r.label='ship full · wait-list'; }
+        });
+      }
+      renderLive();
+    }, 500+i*400);
+    timers.push(t);
+  });
+}
+
+function cycleReply(i){
+  const r = replies[i]; if(!r) return;
+  const sl = slots();
+  const order = sl.length
+    ? [
+        {kind:'sent', label:'sent…'},
+        {kind:'opened', label:'opened'},
+        {kind:'yes', label:`Yes · ${sl[0]}`, slot:sl[0]},
+        {kind:'yes', label:`can’t ${sl[0]}, can ${sl[Math.min(1,sl.length-1)]}`, slot:sl[Math.min(1,sl.length-1)]},
+        {kind:'wait', label:'ship full · wait-list'}
+      ]
+    : [
+        {kind:'sent', label:'sent…'},
+        {kind:'opened', label:'opened'},
+        {kind:'yes', label:'Yes ✓'},
+        {kind:'wait', label:'ship full · wait-list'}
+      ];
+  const idx = order.findIndex(o=>o.kind===r.kind && o.label===r.label);
+  const next = order[(idx+1+order.length)%order.length] || order[0];
+  Object.assign(r, next);
+  if(shipFull()){
+    replies.forEach(x=>{
+      if(x.kind!=='yes'){ x.kind='wait'; x.label='ship full · wait-list'; }
+    });
+  }
+  renderLive();
+}
+
+let chefWhen = 'tonight';
+let chefs = [
+  {meal:"Mia’s stir-fry", when:'Tonight · 7pm', place:"Mia’s place", kind:'Quick cook · learn', hands:['Tom Blake','Sara Nguyen']},
+  {meal:"Tom’s nonna pasta", when:'Sat · 6pm', place:"Tom’s place", kind:'Favourite meal', hands:['Mia Chen']}
+];
+function renderChefs(){
+  $('chefList').innerHTML = chefs.map(c=>`<div class="card job-card">
+    <strong>${esc(c.meal)}</strong>
+    <span class="job-meta">${esc(c.when)} · ${esc(c.place)} · ${esc(c.kind)}</span>
+    <span class="job-meta">${c.hands.length? 'Coming: '+c.hands.map(esc).join(', ') : 'Waiting on mates'}</span>
+  </div>`).join('');
+  [...document.querySelectorAll('#chefWhen .tab')].forEach(t=>{
+    t.classList.toggle('on', t.dataset.cwhen===chefWhen);
+  });
+}
+const RED_NEEDS = [
+  {id:'keys', label:'Keys locked out', sms:'Al · keys locked out. Can you? →'},
+  {id:'chemist', label:'Chemist pickup', sms:'Al · chemist pickup. Can you? →'},
+  {id:'lift', label:'Need a lift', sms:'Al · need a lift. Can you? →'}
+];
+const HOT_NEEDS = [
+  {id:'tickets', label:'2 spare movie tickets', sms:'Al · 2 movie tickets. 12 min. Can you? →'},
+  {id:'concert', label:'Extra concert seat', sms:'Al · extra seat. 8 min. Can you? →'}
+];
+let urgent = blankUrgent('red');
+function blankUrgent(kind){
+  return {
+    kind,
+    needId: kind==='red' ? 'keys' : 'tickets',
+    seats: 1,
+    got: 0,
+    idx: 0,
+    list: SAMPLE.slice(0,5).map((p,i)=>({...p,id:i})),
+    log: []
+  };
+}
+function uNeeds(){ return urgent.kind==='red' ? RED_NEEDS : HOT_NEEDS; }
+function uNeed(){ return uNeeds().find(n=>n.id===urgent.needId) || uNeeds()[0]; }
+function uFilled(){ return urgent.got >= urgent.seats; }
+function uCurrent(){ return urgent.list[urgent.idx] || null; }
+function renderUrgent(){
+  const red = urgent.kind==='red';
+  $('urgentLogo').innerHTML = red ? 'ALL <span>HANDS</span> ON DECK' : 'ALL <span>MATES</span> ON DECK';
+  $('urgentPill').textContent = red ? 'Red alert' : 'Hot · minutes';
+  $('urgentPill').style.borderColor = red ? 'var(--red)' : 'var(--hot)';
+  $('urgentPill').style.color = red ? '#ffb4b4' : '#d7c2ff';
+  $('urgentH').textContent = red ? 'Need someone now' : 'Hot opportunity';
+  $('urgentSub').textContent = red
+    ? 'One fake text at a time. First Can stops the rest. No chat.'
+    : 'Lasts minutes. Same cascade. First Can can take it.';
+  $('urgentNeeds').innerHTML = uNeeds().map(n=>
+    `<button type="button" class="chip ${urgent.needId===n.id?'on':''}" data-uid="${n.id}">${n.label}</button>`
+  ).join('');
+  $('uSeats').textContent = String(urgent.seats);
+  $('uSeatsHint').textContent = urgent.seats===1
+    ? 'Need 1 person. First Can stops the cascade.'
+    : `Need ${urgent.seats}. Keep cascading until ${urgent.seats} Can.`;
+  $('urgentSms').innerHTML = `<em>${esc(uNeed().sms)}</em>`;
+  $('urgentGo').className = red ? 'btn btn-alert' : 'btn btn-hot';
+  $('urgentGo').textContent = `Fake-text ${urgent.list[0] ? urgent.list[0].name.split(' ')[0] : 'first mate'}`;
+}
+function startUrgent(kind){
+  urgent = blankUrgent(kind);
+  renderUrgent();
+  show('urgent');
+}
+function renderUblast(){
+  const red = urgent.kind==='red';
+  const full = uFilled();
+  const cur = uCurrent();
+  $('ublastLogo').innerHTML = red ? 'ALL <span>HANDS</span> ON DECK' : 'ALL <span>MATES</span> ON DECK';
+  $('ublastPill').textContent = full ? 'Stopped' : 'Cascade';
+  $('ublastTitle').textContent = full ? 'Got them' : (cur ? `Texted ${cur.name.split(' ')[0]}` : 'Done');
+  $('ublastSub').textContent = full
+    ? 'Stop. Do not text anyone else.'
+    : `${urgent.got}/${urgent.seats} Can · one mate at a time`;
+  $('ublastStop').classList.toggle('hidden', !full);
+  $('ublastStop').className = full ? (red ? 'banner-red' : 'banner-hot') : 'banner-red hidden';
+  $('ublastList').innerHTML = urgent.log.map(r=>{
+    const cls = r.kind==='can' ? 'win' : r.kind==='cant' ? 'taken' : r.kind==='skip' ? 'taken' : 'wait';
+    return `<div class="live-row"><span>${esc(r.name)}</span><span class="${cls}">${esc(r.label)}</span></div>`;
+  }).join('') || `<div class="empty">Nobody texted yet.</div>`;
+  $('uOpenMate').disabled = full || !cur;
+  $('uOpenMate').textContent = full ? 'Stopped' : (cur ? `Open ${cur.name.split(' ')[0]}’s text` : 'Done');
+  $('uOpenMate').className = full ? 'btn btn-ghost' : (red ? 'btn btn-alert' : 'btn btn-hot');
+  $('uNoReply').disabled = full || !cur;
+  $('uNoReply').classList.toggle('hidden', full);
+}
+function cascadeStart(){
+  urgent.got=0; urgent.idx=0; urgent.log=[];
+  const first = uCurrent();
+  if(first) urgent.log.push({id:first.id,name:first.name,kind:'sent',label:'texted… · waiting'});
+  show('ublast');
+  renderUblast();
+}
+function cascadeNext(reason){
+  const cur = uCurrent();
+  if(cur){
+    const row = urgent.log.find(r=>r.id===cur.id);
+    if(row && row.kind==='sent'){ row.kind='skip'; row.label = reason==='noreply' ? 'no reply · skipped' : 'Can’t'; }
+  }
+  urgent.idx += 1;
+  if(uFilled() || urgent.idx>=urgent.list.length){
+    renderUblast();
+    return;
+  }
+  const next = uCurrent();
+  urgent.log.push({id:next.id,name:next.name,kind:'sent',label:'texted… · waiting'});
+  renderUblast();
+}
+function mateAnswer(can){
+  const cur = uCurrent(); if(!cur) { show('ublast'); renderUblast(); return; }
+  const row = urgent.log.find(r=>r.id===cur.id) || urgent.log[urgent.log.length-1];
+  if(can){
+    urgent.got += 1;
+    if(row){ row.kind='can'; row.label = uFilled() && urgent.seats===1 ? 'CAN · coming · stop' : 'CAN · coming'; }
+    if(uFilled()){
+      urgent.list.slice(urgent.idx+1).forEach(p=>{
+        if(!urgent.log.some(r=>r.id===p.id)) urgent.log.push({id:p.id,name:p.name,kind:'skip',label:'not texted'});
+      });
+      urgent.idx = urgent.list.length;
+    } else {
+      urgent.idx += 1;
+      const next = uCurrent();
+      if(next) urgent.log.push({id:next.id,name:next.name,kind:'sent',label:'texted… · waiting'});
+    }
+  } else {
+    if(row){ row.kind='cant'; row.label='Can’t'; }
+    urgent.idx += 1;
+    const next = uCurrent();
+    if(next && !uFilled()) urgent.log.push({id:next.id,name:next.name,kind:'sent',label:'texted… · waiting'});
+  }
+  show('ublast');
+  renderUblast();
+}
+function openMate(){
+  const cur = uCurrent(); if(!cur || uFilled()) return;
+  $('umateWho').textContent = `${cur.name} · ${cur.phone}`;
+  $('umateSms').innerHTML = `<em>${esc(uNeed().sms)}</em>`;
+  $('umateH').textContent = uNeed().label;
+  $('umateSub').textContent = urgent.kind==='red'
+    ? 'Al needs someone now. One tap.'
+    : 'Hot — minutes left. One tap.';
+  show('umate');
+}
+const FUN = /tennis|party|brunch|drinks|movie night|night out|game night|picnic/i;
+let member = new URLSearchParams(location.search).has('member')
+  || sessionStorage.getItem('amod-member')==='1';
+if(new URLSearchParams(location.search).has('invite')){
+  member=false;
+  sessionStorage.removeItem('amod-member');
+}
+let firstPicUrl = '';
+let myFirst = null;
+function renderHome(){
+  $('homeSub').innerHTML = member
+    ? `What’s on. Some <s>jobs</s> activities need many hands, some need few. When the ship is full, stop.`
+    : `Looking in. You can see what’s on — not who is coming.`;
+  $('ikeaWho').textContent = member ? 'Mia Chen + 3 coming' : 'People are coming · names hidden';
+  $('garageWho').textContent = member ? 'Tom Blake + 1 coming' : 'People are coming · names hidden';
+  $('eventWho').textContent = member ? 'Helen Walker was there' : 'People were there · names hidden';
+  $('goJoin').classList.toggle('hidden', member);
+  $('moreToggle').classList.toggle('hidden', !member);
+  if(!member) $('moreDoors').classList.add('hidden');
+  if(myFirst){
+    $('myFirstCard').classList.remove('hidden');
+    $('myFirstCard').innerHTML = `<button type="button" class="card job-card" id="goMine"><strong>${esc(myFirst)}</strong><span class="job-meta">Your first activity · the weight</span></button>`;
+    $('goMine').onclick=()=>openDetail('mine');
+  }
+  renderBoard();
+  const cap = {name:'Al', photo:AL_PHOTO, hat:'captain', color:'#2a3a20'};
+  document.querySelectorAll('.feed-craft').forEach(el=>{
+    el.innerHTML = miniCraft(+el.dataset.extra||1, cap, []);
+  });
+}
+function peek(title, when){
+  if(member) return false;
+  $('teaseTitle').textContent = title;
+  $('teaseWhen').textContent = when;
+  show('tease');
+  return true;
+}
+function sceneSvg(kind){
+  if(kind==='garage') return `<svg viewBox="0 0 200 260" preserveAspectRatio="xMidYMid slice"><rect width="200" height="260" fill="#1c1410"/><rect x="20" y="40" width="160" height="180" fill="#2a1e14" stroke="#5a4030"/><rect x="30" y="150" width="50" height="40" fill="#6a4a28"/><rect x="90" y="130" width="70" height="60" fill="#4a3020"/><rect x="40" y="80" width="40" height="30" fill="#3a2a18"/><rect x="110" y="70" width="55" height="35" fill="#5a3820"/></svg>`;
+  if(kind==='ikea') return `<svg viewBox="0 0 200 260" preserveAspectRatio="xMidYMid slice"><rect width="200" height="260" fill="#1a2218"/><rect x="25" y="160" width="70" height="50" fill="#c8b48a"/><rect x="100" y="140" width="70" height="70" fill="#d4c49a"/><rect x="40" y="90" width="55" height="45" fill="#b8a878"/><rect x="110" y="70" width="50" height="40" fill="#c4b888"/></svg>`;
+  if(kind==='street') return `<svg viewBox="0 0 200 260" preserveAspectRatio="xMidYMid slice"><rect width="200" height="260" fill="#1a1c1a"/><rect x="0" y="140" width="200" height="80" fill="#2a2c2a"/><circle cx="50" cy="170" r="12" fill="#3a3a30"/><circle cx="120" cy="185" r="16" fill="#333228"/><rect x="20" y="40" width="30" height="90" fill="#243028"/><rect x="150" y="50" width="28" height="80" fill="#243028"/></svg>`;
+  if(kind==='street-after') return `<svg viewBox="0 0 200 260" preserveAspectRatio="xMidYMid slice"><rect width="200" height="260" fill="#142018"/><rect x="0" y="140" width="200" height="80" fill="#2a3830"/><rect x="20" y="40" width="30" height="90" fill="#2a4030"/><rect x="150" y="50" width="28" height="80" fill="#2a4030"/><circle cx="100" cy="120" r="18" fill="#c8f54a" opacity=".35"/></svg>`;
+  return `<svg viewBox="0 0 200 260" preserveAspectRatio="xMidYMid slice"><rect width="200" height="260" fill="#1a2218"/><text x="100" y="130" text-anchor="middle" fill="#8fb82e" font-size="42">⚖</text></svg>`;
+}
+function hullSvg(id){
+  if(id==='row') return `<svg class="hull" viewBox="0 0 200 240"><ellipse cx="100" cy="128" rx="36" ry="88" fill="#6a4a28" stroke="#c8a227" stroke-width="3"/><path d="M64 128 L40 136 M136 128 L160 136" stroke="#5a3a18" stroke-width="4"/></svg>`;
+  if(id==='pea') return `<svg class="hull" viewBox="0 0 220 220"><ellipse cx="110" cy="120" rx="78" ry="48" fill="#8a5a28" stroke="#c8a227" stroke-width="3"/><ellipse cx="110" cy="118" rx="58" ry="28" fill="#5a3a18" opacity=".35"/></svg>`;
+  if(id==='cork') return `<svg class="hull" viewBox="0 0 240 200"><ellipse cx="70" cy="110" rx="40" ry="36" fill="#c8a06a" stroke="#c8a227" stroke-width="3"/><ellipse cx="120" cy="118" rx="42" ry="38" fill="#d4b078" stroke="#c8a227" stroke-width="3"/><ellipse cx="172" cy="110" rx="40" ry="36" fill="#c8a06a" stroke="#c8a227" stroke-width="3"/></svg>`;
+  if(id==='four') return `<svg class="hull" viewBox="0 0 220 300"><path d="M110 20 L138 90 L130 250 L90 250 L82 90 Z" fill="#5a3a22" stroke="#c8a227" stroke-width="3"/><rect x="106" y="40" width="8" height="160" fill="#d8c49a"/><path d="M114 50 L170 140 L114 140 Z" fill="#f4f7f2" opacity=".85"/></svg>`;
+  return `<svg class="hull" viewBox="0 0 240 340"><path d="M120 30 L160 110 L150 300 L90 300 L80 110 Z" fill="#4a2e18" stroke="#c8a227" stroke-width="3"/><rect x="116" y="36" width="8" height="200" fill="#d8c49a"/><rect x="70" y="50" width="6" height="160" fill="#c8b888"/><rect x="164" y="50" width="6" height="160" fill="#c8b888"/><path d="M124 48 L190 130 L124 130 Z" fill="#f4f7f2" opacity=".8"/><path d="M76 60 L30 130 L76 130 Z" fill="#e8ead0" opacity=".75"/><path d="M170 60 L214 130 L170 130 Z" fill="#e8ead0" opacity=".75"/></svg>`;
+}
+function extraSeats(id){
+  if(id==='row') return {helm:[50,78], crew:[[50,32]]};
+  if(id==='pea') return {helm:[50,72], crew:[[32,42],[68,42]]};
+  if(id==='cork') return {helm:[50,78], crew:[[22,48],[50,36],[78,48]]};
+  if(id==='four') return {helm:[50,80], crew:[[50,26],[32,50],[68,50],[50,62]]};
+  return {helm:[50,82], crew:[[50,22],[28,38],[72,38],[26,56],[74,56]]};
+}
+function miniCraft(extra, captain, crew){
+  const c = craftOf(extra);
+  const pos = extraSeats(c.id);
+  let seats = seatAt(pos.helm[0], pos.helm[1], captain, true);
+  for(let i=0;i<c.extra;i++){
+    const xy = pos.crew[i]; if(!xy) continue;
+    seats += seatAt(xy[0], xy[1], (crew&&crew[i])||null, false);
+  }
+  return `<div class="craft-wrap" style="width:100%">${hullSvg(c.id)}${seats}</div>`;
+}
+function seatAt(x,y,person,isCap){
+  if(!person){
+    return `<div class="seat crew" style="left:${x}%;top:${y}%"><div class="mini empty-seat"></div></div>`;
+  }
+  const hide = !member;
+  const face = hide
+    ? `<div class="mini"><div class="ghost-face"></div></div>`
+    : `<div class="mini">${faceHtml(person.photo||'', person.hat, person.color)}</div>`;
+  const tag = hide ? '' : `<div class="tag">${isCap?'Captain':(person.name||'mate')}</div>`;
+  return `<div class="seat ${isCap?'helm':'crew'}" style="left:${x}%;top:${y}%">${face}${tag}</div>`;
+}
+function openDetail(key){
+  const you = {name:'You', photo:selfieUrl, hat:myHat, color:'#3a4a20'};
+  const al = {name:'Al', photo:AL_PHOTO, hat:'captain', color:'#2a3a20'};
+  const mate = n => ({name:n, photo:photoFor(n), hat:hatFor(n), color:'#2a3a20'});
+  const jobs = {
+    garage:{title:"Al’s garage", sub:'Rowboat · you + 1', extra:1, scene:'garage', after:null,
+      captain:al, crew:[mate('Tom')]},
+    ikea:{title:'IKEA wardrobe', extra:4, sub:'Four-hander', scene:'ikea', after:null,
+      captain:al, crew:[mate('Mia'),mate('Sara'),mate('Jack')]},
+    street:{title:'Street tidy', extra:5, sub:'Tall ship · done', scene:'street', after:'street-after',
+      captain:al, crew:[mate('Helen'),mate('Mia'),mate('Tom'),mate('Sara'),mate('Priya')]},
+    mine:{title: myFirst||'Your activity', extra:1, sub:'Your <s>job</s> activity · rowboat', scene:'mind', after:null,
+      captain:you, crew:[]}
+  };
+  const d = jobs[key] || jobs.garage;
+  const c = craftOf(d.extra);
+  $('heroTitle').textContent = d.title;
+  $('heroSub').innerHTML = d.sub;
+  $('heroBefore').innerHTML = sceneSvg(d.scene);
+  $('craftKind').textContent = c.label;
+  $('craftNote').textContent = member ? 'You’re already captain. Empty = still needed.' : 'Craft size is extras needed. Names hidden.';
+  const pos = extraSeats(c.id);
+  let seats = seatAt(pos.helm[0], pos.helm[1], d.captain, true);
+  for(let i=0;i<c.extra;i++){
+    const xy = pos.crew[i]; if(!xy) continue;
+    seats += seatAt(xy[0], xy[1], d.crew[i]||null, false);
+  }
+  $('craft').innerHTML = hullSvg(c.id) + seats;
+  const done = !!d.after;
+  $('afterPane').classList.toggle('hidden', !done);
+  if(done){
+    $('heroAfter').innerHTML = sceneSvg(d.after);
+    $('afterTitle').textContent = d.title;
+  }
+  show('detail');
+  $('flick').scrollTop = 0;
+}
+$('moreToggle').onclick=()=>{
+  $('moreDoors').classList.toggle('hidden');
+  $('moreToggle').textContent = $('moreDoors').classList.contains('hidden') ? 'More' : 'Less';
+};
+$('goEvent').onclick=()=>openDetail('street');
+$('detailBack').onclick=()=>{ renderHome(); show('home'); };
+$('goJoin').onclick=$('teaseJoin').onclick=()=>show('selfie');
+$('teaseBack').onclick=()=>{ renderHome(); show('home'); };
+const HATS = [
+  {id:'sailor', label:'Sailor cap'},
+  {id:'pirate', label:'Pirate hat'},
+  {id:'captain', label:'Captain cap'},
+  {id:'beret', label:'French beret'},
+  {id:'turban', label:'Turban'}
+];
+function hatMarkup(id){
+  if(id==='sailor') return '<ellipse cx="50" cy="30" rx="40" ry="11" fill="#f4f7f2"/><rect x="20" y="12" width="60" height="18" rx="9" fill="#f4f7f2"/><rect x="20" y="22" width="60" height="7" fill="#1a2744"/>';
+  if(id==='pirate') return '<path d="M8 34 Q50 6 92 34 L80 40 Q50 20 20 40 Z" fill="#141414"/><circle cx="50" cy="18" r="5" fill="#c8f54a"/>';
+  if(id==='captain') return '<ellipse cx="50" cy="38" rx="42" ry="9" fill="#1a2744"/><rect x="26" y="10" width="48" height="24" rx="10" fill="#1a2744"/><rect x="38" y="18" width="24" height="6" rx="2" fill="#c8a227"/>';
+  if(id==='beret') return '<ellipse cx="46" cy="26" rx="38" ry="16" fill="#5a1d33"/><circle cx="80" cy="18" r="5" fill="#5a1d33"/>';
+  return '<path d="M16 42 Q22 10 50 8 Q78 10 84 42 Q50 28 16 42 Z" fill="#c8a227"/><path d="M22 38 Q50 18 78 38" stroke="#8a7020" fill="none" stroke-width="3"/>';
+}
+let selfieUrl = '';
+let myHat = 'sailor';
+function paintHat(){
+  $('hatSvg').innerHTML = hatMarkup(myHat);
+  [...document.querySelectorAll('#hatChips .chip')].forEach(c=>c.classList.toggle('on', c.dataset.hat===myHat));
+}
+function faceHtml(photo, hat, color){
+  const src = photo || matePhoto((color||'x').length);
+  return `<img alt="" src="${src}"/><svg class="hat-svg" viewBox="0 0 100 100">${hatMarkup(hat)}</svg>`;
+}
+function renderBoard(){
+  const showB = member;
+  $('boardLabel').classList.toggle('hidden', !showB);
+  $('board').classList.toggle('hidden', !showB);
+  if(!showB) return;
+  const row = [
+    {name:'You', photo:selfieUrl, hat:myHat, color:'#3a4a20'},
+    {name:'Mia', photo:photoFor('Mia'), hat:hatFor('Mia'), color:'#3a5a48'},
+    {name:'Tom', photo:photoFor('Tom'), hat:hatFor('Tom'), color:'#4a3a28'},
+    {name:'Sara', photo:photoFor('Sara'), hat:hatFor('Sara'), color:'#3a2a40'}
+  ];
+  $('board').innerHTML = row.map(p=>`<div class="aboard"><div class="mini">${faceHtml(p.photo,p.hat,p.color)}</div><div class="n">${esc(p.name)}</div></div>`).join('');
+}
+$('selfieBack').onclick=()=>{ renderHome(); show('home'); };
+$('selfieFile').onchange=e=>{
+  const f=e.target.files&&e.target.files[0]; if(!f) return;
+  selfieUrl=URL.createObjectURL(f);
+  $('selfieImg').src=selfieUrl;
+  $('selfieImg').classList.remove('hidden');
+  $('hatImg').src=selfieUrl;
+  $('selfieNext').classList.remove('hidden');
+};
+$('selfieNext').onclick=()=>{
+  if(!selfieUrl) return;
+  $('hatChips').innerHTML = HATS.map(h=>`<button type="button" class="chip ${myHat===h.id?'on':''}" data-hat="${h.id}">${h.label}</button>`).join('');
+  paintHat();
+  show('hat');
+};
+$('hatChips').onclick=e=>{
+  const c=e.target.closest('[data-hat]'); if(!c) return;
+  myHat=c.dataset.hat; paintHat();
+};
+$('hatNext').onclick=()=>show('first');
+$('hatBack').onclick=()=>show('selfie');
+$('firstBack').onclick=()=>show('hat');
+$('firstText').oninput=()=>{ $('firstWarn').textContent=''; };
+$('firstFile').onchange=e=>{
+  const f=e.target.files&&e.target.files[0]; if(!f) return;
+  firstPicUrl=URL.createObjectURL(f);
+  $('firstPic').classList.remove('hidden');
+  $('firstPic').innerHTML=`<img alt="" src="${firstPicUrl}"/>`;
+};
+$('firstPost').onclick=()=>{
+  const t=($('firstText').value||'').trim();
+  if(!t){ $('firstWarn').textContent='Write the thing on your mind. Text only is fine.'; return; }
+  if(FUN.test(t)){ $('firstWarn').textContent='That sounds like fun. First activity has to be the weight on your mind.'; return; }
+  myFirst=t;
+  member=true;
+  sessionStorage.setItem('amod-member','1');
+  renderHome();
+  show('home');
+};
+$('backPhotos').onclick=()=>{ renderHome(); show('home'); };
+$('photoSub').innerHTML = member
+  ? `This <s>job</s> activity is now an event. Photos live here.`
+  : `This <s>job</s> activity is now an event. People were there — you can’t see who.`;
+$('picFile').onchange=e=>{
+  const f=e.target.files&&e.target.files[0]; if(!f) return;
+  const url=URL.createObjectURL(f);
+  const el=document.createElement('div');
+  el.className='pic';
+  el.innerHTML=`<img alt="event photo" src="${url}"/>`;
+  $('picGrid').appendChild(el);
+  e.target.value='';
+};
+$('goHands').onclick=()=>{ if(!member){ show('selfie'); return; } startUrgent('red'); };
+$('goHot').onclick=()=>{ if(!member){ show('selfie'); return; } startUrgent('purple'); };
+$('urgentBack').onclick=()=>show('home');
+$('urgentNeeds').onclick=e=>{
+  const c=e.target.closest('[data-uid]'); if(!c) return;
+  urgent.needId=c.dataset.uid; renderUrgent();
+};
+$('uMinus').onclick=()=>{ urgent.seats=Math.max(1,urgent.seats-1); renderUrgent(); };
+$('uPlus').onclick=()=>{ urgent.seats=Math.min(3,urgent.seats+1); renderUrgent(); };
+$('urgentGo').onclick=()=>cascadeStart();
+$('uOpenMate').onclick=()=>openMate();
+$('uNoReply').onclick=()=>cascadeNext('noreply');
+$('uBackHome').onclick=()=>show('home');
+$('uCan').onclick=()=>mateAnswer(true);
+$('uCant').onclick=()=>mateAnswer(false);
+
+$('goChefs').onclick=()=>{ if(peek('Tonight cook',"Mia’s place")) return; renderChefs(); show('chefs'); };
+$('backChefsHome').onclick=()=>show('home');
+$('chefWhen').onclick=e=>{
+  const t=e.target.closest('.tab'); if(!t) return;
+  chefWhen=t.dataset.cwhen;
+  renderChefs();
+};
+$('chefHost').onclick=()=>{
+  const meal=($('chefMeal').value||'').trim() || (chefWhen==='tonight' ? 'Quick cook' : 'Favourite meal');
+  chefs.unshift({
+    meal,
+    when: chefWhen==='tonight' ? 'Tonight · 7pm' : 'Weekend · Sat 6pm',
+    place:"Al’s place",
+    kind: chefWhen==='tonight' ? 'Quick cook' : 'Favourite meal',
+    hands:['Mia Chen','Lily Martin']
+  });
+  $('chefMeal').value='';
+  renderChefs();
+};
+
+$('presetIkea').onclick=()=>openDetail('ikea');
+$('presetGarage').onclick=()=>openDetail('garage');
+$('goPost').onclick=()=>{
+  if(!member){ show('selfie'); return; }
+  clearTimers();
+  job = blankJob();
+  people.forEach(p=>p.on=false);
+  sentCount=0; pendingBurst=[]; replies=[];
+  renderPost();
+  show('post');
+};
+$('backHome').onclick=()=>show('home');
+$('jobTitle').oninput=e=>{ job.title = e.target.value; };
+$('craftRail').onclick=e=>{
+  const p=e.target.closest('[data-extra]'); if(!p) return;
+  job.hands=+p.dataset.extra;
+  renderPost();
+};
+$('modeTabs').onclick=e=>{
+  const t=e.target.closest('.tab'); if(!t) return;
+  job.mode=t.dataset.mode;
+  renderPost();
+};
+$('dayPacks').onclick=e=>{
+  const c=e.target.closest('[data-pack]'); if(!c) return;
+  const pack=PACKS.find(p=>p.id===c.dataset.pack); if(!pack) return;
+  job.days=pack.days.slice();
+  renderPost();
+};
+$('dayChips').onclick=e=>{
+  const c=e.target.closest('[data-day]'); if(!c) return;
+  const id=c.dataset.day;
+  if(job.days.includes(id)) job.days=job.days.filter(d=>d!==id);
+  else job.days=DAYS.map(d=>d.id).filter(d=>d===id || job.days.includes(d));
+  renderPost();
+};
+$('timeChips').onclick=e=>{
+  const c=e.target.closest('[data-time]'); if(!c) return;
+  job.time=c.dataset.time; renderPost();
+};
+$('startChips').onclick=e=>{
+  const c=e.target.closest('[data-start]'); if(!c) return;
+  job.start=c.dataset.start;
+  if(toMin(job.end)<=toMin(job.start)){
+    const next = TIMES.find(t=>toMin(t)>toMin(job.start));
+    if(next) job.end=next;
+  }
+  renderPost();
+};
+$('endChips').onclick=e=>{
+  const c=e.target.closest('[data-end]'); if(!c) return;
+  job.end=c.dataset.end; renderPost();
+};
+
+$('goInvite').onclick=()=>{
+  job.title = ($('jobTitle').value||'').trim() || 'Activity';
+  if(!jobReady()) return;
+  show('invite');
+  renderInvite();
+};
+$('backPost').onclick=()=>{ renderPost(); show('post'); };
+$('nameSearch').oninput=e=>{ nameQ=e.target.value||''; renderInvite(); };
+$('list').onchange=e=>{
+  const p=people.find(x=>x.id===+e.target.dataset.id);
+  if(p){ p.on=!!e.target.checked; renderInvite(); }
+};
+$('reviewBtn').onclick=()=>{
+  if(!picked().length) return;
+  show('confirm');
+  renderConfirm();
+};
+$('backPick').onclick=()=>show('invite');
+$('confirmSend').onclick=()=>{
+  if(!pendingBurst.length) return;
+  const burst = pendingBurst.filter(p=>p.on);
+  if(!burst.length) return;
+  sentCount += burst.length;
+  burst.forEach(p=>{
+    if(!replies.some(r=>r.id===p.id)){
+      replies.push({id:p.id,name:p.name,kind:'sent',label:'sent…'});
+    }
+  });
+  show('live');
+  renderLive();
+  simulateBurst(burst);
+};
+$('nextBurst').onclick=()=>{
+  if($('nextBurst').disabled) return;
+  show('invite');
+  setTimeout(()=>$('reviewBtn').click(), 50);
+};
+$('liveList').onclick=e=>{
+  const row=e.target.closest('[data-ri]'); if(!row) return;
+  cycleReply(+row.dataset.ri);
+};
+$('seeWait').onclick=()=>{ renderWait(); show('wait'); };
+$('backLive').onclick=()=>{ renderLive(); show('live'); };
+$('backInvite').onclick=()=>show('invite');
+$('resetHome').onclick=()=>{
+  clearTimers();
+  job=blankJob();
+  people.forEach(p=>p.on=false);
+  sentCount=0; pendingBurst=[]; replies=[]; nameQ='';
+  renderHome();
+  show('home');
+};
+
+renderPost();
+renderHome();
+show('home');
+</script>
+</body>
+</html>
