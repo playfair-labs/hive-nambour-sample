@@ -1414,11 +1414,9 @@ function renderBoard(){
   if(!showB) return;
   const row = [
     {name:'You', photo:selfieUrl, hat:myHat, color:'#3a4a20'},
-    {name:'Mia', photo:photoFor('Mia'), hat:hatFor('Mia'), color:'#3a5a48'},
-    {name:'Remi', photo:photoFor('Remi'), hat:hatFor('Remi'), color:'#4a3a28'},
-    {name:'Chris', photo:photoFor('Chris'), hat:hatFor('Chris'), color:'#3a2a40'}
+    ...SAMPLE.map(p=>({name:p.name, photo:p.photo, hat:p.hat, color:'#2a3a20', note:p.note}))
   ];
-  $('board').innerHTML = row.map(p=>`<div class="aboard"><div class="mini">${faceHtml(p.photo,p.hat,p.color)}</div><div class="n">${esc(p.name)}</div></div>`).join('');
+  $('board').innerHTML = row.map(p=>`<div class="aboard"><div class="mini">${faceHtml(p.photo,p.hat,p.color)}</div><div class="n">${esc(p.name)}</div>${p.note?`<div class="n">${esc(p.note)}</div>`:''}</div>`).join('');
 }
 $('selfieBack').onclick=()=>{ renderHome(); show('home'); };
 $('selfieFile').onchange=e=>{
