@@ -38,13 +38,13 @@
     letter-spacing:-.07em;line-height:.8;color:var(--navy);opacity:.78;
     font-variant-numeric:tabular-nums;filter:drop-shadow(0 1px 0 #fffdf6)}
   .need.off{display:none}
-  .asks{position:absolute;left:6px;bottom:8px;z-index:7;display:flex;flex-direction:column;
-    align-items:flex-start;gap:5px;max-width:48%}
+  .asks{position:absolute;left:4px;bottom:6px;z-index:7;display:flex;flex-direction:column;
+    align-items:flex-start;gap:6px;max-width:52%;pointer-events:auto}
   .tool{appearance:none;-webkit-appearance:none;font-family:inherit;cursor:pointer;
-    pointer-events:auto;font-size:clamp(15px,4vw,18px);font-weight:800;letter-spacing:-.03em;
+    pointer-events:auto;font-size:clamp(16px,4.4vw,19px);font-weight:800;letter-spacing:-.03em;
     line-height:1.05;color:var(--navy);background:rgba(255,253,246,.94);border:1.5px solid var(--navy);
-    border-radius:10px;padding:4px 8px;white-space:nowrap;box-shadow:0 1px 0 #fffdf6}
-  .tool:focus{outline:none}
+    border-radius:11px;padding:7px 11px;white-space:nowrap;box-shadow:0 1px 0 #fffdf6;
+    touch-action:none}
   .tool.holding{transform:scale(.96);box-shadow:0 0 0 3px var(--hive),0 1px 0 #fffdf6}
   .tool.fly{animation:toolFly .42s cubic-bezier(.22,1.1,.3,1) both}
   @keyframes toolFly{
@@ -63,9 +63,9 @@
   .seat.you .loot{background:var(--hive)}
   .plate.peek .seat .tag{top:calc(108% + 15px)}
   .cal-card{position:absolute;left:12px;right:12px;z-index:14;
-    bottom:max(86px,calc(env(safe-area-inset-bottom) + 68px));
+    top:max(10px,env(safe-area-inset-top));bottom:auto;
     background:#fffdf6;border:2px solid var(--navy);border-radius:16px;padding:12px 14px 13px;
-    box-shadow:0 10px 28px rgba(40,30,10,.16);opacity:0;transform:translateY(12px);
+    box-shadow:0 10px 28px rgba(40,30,10,.16);opacity:0;transform:translateY(-10px);
     pointer-events:none;transition:opacity .2s,transform .2s}
   .cal-card.on{opacity:1;transform:none;pointer-events:auto}
   .cal-card .k{font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;
@@ -400,8 +400,15 @@ function toICS(evt){
   lines.push('END:VEVENT','END:VCALENDAR');
   return lines.join('\r\n');
 }
+function isIOS(){
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1);
+}
 function downloadICS(ics, filename){
-  const blob = new Blob([ics], {type:'text/calendar;charset=utf-8'});
+  /* iPhone: text/calendar opens Calendar. Desktop: octet-stream so Chrome
+     downloads instead of popping a blob preview tab. */
+  const type = isIOS() ? 'text/calendar;charset=utf-8' : 'application/octet-stream';
+  const blob = new Blob([ics], {type});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
@@ -419,10 +426,10 @@ function showCalCard(evt, how){
   const el = $('calCard');
   if(!el) return;
   const howLine = how==='ics'
-    ? 'Wrote a Calendar file — iPhone opens it in Calendar. Desktop downloads .ics.'
+    ? 'Wrote Calendar · .ics — iPhone opens Calendar'
     : how==='cancel'
       ? 'Calendar write cancelled.'
-      : 'Sample card. This web page cannot write the native Calendar store.';
+      : 'Sample card — this page cannot write the native Calendar store.';
   el.hidden = false;
   el.classList.add('on');
   el.innerHTML = `<span class="k">Calendar</span>
@@ -430,7 +437,7 @@ function showCalCard(evt, how){
     <span class="w">${esc(evt.when)}</span>
     <span class="h">${esc(howLine)}</span>`;
   if(calTimer) clearTimeout(calTimer);
-  calTimer = setTimeout(hideCalCard, 3600);
+  calTimer = setTimeout(hideCalCard, 5200);
 }
 function hideCalCard(){
   const el = $('calCard');
@@ -732,6 +739,19 @@ function tinyPlate(kind){
 }
 
 function findBoat(id){ return boats.find(b=>b.id===id); }
+function toolAt(plate, x, y){
+  if(!plate) return null;
+  const nodes = plate.querySelectorAll('[data-tool]');
+  let best = null, bestD = Infinity;
+  nodes.forEach(el=>{
+    const r = el.getBoundingClientRect();
+    const pad = 18;
+    if(x < r.left - pad || x > r.right + pad || y < r.top - pad || y > r.bottom + pad) return;
+    const d = Math.hypot(x - (r.left+r.right)/2, y - (r.top+r.bottom)/2);
+    if(d < bestD){ best = el; bestD = d; }
+  });
+  return best;
+}
 
 function togglePeek(id){
   peekId = peekId===id ? null : id;
@@ -837,12 +857,14 @@ function onDown(e){
   const b = findBoat(id); if(!b) return;
   const addEl = e.target.closest('[data-add]');
   if(addEl){
+    e.preventDefault();
     togglePosterTool(id, addEl.dataset.add);
     drag = {id, plate, pointer:e.pointerId, x:e.clientX, y:e.clientY, moved:true, held:true};
     try{ plate.setPointerCapture(e.pointerId); }catch(err){}
     return;
   }
-  const toolEl = e.target.closest('[data-tool]');
+  const toolEl = e.target.closest('[data-tool]') || toolAt(plate, e.clientX, e.clientY);
+  if(toolEl) e.preventDefault();
   const svg = plate.querySelector('[data-sun]');
   const hit = (!b.must && !toolEl && svg) ? clientSunHit(e.clientX, e.clientY, svg) : null;
   const onSun = !!(hit && hit.dist <= SUN_HIT_PX);
@@ -874,8 +896,8 @@ function onMove(e){
   const dist = Math.hypot(dx,dy);
   if(dist>36) drag.moved = true;
   if(drag.sun && dist>8) drag.moved = true;
-  if(drag.tool && dist>28) drag.moved = true;
-  if(drag.moved && drag.hold && (drag.sun || drag.tool || Math.abs(dy)>28)){
+  if(drag.tool && dist>44) drag.moved = true;
+  if(drag.moved && drag.hold && (drag.sun || (drag.tool && dist>44) || Math.abs(dy)>28)){
     clearTimeout(drag.hold); drag.hold=null;
     if(drag.toolEl) drag.toolEl.classList.remove('holding');
   }
@@ -947,6 +969,9 @@ $('cal').onclick = e=>{
   if(composeId){ composeId=null; render(); }
 };
 $('calCard').onclick = ()=> hideCalCard();
+document.querySelector('.phone').addEventListener('contextmenu', e=>{
+  e.preventDefault();
+});
 
 render();
 </script>
