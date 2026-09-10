@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-title" content="All Mates" />
 <meta name="theme-color" content="#fbf6ea" />
-<meta name="allmates-build" content="pages-p1-board5" />
+<meta name="allmates-build" content="pages-p1-glance-flood" />
 <title>All Mates On Deck</title>
 <style>
   :root{
@@ -16,30 +16,56 @@
   *{box-sizing:border-box}
   html,body{margin:0;height:100%;background:#efe6d2;touch-action:manipulation;
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);
-    -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+    -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;
+    overscroll-behavior-x:none}
   body{display:flex;justify-content:center}
   .phone{width:100%;max-width:390px;height:100dvh;background:var(--bg);position:relative;
-    overflow:hidden;display:flex;flex-direction:column}
+    overflow:hidden;display:flex;flex-direction:column;overscroll-behavior-x:none}
   .cal{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;
     padding:max(10px,env(safe-area-inset-top)) 8px 96px;scroll-behavior:smooth}
   .row{display:grid;grid-template-columns:22px 1fr;align-items:center;gap:0;
     min-height:38vh;padding:8px 2px}
   .day{font-size:11px;font-weight:800;letter-spacing:.08em;color:var(--navy);opacity:.55;
     writing-mode:vertical-rl;transform:rotate(180deg);text-align:center;pointer-events:none}
-  .hrs{position:absolute;right:4px;top:50%;transform:translateY(-50%);z-index:6;
-    font-size:13px;font-weight:800;color:var(--navy);opacity:.45;pointer-events:none;
-    letter-spacing:.02em;line-height:1}
-  .plate{position:relative;width:100%;aspect-ratio:16/9;touch-action:none}
-  .plate svg{display:block;width:100%;height:100%;overflow:visible}
+  .who{position:absolute;left:6px;top:2px;z-index:6;pointer-events:none;
+    max-width:72%;color:var(--navy);line-height:1.02;filter:drop-shadow(0 1px 0 #fffdf6)}
+  .who .lead{display:block;font-size:clamp(22px,6.6vw,30px);font-weight:800;
+    letter-spacing:-.035em}
+  .who .vessel{display:block;font-size:clamp(20px,6vw,28px);font-weight:800;
+    letter-spacing:-.03em;opacity:.92}
+  .need{position:absolute;right:2px;top:46%;transform:translateY(-50%);z-index:6;
+    pointer-events:none;font-size:clamp(64px,22vw,92px);font-weight:900;
+    letter-spacing:-.07em;line-height:.8;color:var(--navy);opacity:.78;
+    font-variant-numeric:tabular-nums;filter:drop-shadow(0 1px 0 #fffdf6)}
+  .need.off{display:none}
+  .row.eve .who,.row.eve .need{color:#f4f0e6;filter:drop-shadow(0 1px 0 #1b2438)}
+  .plate{position:relative;width:100%;aspect-ratio:16/9;touch-action:none;overflow:visible}
+  .plate svg{display:block;overflow:visible}
+  .medium{width:100%;height:100%}
   .sky,.medium,.sundial{position:absolute;inset:0;pointer-events:none}
-  .sundial{z-index:4;pointer-events:none}
+  /* Extra sky above the plate so the high midday apex is visible + hittable. */
+  .sundial{z-index:4;pointer-events:none;inset:auto;left:0;right:0;top:-28%;
+    width:100%;height:128%;overflow:visible}
   .sundial .hit{pointer-events:auto;fill:transparent;cursor:ew-resize;stroke:#000;stroke-opacity:0}
+  .sun-readout{position:absolute;left:50%;top:max(10px,env(safe-area-inset-top));
+    transform:translateX(-50%) translateY(-8px) scale(.94);z-index:12;pointer-events:none;
+    opacity:0;transition:opacity .16s ease,transform .16s ease;font-variant-numeric:tabular-nums}
+  .sun-readout.on{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}
+  .sun-readout .digits{display:block;font-size:clamp(26px,8.4vw,38px);font-weight:800;
+    letter-spacing:-.03em;line-height:1;color:var(--navy);background:rgba(255,253,246,.94);
+    border:2px solid var(--navy);border-radius:16px;padding:8px 16px 9px;
+    box-shadow:0 8px 22px rgba(40,30,10,.14)}
+  .sun-readout .digits.pop{animation:digitPop .18s cubic-bezier(.22,1.2,.3,1)}
+  @keyframes digitPop{
+    0%{transform:scale(1.12)}
+    100%{transform:scale(1)}
+  }
   .tub-spin{position:absolute;inset:0;z-index:3;transform-origin:50% 78%;
     transition:transform .7s cubic-bezier(.22,.8,.25,1);pointer-events:none}
   .tub-spin .tub{width:100%;height:100%;object-fit:contain;display:block;pointer-events:none}
   .mates{position:absolute;inset:0;z-index:5;pointer-events:none}
-  .seat{position:absolute;width:15%;aspect-ratio:1;transform:translate(-50%,-50%);
-    border-radius:50%;overflow:visible}
+  .seat{position:absolute;width:18%;aspect-ratio:1;transform:translate(-50%,-50%);
+    border-radius:50%;overflow:visible;z-index:1}
   .seat img,.seat .face{width:100%;height:100%;border-radius:50%;object-fit:cover;
     display:block;border:2px solid #fff;box-shadow:0 2px 0 rgba(0,0,0,.18);background:#243028}
   .seat.you img,.seat.you .face{box-shadow:0 0 0 3px var(--hive),0 2px 0 rgba(0,0,0,.18)}
@@ -79,22 +105,31 @@
   .night .phone, .row.eve .plate{filter:none}
   .row.eve{background:linear-gradient(180deg,#1b2438 0%,#fbf6ea 72%)}
   .row.eve .day{color:#f4f0e6}
+  .medium{transition:opacity .2s}
 </style>
 </head>
 <body>
 <div class="phone">
+  <div class="sun-readout" id="sunReadout" aria-hidden="true"></div>
   <div class="cal" id="cal" aria-label="Boats"></div>
   <div class="picker" id="picker" aria-hidden="true"></div>
   <button type="button" class="plus" id="plus" aria-label="New boat">+</button>
 </div>
 <script>
 /* Invite-only private mates sample. No outreach, no discovery, no texts. */
-const BUILD = 'pages-p1-board';
+const BUILD = 'pages-p1-glance-flood';
 const $ = id => document.getElementById(id);
 const ink = '#1a1a1a';
+/* Faces sit in the clawfoot bowl, stacked around the painted captain. */
 const SEATS = [
-  {x:36,y:52},{x:22,y:38},{x:44,y:44},{x:28,y:60},{x:50,y:36}
+  {x:34,y:62},{x:44,y:59},{x:28,y:56},{x:40,y:54},{x:50,y:58}
 ];
+const VESSELS = {
+  soup:['Gravy Boat','Bisque','Stock Pot','The Ladle'],
+  tennis:['Love-All','Deuce','Ace High','Baseline'],
+  garden:['Sea Biscuit','Mulch','Wheelbarrow','Clippings'],
+  water:['Tubby','Clawfoot','Soapdish']
+};
 const INHERENT = 8; /* baked bow-up in the locked plate */
 
 function esc(s){
@@ -128,26 +163,151 @@ function dayMeta(offset){
   return {offset, short:['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()], date:d};
 }
 
-/* Sun path: 06:00 = 0 (left / ocean), 12:00 = .4 (high), 17:00 = .73 (horizon), 21:00 = 1 (dark). */
-function hourToT(h){ return Math.max(0, Math.min(1, (h-6)/15)); }
-function tToHour(t){ return 6 + t*15; }
-function sunPoint(t){
-  const a = Math.PI * (1-t);
-  return {x: 400 + 310*Math.cos(a), y: 168 - 118*Math.sin(a)};
+/* Sun path is a 24h loop. t=0/1 is 05:00 at the left waterline.
+   Day is a wide parabolic climb-and-fall (not a tight circle):
+   05:00 left → midday apex high above the captain → 19:00 right.
+   Night continues under the water / tub as a low complementary arch.
+   Ends sit in-plate beside the tub (not through the figure); apex
+   overflows the 16:9 plate so the hat has clear air. */
+const DAWN_H = 5;
+const NOON_H = 12;
+const DUSK_H = 19;
+const T_NOON = (NOON_H - DAWN_H) / 24;
+const T_DUSK = (DUSK_H - DAWN_H) / 24;
+const T_HALF = 0.5 / 24;
+const SUN_X0 = 32;
+const SUN_X1 = 768;
+const SUN_Y_APEX = -58;
+const SUN_Y_RIM = 338;
+const SUN_Y_NIGHT = 482;
+const SUN_HIT_PX = 44;
+
+function wrap01(t){ return ((t % 1) + 1) % 1; }
+function hourToT(h){
+  let x = (h - DAWN_H) / 24;
+  x = x - Math.floor(x);
+  return x;
 }
-function tFromPoint(x,y,svg){
+function tToHour(t){ return DAWN_H + wrap01(t) * 24; }
+function snapHour(h){ return Math.round(h * 2) / 2; }
+function snapT(t){ return hourToT(snapHour(tToHour(t))); }
+
+function dayRise(u){
+  /* Flatter than a circle: high plateau over the captain, low only at the rims. */
+  const s = Math.abs(2 * u - 1);
+  return 1 - Math.pow(s, 3.35);
+}
+function sunPoint(t){
+  const tt = wrap01(t);
+  if(tt <= T_DUSK){
+    const u = tt / T_DUSK;
+    return {
+      x: SUN_X0 + (SUN_X1 - SUN_X0) * u,
+      y: SUN_Y_RIM - (SUN_Y_RIM - SUN_Y_APEX) * dayRise(u)
+    };
+  }
+  const u = (tt - T_DUSK) / (1 - T_DUSK);
+  return {
+    x: SUN_X1 + (SUN_X0 - SUN_X1) * u,
+    y: SUN_Y_RIM + 4 * (SUN_Y_NIGHT - SUN_Y_RIM) * u * (1 - u)
+  };
+}
+function clientSunHit(x, y, svg){
+  const t = tFromPoint(x, y, svg);
+  const p = sunPoint(t);
   const r = svg.getBoundingClientRect();
-  const px = ((x-r.left)/r.width)*800;
-  const py = ((y-r.top)/r.height)*500;
-  const dx = px-400, dy = 168-py;
-  let ang = Math.atan2(dy, dx);
-  if(ang<0) ang = 0;
-  if(ang>Math.PI) ang = Math.PI;
-  return 1 - (ang/Math.PI);
+  const vb = svg.viewBox.baseVal;
+  const cx = r.left + ((p.x - vb.x) / vb.width) * r.width;
+  const cy = r.top + ((p.y - vb.y) / vb.height) * r.height;
+  return {t, dist: Math.hypot(x - cx, y - cy)};
+}
+function sunPathD(t0, t1){
+  const a = Math.max(0, Math.min(1, t0));
+  const b = Math.max(0, Math.min(1, t1));
+  if(b - a < 1e-4){
+    const p = sunPoint(a);
+    return `M${p.x.toFixed(1)} ${p.y.toFixed(1)}`;
+  }
+  const n = Math.max(16, Math.ceil((b - a) * 72));
+  let d = '';
+  for(let i=0;i<=n;i++){
+    const p = sunPoint(a + (b - a) * i / n);
+    d += (i ? 'L' : 'M') + p.x.toFixed(1) + ' ' + p.y.toFixed(1);
+  }
+  return d;
+}
+function tFromPoint(x, y, svg){
+  const r = svg.getBoundingClientRect();
+  const vb = svg.viewBox.baseVal;
+  const px = vb.x + ((x - r.left) / r.width) * vb.width;
+  const py = vb.y + ((y - r.top) / r.height) * vb.height;
+  const dist2 = t => {
+    const p = sunPoint(t);
+    const dx = p.x - px, dy = p.y - py;
+    return dx * dx + dy * dy;
+  };
+  let bestT = 0, bestD = Infinity;
+  const steps = 120;
+  for(let i=0;i<=steps;i++){
+    const t = i / steps;
+    const d = dist2(t);
+    if(d < bestD){ bestD = d; bestT = t; }
+  }
+  let lo = Math.max(0, bestT - 1 / steps);
+  let hi = Math.min(1, bestT + 1 / steps);
+  for(let k=0;k<14;k++){
+    const t1 = lo + (hi - lo) / 3;
+    const t2 = hi - (hi - lo) / 3;
+    if(dist2(t1) < dist2(t2)) hi = t2;
+    else lo = t1;
+  }
+  return (lo + hi) / 2;
+}
+function rangeMidT(b){
+  if(b.allDay) return T_NOON;
+  return (b.sunStart + b.sunEnd) / 2;
 }
 function isEvening(b){
   if(b.allDay) return false;
-  return ((b.sunStart+b.sunEnd)/2) >= 0.78;
+  const h = tToHour(rangeMidT(b)) % 24;
+  return h >= 17.5 || h < 5;
+}
+function isMoon(b){
+  if(b.allDay) return false;
+  return rangeMidT(b) > T_DUSK;
+}
+function clockParts(t){
+  let h = snapHour(tToHour(t));
+  h = ((h % 24) + 24) % 24;
+  const mins = Math.round(h * 2) % 2 ? 30 : 0;
+  const hr24 = Math.floor(h) % 24;
+  const ap = hr24 >= 12 ? 'PM' : 'AM';
+  let hr = hr24 % 12;
+  if(!hr) hr = 12;
+  return {text:`${hr}:${mins===0?'00':'30'}`, ap};
+}
+function formatRange(a, b, allDay){
+  if(allDay) return 'All day';
+  const A = clockParts(a), B = clockParts(b);
+  if(A.ap === B.ap) return `${A.text} – ${B.text} ${A.ap}`;
+  return `${A.text} ${A.ap} – ${B.text} ${B.ap}`;
+}
+function showReadout(text){
+  const el = $('sunReadout');
+  if(!el) return;
+  el.classList.add('on');
+  el.setAttribute('aria-hidden', 'false');
+  if(el.dataset.txt === text) return;
+  el.dataset.txt = text;
+  el.innerHTML = `<span class="digits pop">${esc(text)}</span>`;
+}
+function hideReadout(){
+  const el = $('sunReadout');
+  if(!el) return;
+  el.classList.remove('on');
+  el.setAttribute('aria-hidden', 'true');
+  el.dataset.txt = '';
+  el.innerHTML = '';
 }
 
 /* Angle = remaining need. Level = finished. Nearly-flat empty = need one. Steep = many. */
@@ -165,6 +325,29 @@ function hoursMark(boat){
   const heads = 1 + (boat.mates||[]).length;
   return Math.max(1, Math.round(base/heads));
 }
+function remainNeed(boat){
+  return Math.max(0, Math.max(1, boat.need|0) - (boat.mates||[]).length);
+}
+/* Flood depth = remaining hours. Deep water / tub sits low when alone;
+   water drops and the boat rides higher as mates board. */
+function floodLevel(boat){
+  const h = Math.max(1, Math.min(5, hoursMark(boat)));
+  const t = (h - 1) / 4;
+  return {
+    hours: h,
+    waterY: 438 - t * 188,
+    lift: -11 + t * 18
+  };
+}
+function leadMate(boat){
+  if(boat.mine) return YOU;
+  return mateBy(boat.owner) || mateBy((boat.mates||[])[0]) || MATES[0];
+}
+function vesselName(medium, seed){
+  const list = VESSELS[medium] || VESSELS.water;
+  if(seed==null) return list[Math.floor(Math.random()*list.length)];
+  return list[Math.abs(Number(seed)||0) % list.length];
+}
 
 const MEDIA = {
   water:{fill:'#4aa3d4',deep:'#2f86b8',splash:'#7ec8e8',foam:'#e8f6fc'},
@@ -173,32 +356,40 @@ const MEDIA = {
   garden:{fill:'#5a9a3a',deep:'#3d6a22',splash:'#8fd15a',foam:'#dce8b8'}
 };
 
-function waves(m){
-  return `<path d="M-40 352 C40 338 80 366 160 350 C240 334 280 368 360 352 C440 336 480 366 560 350 C640 334 700 364 860 348 L860 520 L-40 520 Z" fill="${m.fill}"/>
-    <path d="M-40 360 C50 348 90 372 170 358 C250 344 300 374 380 358 C460 342 510 372 590 356 C670 340 740 370 860 354" fill="none" stroke="${m.deep}" stroke-width="5"/>
-    <path d="M-20 348 C20 330 48 356 78 340" fill="${m.splash}" stroke="${ink}" stroke-width="3"/>
-    <path d="M70 336 C88 318 96 338 118 326 C128 342 90 350 70 336 Z" fill="${m.foam}" stroke="${ink}" stroke-width="3"/>`;
+function waves(m, waterY){
+  const d = (waterY ?? 352) - 352;
+  const Y = y => (y + d).toFixed(1);
+  return `<path d="M-40 ${Y(352)} C40 ${Y(338)} 80 ${Y(366)} 160 ${Y(350)} C240 ${Y(334)} 280 ${Y(368)} 360 ${Y(352)} C440 ${Y(336)} 480 ${Y(366)} 560 ${Y(350)} C640 ${Y(334)} 700 ${Y(364)} 860 ${Y(348)} L860 560 L-40 560 Z" fill="${m.fill}"/>
+    <path d="M-40 ${Y(360)} C50 ${Y(348)} 90 ${Y(372)} 170 ${Y(358)} C250 ${Y(344)} 300 ${Y(374)} 380 ${Y(358)} C460 ${Y(342)} 510 ${Y(372)} 590 ${Y(356)} C670 ${Y(340)} 740 ${Y(370)} 860 ${Y(354)}" fill="none" stroke="${m.deep}" stroke-width="5"/>
+    <path d="M-20 ${Y(348)} C20 ${Y(330)} 48 ${Y(356)} 78 ${Y(340)}" fill="${m.splash}" stroke="${ink}" stroke-width="3"/>
+    <path d="M70 ${Y(336)} C88 ${Y(318)} 96 ${Y(338)} 118 ${Y(326)} C128 ${Y(342)} 90 ${Y(350)} 70 ${Y(336)} Z" fill="${m.foam}" stroke="${ink}" stroke-width="3"/>`;
 }
-function gardenExtra(){
+function gardenExtra(waterY){
+  const d = (waterY ?? 352) - 352;
+  const Y = y => (y + d).toFixed(1);
   return `<g stroke="${ink}" stroke-width="2.4">
     ${[40,90,150,220,290,360,430,500,570,640,710,770].map((x,i)=>
-      `<path d="M${x} 348 C${x-6} 320 ${x+8} 312 ${x+2} 348" fill="${i%2?'#4e8c30':'#6aad3e'}"/>`
+      `<path d="M${x} ${Y(348)} C${x-6} ${Y(320)} ${x+8} ${Y(312)} ${x+2} ${Y(348)}" fill="${i%2?'#4e8c30':'#6aad3e'}"/>`
     ).join('')}
-    <path d="M-40 400 C80 388 200 412 400 396 C600 380 720 408 860 392 L860 520 L-40 520 Z" fill="#5a3a20"/>
+    <path d="M-40 ${Y(400)} C80 ${Y(388)} 200 ${Y(412)} 400 ${Y(396)} C600 ${Y(380)} 720 ${Y(408)} 860 ${Y(392)} L860 560 L-40 560 Z" fill="#5a3a20"/>
   </g>`;
 }
-function tennisBalls(){
+function tennisBalls(waterY){
+  const d = (waterY ?? 352) - 352;
+  const Y = y => (y + d).toFixed(1);
   return `<g>
-    <circle cx="120" cy="400" r="16" fill="#c8f54a" stroke="${ink}" stroke-width="3"/>
-    <path d="M108 392 C120 400 120 408 132 410" fill="none" stroke="${ink}" stroke-width="2"/>
-    <circle cx="620" cy="412" r="12" fill="#c8f54a" stroke="${ink}" stroke-width="3"/>
+    <circle cx="120" cy="${Y(400)}" r="16" fill="#c8f54a" stroke="${ink}" stroke-width="3"/>
+    <path d="M108 ${Y(392)} C120 ${Y(400)} 120 ${Y(408)} 132 ${Y(410)}" fill="none" stroke="${ink}" stroke-width="2"/>
+    <circle cx="620" cy="${Y(412)}" r="12" fill="#c8f54a" stroke="${ink}" stroke-width="3"/>
   </g>`;
 }
-function soupBits(){
+function soupBits(waterY){
+  const d = (waterY ?? 352) - 352;
+  const Y = y => (y + d).toFixed(1);
   return `<g>
-    <ellipse cx="140" cy="404" rx="10" ry="6" fill="#d4552a" stroke="${ink}" stroke-width="2"/>
-    <ellipse cx="560" cy="418" rx="8" ry="5" fill="#6a8f2a" stroke="${ink}" stroke-width="2"/>
-    <ellipse cx="240" cy="428" rx="7" ry="4" fill="#f0c14a" stroke="${ink}" stroke-width="2"/>
+    <ellipse cx="140" cy="${Y(404)}" rx="10" ry="6" fill="#d4552a" stroke="${ink}" stroke-width="2"/>
+    <ellipse cx="560" cy="${Y(418)}" rx="8" ry="5" fill="#6a8f2a" stroke="${ink}" stroke-width="2"/>
+    <ellipse cx="240" cy="${Y(428)}" rx="7" ry="4" fill="#f0c14a" stroke="${ink}" stroke-width="2"/>
   </g>`;
 }
 function standingTool(kind){
@@ -220,15 +411,16 @@ function standingTool(kind){
   </g>`;
   return '';
 }
-function mediumSvg(kind, eve){
+function mediumSvg(kind, eve, boat){
   const m = MEDIA[kind]||MEDIA.water;
   const sky = eve ? '#1b2438' : 'transparent';
+  const waterY = boat ? floodLevel(boat).waterY : 352;
   return `<svg class="medium" viewBox="0 0 800 500" aria-hidden="true">
     <rect width="800" height="500" fill="${sky}"/>
-    ${waves(m)}
-    ${kind==='garden'?gardenExtra():''}
-    ${kind==='tennis'?tennisBalls():''}
-    ${kind==='soup'?soupBits():''}
+    ${waves(m, waterY)}
+    ${kind==='garden'?gardenExtra(waterY):''}
+    ${kind==='tennis'?tennisBalls(waterY):''}
+    ${kind==='soup'?soupBits(waterY):''}
     ${standingTool(kind)}
   </svg>`;
 }
@@ -237,45 +429,55 @@ function plateSrc(kind){
   return 'plates/tub-'+k+'.png';
 }
 function spinDeg(boat){ return tipDeg(boat) - INHERENT; }
+function moonMark(x, y){
+  return `<path transform="translate(${x.toFixed(1)} ${y.toFixed(1)})"
+    d="M7-17.6A20 20 0 1 0 7 17.6A14.5 14.5 0 1 1 7-17.6Z"
+    fill="#d8dde8" stroke="${ink}" stroke-width="3"/>`;
+}
 function sunSvg(boat){
   const a = boat.allDay ? 0 : boat.sunStart;
   const b = boat.allDay ? 1 : boat.sunEnd;
-  const mid = (a+b)/2;
-  const p0 = sunPoint(a), p1 = sunPoint(b), pm = sunPoint(mid);
-  const large = (b-a)>0.5 ? 1 : 0;
-  const arc = `M${p0.x.toFixed(1)} ${p0.y.toFixed(1)} A310 118 0 ${large} 1 ${p1.x.toFixed(1)} ${p1.y.toFixed(1)}`;
-  const track = `M${sunPoint(0).x.toFixed(1)} ${sunPoint(0).y.toFixed(1)} A310 118 0 0 1 ${sunPoint(1).x.toFixed(1)} ${sunPoint(1).y.toFixed(1)}`;
-  const col = boat.must ? 'var(--must)' : 'var(--sun)';
+  const mid = rangeMidT(boat);
+  const pm = sunPoint(mid);
+  const dayTrack = sunPathD(0, T_DUSK);
+  const nightTrack = sunPathD(T_DUSK, 1);
+  const hit = sunPathD(0, 1);
+  const arc = boat.allDay ? dayTrack : sunPathD(a, b);
+  const moon = isMoon(boat);
+  const col = boat.must ? 'var(--must)' : (moon ? '#c5cbe0' : 'var(--sun)');
   const sunFill = isEvening(boat) ? '#d8dde8' : '#f5c431';
-  const stroke = boat.allDay ? col : col;
-  return `<svg class="sundial" viewBox="0 0 800 500" data-sun="1">
-    <path d="${track}" fill="none" stroke="${ink}" stroke-width="6" opacity=".12"/>
-    <path d="${boat.allDay?track:arc}" fill="none" stroke="${stroke}" stroke-width="${boat.allDay?18:14}"
+  return `<svg class="sundial" viewBox="0 -140 800 640" preserveAspectRatio="none" data-sun="1">
+    <path d="${dayTrack}" fill="none" stroke="${ink}" stroke-width="6" opacity=".14"/>
+    <path d="${nightTrack}" fill="none" stroke="${ink}" stroke-width="5" opacity=".07"/>
+    <path d="${arc}" fill="none" stroke="${col}" stroke-width="${boat.allDay?18:14}"
       stroke-linecap="round" opacity="${boat.allDay?.55:.9}"/>
-    <circle cx="${pm.x.toFixed(1)}" cy="${pm.y.toFixed(1)}" r="20" fill="${sunFill}" stroke="${ink}" stroke-width="3"/>
-    <path class="hit" d="${track}" stroke="transparent" stroke-width="48" fill="none"/>
+    ${moon ? moonMark(pm.x, pm.y)
+      : `<circle cx="${pm.x.toFixed(1)}" cy="${pm.y.toFixed(1)}" r="20" fill="${sunFill}" stroke="${ink}" stroke-width="3"/>`}
+    <path class="hit" d="${hit}" stroke="transparent" stroke-width="34" fill="none"/>
   </svg>`;
 }
 
 function loadBoats(){
   if(new URLSearchParams(location.search).has('fresh')){
     sessionStorage.removeItem('amod-boats');
+    sessionStorage.removeItem('amod-boats-v2');
+    sessionStorage.removeItem('amod-boats-v3');
   }
   try{
-    const raw = sessionStorage.getItem('amod-boats');
+    const raw = sessionStorage.getItem('amod-boats-v3');
     if(raw){
       const parsed = JSON.parse(raw);
       if(Array.isArray(parsed) && parsed.length) return parsed;
     }
   }catch(e){}
   return [
-    {id:'cook', day:0, medium:'soup', need:2, mates:['mia'], hours:4, sunStart:hourToT(8), sunEnd:hourToT(11), must:false, allDay:false, mine:false},
-    {id:'tennis', day:1, medium:'tennis', need:3, mates:[], hours:5, sunStart:hourToT(9), sunEnd:hourToT(11), must:true, allDay:false, mine:false},
-    {id:'garden', day:2, medium:'garden', need:1, mates:[], hours:2, sunStart:0, sunEnd:1, must:false, allDay:true, mine:false}
+    {id:'cook', day:0, medium:'soup', owner:'mia', vessel:'Gravy Boat', need:5, mates:['mia','andy','remi'], hours:8, sunStart:hourToT(8), sunEnd:hourToT(11), must:false, allDay:false, mine:false},
+    {id:'tennis', day:1, medium:'tennis', owner:'nova', vessel:'Love-All', need:3, mates:[], hours:5, sunStart:hourToT(9), sunEnd:hourToT(11), must:true, allDay:false, mine:false},
+    {id:'garden', day:2, medium:'garden', owner:'remi', vessel:'Sea Biscuit', need:4, mates:['remi','renee','amar','val'], hours:5, sunStart:0, sunEnd:1, must:false, allDay:true, mine:false}
   ];
 }
 let boats = loadBoats();
-function save(){ sessionStorage.setItem('amod-boats', JSON.stringify(boats)); }
+function save(){ sessionStorage.setItem('amod-boats-v3', JSON.stringify(boats)); }
 
 let peekId = null;
 let composeId = null;
@@ -293,26 +495,31 @@ function render(){
 function boatRow(b){
   const d = dayMeta(b.day);
   const tip = spinDeg(b);
+  const flood = floodLevel(b);
   const eve = isEvening(b);
   const peek = peekId===b.id ? ' peek' : '';
   const compose = composeId===b.id ? ' compose' : '';
+  const rem = remainNeed(b);
+  const lead = leadMate(b);
+  const vessel = b.vessel || vesselName(b.medium, 0);
   const seats = (b.mates||[]).map((id,i)=>{
     const p = mateBy(id); if(!p) return '';
-    const s = SEATS[i] || {x:26+i*8, y:40};
+    const s = SEATS[i] || {x:30+i*6, y:56};
     const extra = (anim[b.id]||{})[id] || '';
-    return `<div class="seat ${id==='you'?'you':''} ${extra}" style="left:${s.x}%;top:${s.y}%">
+    return `<div class="seat ${id==='you'?'you':''} ${extra}" style="left:${s.x}%;top:${s.y}%;z-index:${i+1}">
       <img alt="" src="${p.photo}"/><span class="tag">${esc(p.name)}</span></div>`;
   }).join('');
   return `<div class="row ${b.day===0?'now':''} ${eve?'eve':''}" data-boat="${b.id}">
     <div class="day">${esc(d.short)}</div>
     <div class="plate${peek}${compose}" data-id="${b.id}" aria-label="Boat">
-      ${mediumSvg(b.medium, eve)}
-      <div class="tub-spin" style="transform:rotate(${tip}deg)">
+      ${mediumSvg(b.medium, eve, b)}
+      <div class="tub-spin" style="transform:translateY(${flood.lift}%) rotate(${tip}deg)">
         <img class="tub" alt="" draggable="false" src="${plateSrc(b.medium)}"/>
         <div class="mates">${seats}</div>
       </div>
       ${sunSvg(b)}
-      <div class="hrs">${hoursMark(b)}</div>
+      <div class="who"><span class="lead">${esc(lead.name)}</span><span class="vessel">${esc(vessel)}</span></div>
+      <div class="need${rem?'' : ' off'}">${rem||''}</div>
     </div>
   </div>`;
 }
@@ -354,7 +561,8 @@ function toggleJoin(id){
 function createBoat(medium){
   const id = 'b'+Date.now();
   boats.unshift({
-    id, day:0, medium, need:1, mates:[], hours:3,
+    id, day:0, medium, owner:'you', vessel:vesselName(medium),
+    need:1, mates:[], hours:3,
     sunStart:hourToT(8), sunEnd:hourToT(12),
     must:false, allDay:false, mine:true
   });
@@ -380,12 +588,14 @@ function onDown(e){
   const plate = e.currentTarget;
   const id = plate.dataset.id;
   const b = findBoat(id); if(!b) return;
-  const sun = e.target.closest('[data-sun]');
-  const startT = sun ? tFromPoint(e.clientX,e.clientY, sun) : null;
+  const svg = plate.querySelector('[data-sun]');
+  const hit = (!b.must && svg) ? clientSunHit(e.clientX, e.clientY, svg) : null;
+  const onSun = !!(hit && hit.dist <= SUN_HIT_PX);
+  const startT = onSun ? snapT(hit.t) : null;
   drag = {
     id, plate, pointer:e.pointerId,
     x:e.clientX, y:e.clientY, moved:false, held:false,
-    sun: !!sun && !b.must, startT, lastT:startT,
+    sun: onSun, startT, lastT:startT,
     need0: b.need, tip0: e.clientY
   };
   try{ plate.setPointerCapture(e.pointerId); }catch(err){}
@@ -395,6 +605,9 @@ function onDown(e){
     if(drag.hold){ clearTimeout(drag.hold); drag.hold=null; }
     toggleJoin(id);
   }, 400);
+  if(drag.sun){
+    showReadout(formatRange(b.sunStart, b.sunEnd, b.allDay));
+  }
 }
 function onMove(e){
   if(!drag) return;
@@ -408,16 +621,17 @@ function onMove(e){
     e.preventDefault();
     const svg = drag.plate.querySelector('[data-sun]');
     const t = tFromPoint(e.clientX,e.clientY,svg);
-    let a = drag.startT, c = t;
+    let a = snapT(drag.startT), c = snapT(t);
     if(c<a){ const x=a; a=c; c=x; }
-    if(c-a < 0.06) c = Math.min(1, a+0.06);
-    b.allDay = (a<=0.04 && c>=0.96);
+    if(c-a < T_HALF - 1e-9) c = snapT(Math.min(1, a + T_HALF));
+    b.allDay = (a<=0.03 && c>=T_DUSK - 0.03);
     b.sunStart = b.allDay ? 0 : a;
     b.sunEnd = b.allDay ? 1 : c;
     const eve = isEvening(b);
     drag.plate.parentElement.classList.toggle('eve', eve);
     const wrap = drag.plate.querySelector('.sundial');
     if(wrap) wrap.outerHTML = sunSvg(b);
+    showReadout(formatRange(b.sunStart, b.sunEnd, b.allDay));
     return;
   }
   if(composeId===b.id && drag.moved && Math.abs(dy)>Math.abs(dx)){
@@ -425,8 +639,15 @@ function onMove(e){
     const next = Math.max(1, Math.min(5, Math.round(drag.need0 + (-dy)/36)));
     if(next!==b.need){
       b.need = next;
+      const flood = floodLevel(b);
       const spin = drag.plate.querySelector('.tub-spin');
-      if(spin) spin.style.transform = `rotate(${spinDeg(b)}deg)`;
+      if(spin) spin.style.transform = `translateY(${flood.lift}%) rotate(${spinDeg(b)}deg)`;
+      const needEl = drag.plate.querySelector('.need');
+      if(needEl){
+        const rem = remainNeed(b);
+        needEl.textContent = rem || '';
+        needEl.classList.toggle('off', !rem);
+      }
     }
   }
 }
@@ -438,7 +659,7 @@ function onUp(e){
   const moved = drag.moved;
   const held = drag.held;
   drag = null;
-  if(wasSun){ save(); render(); return; }
+  if(wasSun){ hideReadout(); save(); render(); return; }
     if(!moved && !held){
     if(composeId && composeId!==id) composeId = null;
     togglePeek(id);
