@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-title" content="All Mates On Deck" />
 <meta name="theme-color" content="#0f1412" />
 <title>All Mates On Deck</title>
-<meta name="allmates-build" content="pages-p0-live" />
+<meta name="allmates-build" content="pages-p0-corridor" />
 <style>
   :root {
     --bg:#0f1412; --card:#1a221e; --hive:#c8f54a; --hive-dim:#8fb82e;
@@ -167,6 +167,11 @@
   .feed-craft .tag,.craft-pick .tag{display:none}
   .craft-pick .seat{width:26px;height:26px}
   .craft-pick .seat .mini{width:24px;height:24px}
+  .agree-bar{position:absolute;left:12px;right:12px;bottom:max(12px, env(safe-area-inset-bottom));
+    display:flex;flex-direction:column;gap:8px;z-index:3}
+  .agree-bar .btn{font-size:16px;padding:14px}
+  .ping-card{background:#121916;border:1px solid var(--hive-dim);border-radius:16px;padding:16px}
+  .ping-card strong{display:block;font-size:18px;margin-bottom:6px}
 </style>
 </head>
 <body>
@@ -184,6 +189,15 @@
       <div class="block-label hidden" id="boardLabel">Who’s on board</div>
       <div class="board hidden" id="board"></div>
       <div class="block-label">On now / coming</div>
+      <button type="button" class="card job-card feed-card" id="presetBrisbane">
+        <div class="feed-craft" id="brisbaneCraft" data-extra="1"></div>
+        <div>
+          <strong>Anyone going Brisbane?</strong>
+          <span class="job-meta">Next 4 weeks · anytime</span>
+          <span class="job-meta">Pickup at Al’s brother’s</span>
+          <span class="job-meta" id="brisbaneWho"></span>
+        </div>
+      </button>
       <button type="button" class="card job-card feed-card" id="presetIkea">
         <div class="feed-craft" data-extra="4"></div>
         <div>
@@ -229,7 +243,7 @@
       <div class="hero">
         <div class="hero-photo" id="heroBefore"></div>
         <div class="hero-copy">
-          <div class="hero-kicker">Before</div>
+          <div class="hero-kicker" id="heroKicker">Before</div>
           <h1 id="heroTitle">Al’s garage</h1>
           <p class="sub" id="heroSub"></p>
           <p class="flick-hint">Flick up · the boat</p>
@@ -239,6 +253,16 @@
         <p class="hero-kicker" id="craftKind">Dinghy</p>
         <div class="craft-wrap" id="craft"></div>
         <p class="note" id="craftNote">Captain is always at the helm.</p>
+        <div class="agree-bar hidden" id="agreeBar">
+          <p class="note" id="agreeHint">Flexible. Someone can take this in 2 weeks.</p>
+          <div class="chips" id="agreeWhen"></div>
+          <button type="button" class="btn btn-primary" id="agreeBtn">I can take this</button>
+          <button type="button" class="btn btn-ghost hidden" id="agreePing">Show later ping · demo</button>
+          <div class="banner-ok hidden" id="agreeDone">
+            <strong>App will ping you later</strong>
+            <span class="meta">No “can you remind me”. Al doesn’t chase. Still fine to talk.</span>
+          </div>
+        </div>
       </div>
       <div class="after-pane hidden" id="afterPane">
         <div class="hero-photo" id="heroAfter"></div>
@@ -444,6 +468,11 @@
       <strong>Ship full</strong>
       <span class="meta">Stop inviting. Extra mates go to the wait-list.</span>
     </div>
+    <div class="banner-ok hidden" id="pingBanner">
+      <strong>App owns the later ping</strong>
+      <span class="meta">A yes means we’ll remind them. No chase-up call.</span>
+      <button type="button" class="btn btn-ghost" id="demoPingLive" style="margin-top:8px;font-size:14px;padding:10px">Show later ping · demo</button>
+    </div>
     <div class="card live" id="liveList" style="flex:1;min-height:0"></div>
     <footer>
       <button class="btn btn-primary" id="nextBurst" disabled>Send more</button>
@@ -569,6 +598,27 @@
       <p class="note">Text only is fine. Fake sample.</p>
     </footer>
   </section>
+
+  <section id="screen-ping" class="screen hidden">
+    <header>
+      <div class="logo">ALL <span>MATES</span> ON DECK</div>
+      <div class="pill warn">Later ping · fake</div>
+    </header>
+    <div>
+      <h1>Still on?</h1>
+      <p class="sub">App ping. Not a chase-up call. Al didn’t have to ask.</p>
+    </div>
+    <div class="ping-card">
+      <strong id="pingWho">You</strong>
+      <p class="sub" id="pingBody">You said you’d pick up at Al’s brother’s.</p>
+      <p class="count" id="pingWhen">You said: in 2 weeks</p>
+    </div>
+    <footer>
+      <button class="btn btn-can" id="pingYes">Still on</button>
+      <button class="btn btn-cant" id="pingNo">Can’t</button>
+      <p class="dark">Fake in-app ping · no real SMS · no gateway</p>
+    </footer>
+  </section>
 </div>
 <script>
 const SAMPLE = [
@@ -662,7 +712,7 @@ function blankJob(){
   };
 }
 function show(id){
-  ['home','chefs','urgent','ublast','umate','post','invite','confirm','live','wait','photos','tease','selfie','hat','first','detail'].forEach(s=>{
+  ['home','chefs','urgent','ublast','umate','post','invite','confirm','live','wait','photos','tease','selfie','hat','first','detail','ping'].forEach(s=>{
     $('screen-'+s).classList.toggle('hidden', s!==id);
   });
 }
@@ -867,6 +917,8 @@ function renderMeter(){
   }
   $('meter').innerHTML = html;
   $('fullBanner').classList.toggle('hidden', !full);
+  const yeses = replies.filter(r=>r.kind==='yes');
+  $('pingBanner').classList.toggle('hidden', !yeses.length);
   $('liveTitle').textContent = full ? 'Ship full' : 'Waiting on yes';
   $('liveTitle').classList.toggle('hidden', full);
   $('liveSub').textContent = full
@@ -1129,6 +1181,21 @@ if(new URLSearchParams(location.search).has('invite')){
 }
 let firstPicUrl = '';
 let myFirst = null;
+let afterJoin = null;
+let pingCtx = null;
+const WHEN_OPTS = [
+  {id:'2w', label:'In 2 weeks'},
+  {id:'soon', label:'This week'},
+  {id:'later', label:'Later in the 4 weeks'}
+];
+function whenLabel(id){
+  return (WHEN_OPTS.find(w=>w.id===id)||WHEN_OPTS[0]).label.toLowerCase();
+}
+function loadCorridor(){
+  try { return JSON.parse(sessionStorage.getItem('amod-corridor')||'null'); } catch(e){ return null; }
+}
+let corridor = loadCorridor() || {agreed:false, when:'2w', who:'You', hat:'sailor', photo:''};
+function saveCorridor(){ sessionStorage.setItem('amod-corridor', JSON.stringify(corridor)); }
 function renderHome(){
   $('homeSub').innerHTML = member
     ? `What’s on. Some <s>jobs</s> activities need many hands, some need few. When the ship is full, stop.`
@@ -1136,6 +1203,15 @@ function renderHome(){
   $('ikeaWho').textContent = member ? 'Mia Chen + 3 coming' : 'People are coming · names hidden';
   $('garageWho').textContent = member ? 'Tom Blake + 1 coming' : 'People are coming · names hidden';
   $('eventWho').textContent = member ? 'Helen Walker was there' : 'People were there · names hidden';
+  if(corridor.agreed){
+    $('brisbaneWho').textContent = member
+      ? `${corridor.who} · ${whenLabel(corridor.when)} · app will ping`
+      : 'Someone took it · names hidden';
+  } else {
+    $('brisbaneWho').textContent = member
+      ? 'Need 1 · anytime in the next 4 weeks'
+      : 'Flexible ask · names hidden';
+  }
   $('goJoin').classList.toggle('hidden', member);
   $('moreToggle').classList.toggle('hidden', !member);
   if(!member) $('moreDoors').classList.add('hidden');
@@ -1147,7 +1223,10 @@ function renderHome(){
   renderBoard();
   const cap = {name:'Al', photo:AL_PHOTO, hat:'captain', color:'#2a3a20'};
   document.querySelectorAll('.feed-craft').forEach(el=>{
-    el.innerHTML = miniCraft(+el.dataset.extra||1, cap, []);
+    const crew = (el.id==='brisbaneCraft' && corridor.agreed)
+      ? [{name:corridor.who, photo:corridor.photo||selfieUrl||AL_PHOTO, hat:corridor.hat||myHat||'sailor', color:'#3a4a20'}]
+      : [];
+    el.innerHTML = miniCraft(+el.dataset.extra||1, cap, crew);
   });
 }
 function peek(title, when){
@@ -1162,6 +1241,7 @@ function sceneSvg(kind){
   if(kind==='ikea') return `<svg viewBox="0 0 200 260" preserveAspectRatio="xMidYMid slice"><rect width="200" height="260" fill="#1a2218"/><rect x="25" y="160" width="70" height="50" fill="#c8b48a"/><rect x="100" y="140" width="70" height="70" fill="#d4c49a"/><rect x="40" y="90" width="55" height="45" fill="#b8a878"/><rect x="110" y="70" width="50" height="40" fill="#c4b888"/></svg>`;
   if(kind==='street') return `<svg viewBox="0 0 200 260" preserveAspectRatio="xMidYMid slice"><rect width="200" height="260" fill="#1a1c1a"/><rect x="0" y="140" width="200" height="80" fill="#2a2c2a"/><circle cx="50" cy="170" r="12" fill="#3a3a30"/><circle cx="120" cy="185" r="16" fill="#333228"/><rect x="20" y="40" width="30" height="90" fill="#243028"/><rect x="150" y="50" width="28" height="80" fill="#243028"/></svg>`;
   if(kind==='street-after') return `<svg viewBox="0 0 200 260" preserveAspectRatio="xMidYMid slice"><rect width="200" height="260" fill="#142018"/><rect x="0" y="140" width="200" height="80" fill="#2a3830"/><rect x="20" y="40" width="30" height="90" fill="#2a4030"/><rect x="150" y="50" width="28" height="80" fill="#2a4030"/><circle cx="100" cy="120" r="18" fill="#c8f54a" opacity=".35"/></svg>`;
+  if(kind==='road') return `<svg viewBox="0 0 200 260" preserveAspectRatio="xMidYMid slice"><rect width="200" height="260" fill="#142018"/><path d="M62 260 L90 70 L110 70 L138 260 Z" fill="#2a2c28"/><path d="M100 70 L100 260" stroke="#c8f54a" stroke-width="3" stroke-dasharray="10 12"/><rect x="96" y="36" width="8" height="40" fill="#8a7020"/><rect x="64" y="16" width="72" height="26" rx="3" fill="#1a2744"/><text x="100" y="34" text-anchor="middle" fill="#c8f54a" font-size="9" font-weight="700">BRISBANE</text><rect x="18" y="168" width="40" height="36" fill="#3a2a20"/><rect x="28" y="158" width="20" height="12" fill="#5a4030"/></svg>`;
   return `<svg viewBox="0 0 200 260" preserveAspectRatio="xMidYMid slice"><rect width="200" height="260" fill="#1a2218"/><text x="100" y="130" text-anchor="middle" fill="#8fb82e" font-size="42">⚖</text></svg>`;
 }
 function hullSvg(id){
@@ -1210,6 +1290,12 @@ function openDetail(key){
       captain:al, crew:[mate('Mia'),mate('Sara'),mate('Jack')]},
     street:{title:'Street tidy', extra:5, sub:'Tall ship · done', scene:'street', after:'street-after',
       captain:al, crew:[mate('Helen'),mate('Mia'),mate('Tom'),mate('Sara'),mate('Priya')]},
+    brisbane:{title:'Anyone going Brisbane?', extra:1,
+      sub:'Need something picked up at my brother’s. Next 4 weeks. Someone can take it in 2.',
+      scene:'road', after:null, captain:al,
+      crew: corridor.agreed
+        ? [{name:corridor.who, photo:corridor.photo||you.photo, hat:corridor.hat||you.hat, color:'#3a4a20'}]
+        : []},
     mine:{title: myFirst||'Your activity', extra:1, sub:'Your <s>job</s> activity · rowboat', scene:'mind', after:null,
       captain:you, crew:[]}
   };
@@ -1219,7 +1305,13 @@ function openDetail(key){
   $('heroSub').innerHTML = d.sub;
   $('heroBefore').innerHTML = sceneSvg(d.scene);
   $('craftKind').textContent = c.label;
-  $('craftNote').textContent = member ? 'You’re already captain. Empty = still needed.' : 'Craft size is extras needed. Names hidden.';
+  if(key==='brisbane'){
+    $('craftNote').textContent = !member
+      ? 'Craft size is extras needed. Names hidden.'
+      : (corridor.agreed ? 'You’re aboard. App owns the later ping.' : 'Al is captain. Empty seat = the pickup.');
+  } else {
+    $('craftNote').textContent = member ? 'You’re already captain. Empty = still needed.' : 'Craft size is extras needed. Names hidden.';
+  }
   const pos = extraSeats(c.id);
   let seats = seatAt(pos.helm[0], pos.helm[1], d.captain, true);
   for(let i=0;i<c.extra;i++){
@@ -1232,6 +1324,21 @@ function openDetail(key){
   if(done){
     $('heroAfter').innerHTML = sceneSvg(d.after);
     $('afterTitle').textContent = d.title;
+  }
+  $('heroKicker').textContent = key==='brisbane' ? 'Corridor ask' : 'Before';
+  const corridorOn = key==='brisbane';
+  $('agreeBar').classList.toggle('hidden', !corridorOn);
+  if(corridorOn){
+    $('agreeWhen').innerHTML = WHEN_OPTS.map(w=>
+      `<button type="button" class="chip ${corridor.when===w.id?'on':''}" data-when="${w.id}">${w.label}</button>`
+    ).join('');
+    $('agreeBtn').classList.toggle('hidden', corridor.agreed);
+    $('agreeWhen').classList.toggle('hidden', corridor.agreed);
+    $('agreeHint').textContent = corridor.agreed
+      ? `You’re on. App will ping you ${whenLabel(corridor.when)}.`
+      : 'Flexible. Someone can take this in 2 weeks.';
+    $('agreeDone').classList.toggle('hidden', !corridor.agreed);
+    $('agreePing').classList.toggle('hidden', !corridor.agreed);
   }
   show('detail');
   $('flick').scrollTop = 0;
@@ -1318,6 +1425,11 @@ $('firstPost').onclick=()=>{
   member=true;
   sessionStorage.setItem('amod-member','1');
   renderHome();
+  if(afterJoin==='brisbane'){
+    afterJoin=null;
+    openDetail('brisbane');
+    return;
+  }
   show('home');
 };
 $('backPhotos').onclick=()=>{ renderHome(); show('home'); };
@@ -1371,6 +1483,65 @@ $('chefHost').onclick=()=>{
 
 $('presetIkea').onclick=()=>openDetail('ikea');
 $('presetGarage').onclick=()=>openDetail('garage');
+$('presetBrisbane').onclick=()=>openDetail('brisbane');
+function openPing(ctx){
+  pingCtx = ctx;
+  $('pingWho').textContent = ctx.who || 'You';
+  $('pingBody').textContent = ctx.body || 'You said you’d pick up at Al’s brother’s.';
+  $('pingWhen').textContent = ctx.whenLine || `You said: ${whenLabel(ctx.when||'2w')}`;
+  show('ping');
+}
+$('agreeWhen').onclick=e=>{
+  const c=e.target.closest('[data-when]'); if(!c) return;
+  corridor.when=c.dataset.when;
+  [...$('agreeWhen').querySelectorAll('.chip')].forEach(x=>x.classList.toggle('on', x.dataset.when===corridor.when));
+};
+$('agreeBtn').onclick=()=>{
+  if(!member){ afterJoin='brisbane'; show('selfie'); return; }
+  corridor.agreed=true;
+  corridor.who='You';
+  corridor.hat=myHat||'sailor';
+  corridor.photo=selfieUrl||'';
+  saveCorridor();
+  openDetail('brisbane');
+  $('flick').querySelector('.boat-pane').scrollIntoView({behavior:'smooth'});
+};
+$('agreePing').onclick=()=>openPing({
+  who:'You',
+  when:corridor.when,
+  body:'You said you’d pick up at Al’s brother’s. Next 4 weeks.',
+  whenLine:`You said: ${whenLabel(corridor.when)}`,
+  from:'corridor'
+});
+$('demoPingLive').onclick=()=>{
+  const yes = replies.find(r=>r.kind==='yes');
+  if(!yes) return;
+  openPing({
+    who:yes.name,
+    body:`${yes.name} said yes to ${job.title||'this activity'}.`,
+    whenLine: yes.slot ? `They said: ${yes.slot}` : `They said yes · ${whenLine()}`,
+    from:'live'
+  });
+};
+$('pingYes').onclick=()=>{
+  if(pingCtx&&pingCtx.from==='corridor') openDetail('brisbane');
+  else { renderLive(); show('live'); }
+};
+$('pingNo').onclick=()=>{
+  if(pingCtx&&pingCtx.from==='corridor'){
+    corridor.agreed=false;
+    saveCorridor();
+    renderHome();
+    openDetail('brisbane');
+  } else if(pingCtx&&pingCtx.from==='live'){
+    const r = replies.find(x=>x.name===pingCtx.who && x.kind==='yes');
+    if(r){ r.kind='wait'; r.label='can’t · wait-list'; }
+    renderLive();
+    show('live');
+  } else {
+    renderHome(); show('home');
+  }
+};
 $('goPost').onclick=()=>{
   if(!member){ show('selfie'); return; }
   clearTimers();
