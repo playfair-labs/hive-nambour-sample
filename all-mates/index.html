@@ -180,7 +180,7 @@ const SUN_X1 = 768;
 const SUN_Y_APEX = -58;
 const SUN_Y_RIM = 338;
 const SUN_Y_NIGHT = 482;
-const SUN_HIT_PX = 30;
+const SUN_HIT_PX = 44;
 
 function wrap01(t){ return ((t % 1) + 1) % 1; }
 function hourToT(h){
@@ -335,8 +335,8 @@ function floodLevel(boat){
   const t = (h - 1) / 4;
   return {
     hours: h,
-    waterY: 424 - t * 156,
-    lift: -9 + t * 15
+    waterY: 438 - t * 188,
+    lift: -11 + t * 18
   };
 }
 function leadMate(boat){
